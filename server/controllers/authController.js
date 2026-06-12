@@ -5,7 +5,7 @@ const OTP = require("../models/OTP");
 const { StudentData, FacultyData } = require("../models/InstitutionalData");
 const sendEmail = require("../utils/sendEmail");
 const calculateAcademicInfo = require("../utils/academicCalculator");
-
+const supabase = require("../config/supabase");
 // Helper Functions
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -183,7 +183,7 @@ exports.registerFaculty = async (req, res) => {
 // ==================== VERIFY OTP ====================
 exports.verifyOTP = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const { email, otp, purpose } = req.body;
 
     const otpRecord = await OTP.findOne({ email, otp });
 
@@ -202,7 +202,7 @@ exports.verifyOTP = async (req, res) => {
         }
       }
       return res.status(400).json({
-        success: false,
+            success: false,
         message: "Invalid OTP"
       });
     }
@@ -212,6 +212,13 @@ exports.verifyOTP = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "OTP expired. Please register again."
+      });
+    }
+
+    if (otpRecord.purpose === "forgot_password" || purpose === "forgot_password") {
+      return res.status(200).json({
+        success: true,
+        message: "OTP verified successfully"
       });
     }
 
@@ -320,14 +327,29 @@ exports.resendOTP = async (req, res) => {
 // ==================== LOGIN ====================
 exports.loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { rollNoOrEmpId, password, rememberMe } = req.body;
 
-    const user = await User.findOne({ email });
+    if (!rollNoOrEmpId) {
+      return res.status(400).json({
+        success: false,
+        message: "Roll No / Employee ID is required"
+      });
+    }
+
+    const identifier = rollNoOrEmpId.trim().toUpperCase();
+
+    const user = await User.findOne({
+      $or: [
+        { rollNumber: identifier },
+        { employeeId: identifier }
+      ]
+    });
 
     if (!user) {
-      return res.status(401).json({
+      return res.status(404).json({
         success: false,
-        message: "Invalid credentials"
+        message: "User not found. Please register.",
+        error: "User not found. Please register."
       });
     }
 
@@ -346,7 +368,8 @@ exports.loginUser = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials"
+        message: "Invalid credentials. Please check your password.",
+        error: "Invalid credentials. Please check your password."
       });
     }
 
@@ -376,6 +399,20 @@ exports.loginUser = async (req, res) => {
     await user.save();
 
     const token = generateToken(user);
+
+    // Set cookie
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/"
+    };
+    
+    if (rememberMe) {
+      cookieOptions.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+    }
+    
+    res.cookie("token", token, cookieOptions);
 
     res.status(200).json({
       success: true,
@@ -408,36 +445,46 @@ exports.loginUser = async (req, res) => {
 // ==================== FORGOT PASSWORD ====================
 exports.forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, rollNoOrEmpId } = req.body;
+    const identifier = (rollNoOrEmpId || email || "").trim().toUpperCase();
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      $or: [
+        { rollNumber: identifier },
+        { employeeId: identifier },
+        { email: identifier.toLowerCase() }
+      ]
+    });
     
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found with this email"
+        message: "User not found. Please register.",
+        error: "User not found. Please register."
       });
     }
 
+    const targetEmail = user.email;
     const otp = generateOTP();
 
-    await OTP.deleteMany({ email, purpose: "forgot_password" });
+    await OTP.deleteMany({ email: targetEmail, purpose: "forgot_password" });
     await OTP.create({
-      email,
+      email: targetEmail,
       otp,
       purpose: "forgot_password",
       expiresAt: new Date(Date.now() + 10 * 60 * 1000)
     });
 
     await sendEmail(
-      email,
+      targetEmail,
       "CAMPX - Password Reset OTP",
       `Your OTP to reset password is: ${otp}\nValid for 10 minutes.`
     );
 
     res.status(200).json({
       success: true,
-      message: "OTP sent to your email"
+      message: "OTP sent to your email",
+      email: targetEmail
     });
 
   } catch (error) {
@@ -482,6 +529,140 @@ exports.resetPassword = async (req, res) => {
     });
 
   } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ==================== UPDATE PROFILE ====================
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, phoneNumber } = req.body;
+    
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    
+    if (name) user.name = name;
+    if (phoneNumber) user.phoneNumber = phoneNumber;
+    
+    await user.save();
+    
+    const updatedUser = user.toObject();
+    delete updatedUser.password;
+    
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ==================== UPDATE PROFILE PICTURE ====================
+exports.updateProfilePicture = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+    
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(req.file.mimetype)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid file type. Please upload an image (JPEG, PNG, GIF, WEBP)"
+      });
+    }
+    
+    if (req.file.size > 2 * 1024 * 1024) {
+      return res.status(400).json({
+        success: false,
+        message: "File size must be less than 2MB"
+      });
+    }
+    
+    const fileExtension = req.file.originalname.split('.').pop();
+    const fileName = `profiles/${req.user.id}-${Date.now()}.${fileExtension}`;
+    
+    const { error } = await supabase.storage
+      .from("campx-files")
+      .upload(fileName, req.file.buffer, {
+        contentType: req.file.mimetype,
+        cacheControl: "3600"
+      });
+    
+    if (error) {
+      console.error("Supabase upload error:", error);
+      return res.status(400).json({
+        success: false,
+        message: "Failed to upload image: " + error.message
+      });
+    }
+    
+    const { data: publicUrlData } = supabase.storage
+      .from("campx-files")
+      .getPublicUrl(fileName);
+    
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { profilePicture: publicUrlData.publicUrl },
+      { new: true }
+    ).select("-password");
+    
+    res.status(200).json({
+      success: true,
+      message: "Profile picture updated successfully",
+      profilePicture: user.profilePicture
+    });
+  } catch (error) {
+    console.error("Update profile picture error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ==================== CHANGE PASSWORD ====================
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+    
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ success: false, message: "New passwords do not match" });
+    }
+    
+    if (newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters" });
+    }
+    
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    
+    if (!isPasswordValid) {
+      return res.status(401).json({ success: false, message: "Current password is incorrect" });
+    }
+    
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    user.password = hashedPassword;
+    await user.save();
+    
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully"
+    });
+  } catch (error) {
+    console.error("Change password error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -540,6 +721,28 @@ if (
         academicInfo.batch;
 
       await user.save();
+      
+      try {
+        const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
+        const ClassFacultyAssignment = require("../models/ClassFacultyAssignment");
+        
+        const proctorAssignment = await ProctorStudentAssignment.findOne({ studentId: user._id })
+          .populate("facultyId", "name phoneNumber email");
+          
+        const classAssignment = await ClassFacultyAssignment.findOne({ studentId: user._id })
+          .populate("facultyId", "name phoneNumber email");
+          
+        const userObj = user.toObject();
+        userObj.proctor = proctorAssignment ? proctorAssignment.facultyId : null;
+        userObj.classTeacher = classAssignment ? classAssignment.facultyId : null;
+        
+        return res.status(200).json({
+          success: true,
+          user: userObj
+        });
+      } catch (err) {
+        console.error("Error fetching proctor/class faculty:", err);
+      }
     }
 
     res.status(200).json({

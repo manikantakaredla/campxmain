@@ -14,11 +14,11 @@ const DataUpload = () => {
 
   const tabs = [
     { id: 'students', label: 'Students', 
-      description: 'Upload student data with name, roll, branch, email, course, phone',
-      columns: ['name', 'roll', 'branch', 'email', 'course', 'ph_no'],
+      description: 'Upload student data with name, roll, branch, section, email, course, phone',
+      columns: ['name', 'roll', 'branch', 'section', 'email', 'course', 'ph_no'],
       endpoint: '/admin/upload/students',
       template: 'student_template.csv',
-      sample: 'name,roll,branch,email,course,ph_no\nJohn Doe,24B11CS052,CSE,john.doe@adityauniversity.in,B.Tech,9876543210' },
+      sample: 'name,roll,branch,section,email,course,ph_no\nJohn Doe,24B11CS052,CSE,A,john.doe@adityauniversity.in,B.Tech,9876543210' },
     { id: 'faculty', label: 'Faculty', 
       description: 'Upload faculty data with employee ID, name, department, designation, role',
       columns: ['empid', 'name', 'dept', 'designation', 'staff_role'],

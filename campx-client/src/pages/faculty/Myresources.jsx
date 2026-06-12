@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { useSettings } from '../../hooks/useSettings'
+import { useAuth } from '../../hooks/useAuth'
 import { resourceService } from '../../services/resourceService'
 import { SearchBar } from '../../components/Common/SearchBar'
 import { Pagination } from '../../components/Common/Pagination'
@@ -10,7 +12,9 @@ import toast from 'react-hot-toast'
 import api from '../../services/api'
 
 const MyResources = () => {
+  const { user } = useAuth()
   const [resources, setResources] = useState([])
+  const { settings } = useSettings()
   const [loading, setLoading] = useState(true)
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 })
   const [searchTerm, setSearchTerm] = useState('')
@@ -24,6 +28,7 @@ const MyResources = () => {
     visibility: 'all',
     targetBranch: '',
     targetYear: '',
+    targetSection: '',
     file: null
   })
 
@@ -89,6 +94,7 @@ const MyResources = () => {
       submitData.append('visibility', formData.visibility)
       submitData.append('targetBranch', formData.targetBranch)
       submitData.append('targetYear', formData.targetYear)
+      submitData.append('targetSection', formData.targetSection)
       submitData.append('file', formData.file)
       
       await api.post('/resources', submitData, {
@@ -104,6 +110,7 @@ const MyResources = () => {
         visibility: 'all',
         targetBranch: '',
         targetYear: '',
+    targetSection: '',
         file: null
       })
       fetchResources()
@@ -165,16 +172,20 @@ const MyResources = () => {
                       <Eye className="w-4 h-4" />
                     </Link>
 
-
-<Link 
-  to={`/faculty/resources/edit/${resource._id}`} 
-  className="p-1.5 text-gray-400 hover:text-green-600 transition-colors"
->
-  <Edit className="w-4 h-4" />
-</Link>
-                    <button onClick={() => handleDelete(resource._id)} className="p-1.5 text-gray-400 hover:text-red-600">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {/* Only show Edit/Delete if user uploaded it */}
+                    {(resource.uploadedBy === user?._id || resource.uploadedBy?._id === user?._id) && (
+                      <>
+                        <Link 
+                          to={`/faculty/resources/edit/${resource._id}`} 
+                          className="p-1.5 text-gray-400 hover:text-green-600 transition-colors"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Link>
+                        <button onClick={() => handleDelete(resource._id)} className="p-1.5 text-gray-400 hover:text-red-600">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
                 <h3 className="font-semibold text-gray-800 mb-1 line-clamp-1">{resource.title}</h3>
@@ -183,7 +194,9 @@ const MyResources = () => {
                   <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
                     {resource.category}
                   </span>
-                  <span className="text-xs text-gray-400">{resource.downloads} downloads</span>
+                  <span className="text-xs text-gray-400">
+                    {new Date(resource.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
             </div>
@@ -259,6 +272,9 @@ const MyResources = () => {
                     <option value="all">All Students</option>
                     <option value="branch">Specific Branch</option>
                     <option value="year">Specific Year</option>
+                    <option value="section">Specific Section</option>
+                    <option value="class">My Class Students</option>
+                    <option value="proctor">My Proctor Students</option>
                   </select>
                 </div>
               </div>
@@ -266,7 +282,10 @@ const MyResources = () => {
               {formData.visibility === 'branch' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Target Branch</label>
-                  <input type="text" name="targetBranch" value={formData.targetBranch} onChange={handleInputChange} className="input-field" placeholder="CSE, ECE, etc." />
+                  <select name="targetBranch" value={formData.targetBranch} onChange={handleInputChange} className="input-field">
+                    <option value="">Select Branch</option>
+                    {settings?.branches?.map(b => <option key={b} value={b}>{b}</option>)}
+                  </select>
                 </div>
               )}
               
@@ -279,6 +298,15 @@ const MyResources = () => {
                     <option value="2">2nd Year</option>
                     <option value="3">3rd Year</option>
                     <option value="4">4th Year</option>
+                  </select>
+                </div>
+              )}
+              {formData.visibility === 'section' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Target Section</label>
+                  <select name="targetSection" value={formData.targetSection} onChange={handleInputChange} className="input-field">
+                    <option value="">Select Section</option>
+                    {settings?.sections?.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
               )}

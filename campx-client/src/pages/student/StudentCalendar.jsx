@@ -28,6 +28,7 @@ const StudentCalendar = () => {
     { value: 'Hackathon', label: 'Hackathon', icon: <Code size={14} />, color: 'bg-pink-100 text-pink-700' },
     { value: 'Exam Notice', label: 'Exam', icon: <BookOpen size={14} />, color: 'bg-red-100 text-red-700' },
     { value: 'Sports', label: 'Sports', icon: <Trophy size={14} />, color: 'bg-emerald-100 text-emerald-700' },
+    { value: 'Event', label: 'Event', icon: <Calendar size={14} />, color: 'bg-teal-100 text-teal-700' },
   ]
 
   useEffect(() => {
@@ -74,7 +75,8 @@ const StudentCalendar = () => {
     const dateStr = `${year}-${month}-${dayStr}`
     
     let events = activities.filter(activity => {
-      const activityDate = new Date(activity.startDate).toISOString().split('T')[0]
+      const d = new Date(activity.startDate)
+      const activityDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
       return activityDate === dateStr
     })
     
@@ -128,7 +130,9 @@ const StudentCalendar = () => {
   const upcomingEvents = activities
     .filter(a => {
       if (filterType !== 'all' && a.type !== filterType) return false
-      return new Date(a.startDate) >= new Date()
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      return new Date(a.startDate) >= today
     })
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
     .slice(0, 10)

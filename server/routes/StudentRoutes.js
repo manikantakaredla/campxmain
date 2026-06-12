@@ -7,7 +7,8 @@ const {
   updateProfilePicture,
   changePassword,
   updateNotificationPreferences,
-  getDashboardData
+  getDashboardData,
+  getAssignedFaculty
 } = require("../controllers/studentController");
 const protect = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
@@ -22,5 +23,7 @@ router.put("/profile/picture", upload.single("file"), updateProfilePicture);
 router.put("/change-password", changePassword);
 router.put("/notification-preferences", updateNotificationPreferences);
 router.get("/dashboard", getDashboardData);
+
+router.get("/assigned-faculty", protect, authorizeRoles("student"), getAssignedFaculty);
 
 module.exports = router;

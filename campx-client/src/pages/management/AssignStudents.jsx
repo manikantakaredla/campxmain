@@ -15,6 +15,8 @@ const AssignStudents = () => {
   const [students, setStudents] = useState([])
   const [selectedFaculty, setSelectedFaculty] = useState(searchParams.get('faculty') || '')
   const [assignmentType, setAssignmentType] = useState(searchParams.get('type') || 'class')
+  const [assignMode, setAssignMode] = useState('individual') // 'individual' or 'section'
+  const [selectedSectionFilter, setSelectedSectionFilter] = useState('')
   const [selectedStudents, setSelectedStudents] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -182,6 +184,30 @@ const AssignStudents = () => {
             {/* Student Search */}
             <div className="p-4 border-b border-gray-100">
               <SearchBar onSearch={setSearchTerm} placeholder="Search students by name or roll number..." />
+              
+              <div className="mt-4 flex gap-2">
+                <button onClick={() => {setAssignMode('individual'); setSelectedStudents([]);}} className={`px-3 py-1 text-sm rounded-lg ${assignMode === 'individual' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>Individual Selection</button>
+                <button onClick={() => {setAssignMode('section'); setSelectedStudents([]);}} className={`px-3 py-1 text-sm rounded-lg ${assignMode === 'section' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>By Section Selection</button>
+              </div>
+              
+              {assignMode === 'section' && (
+                <div className="mt-4">
+                  <select className="w-full p-2 border rounded-lg" value={selectedSectionFilter} onChange={(e) => {
+                    setSelectedSectionFilter(e.target.value);
+                    if (e.target.value) {
+                      const sectionStudents = students.filter(s => s.section === e.target.value).map(s => s._id);
+                      setSelectedStudents(sectionStudents);
+                    } else {
+                      setSelectedStudents([]);
+                    }
+                  }}>
+                    <option value="">Select Section...</option>
+                    {Array.from(new Set(students.map(s => s.section).filter(Boolean))).map(sec => (
+                      <option key={sec} value={sec}>{sec}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             {/* Student List */}

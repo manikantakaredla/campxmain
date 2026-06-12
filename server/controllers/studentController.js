@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const User = require("../models/User");
 const Announcement = require("../models/Announcement");
 const Resource = require("../models/Resource");
@@ -300,5 +301,30 @@ if (
   } catch (error) {
     console.error("Get dashboard error:", error);
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+// ==================== GET ASSIGNED FACULTY ====================
+exports.getAssignedFaculty = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
+    const ClassStudentAssignment = require("../models/ClassStudentAssignment");
+
+    const proctorAssignment = await ProctorStudentAssignment.findOne({ studentId })
+      .populate("facultyId", "name email phoneNumber department staffRole");
+      
+    const classAssignment = await ClassStudentAssignment.findOne({ studentId })
+      .populate("facultyId", "name email phoneNumber department staffRole");
+
+    res.status(200).json({
+      success: true,
+      data: {
+        proctor: proctorAssignment ? proctorAssignment.facultyId : null,
+        classTeacher: classAssignment ? classAssignment.facultyId : null
+      }
+    });
+  } catch (error) {
+    console.error("Get assigned faculty error:", error);
+    res.status(500).json({ success: false, message: "Error fetching assigned faculty" });
   }
 };

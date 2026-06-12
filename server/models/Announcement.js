@@ -8,107 +8,79 @@ const contactSchema = new mongoose.Schema({
 
 const announcementSchema = new mongoose.Schema({
   // ========== BASIC INFO ==========
-  title: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  description: {
-    type: String,
-    required: true
-  },
+  title: { type: String, required: true, trim: true },
+  description: { type: String, required: true },
+  url: { type: String },
   
   // ========== TYPE/CATEGORY ==========
   type: {
     type: String,
     enum: [
-      "exam", "workshop", "internship", "hackathon", 
-      "placement", "crt", "sports", "fee", "lab", 
-      "academic", "event", "general", "holiday", "result"
+      "academic", "assignment", "internal_exam", "external_exam", 
+      "workshop", "seminar", "hackathon", "internship", 
+      "placement", "event", "general", "examination", 
+      "holiday", "emergency", "fee", "lab", "sports", 
+      "result", "crt", "exam"
     ],
     default: "general",
     required: true
   },
   
-  // ========== PRIORITY ==========
-  priority: {
-    type: String,
-    enum: ["low", "medium", "high", "urgent"],
-    default: "medium"
-  },
+  // ========== PRIORITY & METADATA ==========
+  priority: { type: String, enum: ["low", "medium", "high", "urgent"], default: "medium" },
+  isImportant: { type: Boolean, default: false },
+  isPinned: { type: Boolean, default: false },
+  showInClassUpdates: { type: Boolean, default: false },
+  allowReadTracking: { type: Boolean, default: false },
   
-  // ========== AUDIENCE ==========
-  audience: {
-    type: String,
-    enum: ["all", "students", "faculty"],
-    default: "all"
-  },
+  // ========== AUDIENCE & TARGETING ==========
+  audience: { type: String, enum: ["all", "students", "faculty", "class", "proctor"], default: "all" },
+  targetMyClass: { type: Boolean, default: false },
+  targetMyProctor: { type: Boolean, default: false },
+  targetMySection: { type: Boolean, default: false },
+  targetMyDepartment: { type: Boolean, default: false },
+  targetBranches: [{ type: String }],
+  targetSections: [{ type: String }],
+  targetYears: [{ type: Number }],
+  targetSpecificStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   
   // ========== ATTACHMENT ==========
-  attachment: {
-    type: String  // Supabase URL
-  },
-  attachmentType: {
-    type: String,
-    enum: ["image", "pdf"]
-  },
+  attachment: { type: String },
+  attachmentType: { type: String, enum: ["image", "pdf"] },
   
   // ========== CONTACTS ==========
   contacts: [contactSchema],
   
-  // ========== LOCATION ==========
-  location: {
-    type: String
-  },
+  // ========== LOCATION & DATES ==========
+  location: { type: String },
+  startDate: { type: Date, default: Date.now },
+  expiryDate: { type: Date },
+  scheduledPublishDate: { type: Date },
   
-  // ========== DATES ==========
-  startDate: {
-    type: Date,
-    default: Date.now
-  },
-  expiryDate: {
-    type: Date
-  },
+  // ========== EVENT SPECIFIC ==========
+  eventDate: { type: Date },
+  eventVenue: { type: String },
+  registrationLink: { type: String },
+  registrationDeadline: { type: Date },
   
-  // ========== FEE SPECIFIC (Only for type="fee") ==========
-  feeAmount: {
-    type: Number
-  },
-  feeLastDate: {
-    type: Date
-  },
+  // ========== FEE SPECIFIC ==========
+  feeAmount: { type: Number },
+  feeLastDate: { type: Date },
   
-  // ========== EVENT SPECIFIC (Only for types that need registration) ==========
-  eventDate: {
-    type: Date
-  },
-  eventVenue: {
-    type: String
-  },
-  registrationLink: {
-    type: String
-  },
+  // ========== REMINDERS ==========
+  sendReminder: { type: Boolean, default: false },
+  reminderDays: [{ type: Number }],
   
-  // ========== TAGS ==========
-  tags: [{
-    type: String
-  }],
+  // ========== METRICS/ANALYTICS ==========
+  readCount: { type: Number, default: 0 },
+  viewCount: { type: Number, default: 0 },
+  shareCount: { type: Number, default: 0 },
   
   // ========== SYSTEM FIELDS ==========
-  status: {
-    type: String,
-    enum: ["active", "expired", "draft"],
-    default: "active"
-  },
-  calendarEventCreated: {
-    type: Boolean,
-    default: false
-  },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true
-  }
+  tags: [{ type: String }],
+  status: { type: String, enum: ["active", "expired", "draft"], default: "active" },
+  calendarEventCreated: { type: Boolean, default: false },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
 }, { timestamps: true });
 
 // Indexes

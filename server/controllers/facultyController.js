@@ -61,6 +61,111 @@ exports.getClassStudents = async (req, res) => {
   }
 };
 
+// ==================== GET ALL DEPARTMENT STUDENTS ====================
+exports.getAllDepartmentStudents = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search } = req.query;
+    const user = await User.findById(req.user.id);
+    
+    // We allow matching either exact abbreviation or full name if there's confusion (e.g. CSE vs Computer Science)
+    let branchQuery = user.department;
+    if (user.department === 'CSE' || user.department === 'Computer Science') {
+      branchQuery = { $in: ['CSE', 'Computer Science'] };
+    } else if (user.department === 'ECE' || user.department === 'Electronics and Communication Engineering') {
+      branchQuery = { $in: ['ECE', 'Electronics and Communication Engineering'] };
+    }
+
+    let query = { role: "student", branch: branchQuery, isActive: true };
+    
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { rollNumber: { $regex: search, $options: "i" } }
+      ];
+    }
+    
+    const students = await User.find(query)
+      .select("-password")
+      .sort({ currentYear: -1, section: 1, rollNumber: 1 });
+      
+    res.status(200).json({
+      success: true,
+      students
+    });
+  } catch (error) {
+    console.error("Get all department students error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// ==================== GET ALL ASSIGNED STUDENTS ====================
+exports.getAllAssignedStudents = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search } = req.query;
+    
+    // Get class assignments
+    const classAssignments = await ClassStudentAssignment.find({ 
+      facultyId: req.user.id 
+    }).select("studentId");
+    
+    // Get proctor assignments
+    const proctorAssignments = await ProctorStudentAssignment.find({ 
+      facultyId: req.user.id 
+    }).select("studentId");
+    
+    const allIds = [...classAssignments.map(a => a.studentId.toString()), ...proctorAssignments.map(a => a.studentId.toString())];
+    const studentIds = [...new Set(allIds)];
+    
+    if (studentIds.length === 0) {
+      return res.status(200).json({
+        success: true,
+        students: [],
+        pagination: { total: 0, page: 1, limit: 20, pages: 0 }
+      });
+    }
+    
+    let query = { _id: { $in: studentIds }, isActive: true };
+    
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { rollNumber: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
+      ];
+    }
+    
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    const students = await User.find(query)
+      .select("name email rollNumber branch section course phoneNumber profilePicture currentYear currentSemester")
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const total = await User.countDocuments(query);
+    
+    res.status(200).json({
+      success: true,
+      students,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    console.error("Get all assigned students error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 // ==================== GET PROCTOR STUDENTS ====================
 exports.getProctorStudents = async (req, res) => {
   try {
@@ -206,11 +311,7 @@ exports.getStudentDetail = async (req, res) => {
     }
     
     const student = await User.findById(studentId)
-      .select("-password")
-      .populate({
-        path: "classFaculty",
-        select: "name employeeId department designation"
-      });
+      .select("-password");
     
     if (!student) {
       return res.status(404).json({

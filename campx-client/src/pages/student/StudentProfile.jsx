@@ -16,6 +16,7 @@ const StudentProfile = () => {
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [assignedFaculty, setAssignedFaculty] = useState({ classTeacher: null, proctor: null })
   
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [passwordData, setPasswordData] = useState({
@@ -42,6 +43,21 @@ const StudentProfile = () => {
       })
     }
   }, [user])
+
+  useEffect(() => {
+    fetchAssignedFaculty()
+  }, [])
+
+  const fetchAssignedFaculty = async () => {
+    try {
+      const response = await api.get('/student/assigned-faculty')
+      if (response.data.success) {
+        setAssignedFaculty(response.data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching assigned faculty:', error)
+    }
+  }
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -143,7 +159,6 @@ const StudentProfile = () => {
     }
   }
 
-  // Helper functions for display formatting
   const getSemesterText = (semester) => {
     if (!semester) return 'N/A'
     const num = parseInt(semester)
@@ -194,8 +209,17 @@ const StudentProfile = () => {
                   </span>
                 )}
               </div>
-             
-               
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingImage}
+                className="absolute bottom-0 right-0 bg-white border border-gray-300 rounded-full p-1.5 hover:bg-gray-50 transition-colors"
+              >
+                {uploadingImage ? (
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Camera size={14} className="text-gray-500" />
+                )}
+              </button>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -208,7 +232,7 @@ const StudentProfile = () => {
             <h2 className="text-lg font-medium text-gray-900">{user?.name}</h2>
             <p className="text-sm text-gray-500 capitalize mt-0.5">{user?.role}</p>
             
-            {/* Academic Information - Directly from user object (fetched from MongoDB) */}
+            {/* Academic Information */}
             <div className="mt-4 pt-4 border-t border-gray-100 text-left space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Roll Number</span>
@@ -237,6 +261,38 @@ const StudentProfile = () => {
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Batch</span>
                 <span className="font-medium text-gray-900">{user?.batch || '-'}</span>
+              </div>
+              
+              {/* Class Teacher */}
+              <div className="flex justify-between text-sm mt-4 pt-4 border-t border-gray-100">
+                <span className="text-gray-500">Class Teacher</span>
+                <div className="text-right">
+                  <span className="font-medium text-gray-900">
+                    {assignedFaculty?.classTeacher?.name || 'Not Assigned'}
+                  </span>
+                  {assignedFaculty?.classTeacher?.phoneNumber && (
+                    <div className="text-xs text-gray-500">{assignedFaculty.classTeacher.phoneNumber}</div>
+                  )}
+                  {assignedFaculty?.classTeacher?.email && !assignedFaculty.classTeacher.phoneNumber && (
+                    <div className="text-xs text-gray-500">{assignedFaculty.classTeacher.email}</div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Proctor */}
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Proctor</span>
+                <div className="text-right">
+                  <span className="font-medium text-gray-900">
+                    {assignedFaculty?.proctor?.name || 'Not Assigned'}
+                  </span>
+                  {assignedFaculty?.proctor?.phoneNumber && (
+                    <div className="text-xs text-gray-500">{assignedFaculty.proctor.phoneNumber}</div>
+                  )}
+                  {assignedFaculty?.proctor?.email && !assignedFaculty.proctor.phoneNumber && (
+                    <div className="text-xs text-gray-500">{assignedFaculty.proctor.email}</div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -378,7 +434,6 @@ const StudentProfile = () => {
             </div>
             
             <form onSubmit={handlePasswordSubmit} className="p-5 space-y-4">
-              {/* Current Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
                 <div className="relative">
@@ -400,7 +455,6 @@ const StudentProfile = () => {
                 </div>
               </div>
 
-              {/* New Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
                 <div className="relative">
@@ -423,7 +477,6 @@ const StudentProfile = () => {
                 <p className="text-xs text-gray-400 mt-1">Minimum 8 characters</p>
               </div>
 
-              {/* Confirm Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
                 <input

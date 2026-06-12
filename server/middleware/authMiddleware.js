@@ -7,6 +7,14 @@ const protect = async (req, res, next) => {
 
     if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
       token = req.headers.authorization.split(" ")[1];
+    } else if (req.headers.cookie) {
+      const cookies = Object.fromEntries(
+        req.headers.cookie.split('; ').map(c => {
+          const eqIdx = c.indexOf('=');
+          return eqIdx > -1 ? [c.substring(0, eqIdx), c.substring(eqIdx + 1)] : [c, ''];
+        })
+      );
+      token = cookies.token;
     }
 
     if (!token) {

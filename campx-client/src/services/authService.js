@@ -26,8 +26,8 @@ export const authService = {
     return response.data
   },
   
-  forgotPassword: async (email) => {
-    const response = await api.post('/auth/forgot-password', { email })
+  forgotPassword: async (identifier) => {
+    const response = await api.post('/auth/forgot-password', { identifier })
     return response.data
   },
   
@@ -41,7 +41,12 @@ export const authService = {
     return response.data
   },
   
-  logout: () => {
+  logout: async () => {
+    try {
+      await api.post('/auth/logout')
+    } catch (e) {
+      console.error('Logout error:', e)
+    }
     localStorage.removeItem('token')
     localStorage.removeItem('user')
   },

@@ -6,6 +6,8 @@ const {
   getUserById,
   updateUser,
   deleteUser,
+  createUser,
+  bulkCreateUsers,
   resetUserPassword,
   updateUserRole
 } = require("../controllers/adminController");
@@ -27,6 +29,10 @@ router.use(protect);
 // ==================== ADMIN ONLY ROUTES ====================
 router.get("/dashboard/stats", authorizeRoles("admin"), getDashboardStats);
 router.get("/users", authorizeRoles("admin"), getAllUsers);
+
+router.post("/users", authorizeRoles("admin"), createUser);
+router.post("/users/bulk", authorizeRoles("admin"), csvUpload.single("file"), bulkCreateUsers);
+
 router.get("/users/:id", authorizeRoles("admin"), getUserById);
 router.put("/users/:id", authorizeRoles("admin"), updateUser);
 router.delete("/users/:id", authorizeRoles("admin"), deleteUser);

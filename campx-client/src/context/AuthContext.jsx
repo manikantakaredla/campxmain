@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react'
+import { authService } from '../services/authService'
 
 export const AuthContext = createContext()
 
@@ -8,31 +9,44 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    const storedUser = localStorage.getItem('user')
-    
-    if (token && storedUser) {
+    const checkAuth = async () => {
       try {
-        const parsedUser = JSON.parse(storedUser)
-        setUser(parsedUser)
-        setIsAuthenticated(true)
+        const response = await authService.getMe()
+        if (response.success && response.user) {
+          setUser(response.user)
+          setIsAuthenticated(true)
+        } else {
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+        }
       } catch (error) {
-        console.error('Error parsing user:', error)
         localStorage.removeItem('token')
         localStorage.removeItem('user')
+      } finally {
+        setLoading(false)
       }
     }
-    setLoading(false)
+    checkAuth()
   }, [])
 
-  const login = (userData, token) => {
-    localStorage.setItem('token', token)
-    localStorage.setItem('user', JSON.stringify(userData))
+  const login = (userData, token, rememberMe = false) => {
+    if (rememberMe) {
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(userData))
+    } else {
+      sessionStorage.setItem('token', token)
+      sessionStorage.setItem('user', JSON.stringify(userData))
+    }
     setUser(userData)
     setIsAuthenticated(true)
   }
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await authService.logout()
+    } catch (e) {
+      // ignore
+    }
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     setUser(null)
@@ -41,7 +55,9 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = (updatedUser) => {
     setUser(updatedUser)
-    localStorage.setItem('user', JSON.stringify(updatedUser))
+    if (localStorage.getItem('user')) {
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+    }
   }
 
   return (

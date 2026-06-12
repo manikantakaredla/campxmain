@@ -24,6 +24,11 @@ const academicActivityRoutes = require("./routes/academicActivityRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const settingRoutes = require("./routes/settingRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
+const opportunityRoutes = require("./routes/opportunityRoutes");
+const placementRoutes = require("./routes/placementRoutes");
+const interviewRoutes = require("./routes/interviewRoutes");
+const successStoryRoutes = require("./routes/successStoryRoutes");
+const startOpportunityCron = require("./scripts/opportunityCron");
 
 const app = express();
 const server = http.createServer(app);
@@ -33,6 +38,9 @@ connectDB();
 
 // ==================== SOCKET.IO INITIALIZATION ====================
 initSocket(server);
+
+// ==================== CRON JOBS ====================
+startOpportunityCron();
 
 // ==================== SECURITY MIDDLEWARE ====================
 app.use(helmet({
@@ -108,6 +116,10 @@ app.use("/api/calendar", academicActivityRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/settings", settingRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/opportunities", opportunityRoutes);
+app.use("/api/placements", placementRoutes);
+app.use("/api/interviews", interviewRoutes);
+app.use("/api/success-stories", successStoryRoutes);
 
 // ==================== 404 HANDLER ====================
 app.use((req, res) => {
@@ -132,7 +144,7 @@ process.on("uncaughtException", (err) => {
 });
 
 // ==================== START SERVER ====================
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
   console.log(`

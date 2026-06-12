@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getClassStudents,
   getProctorStudents,
+  getAllAssignedStudents, getAllDepartmentStudents,
   searchStudents,
   getStudentDetail
 } = require("../controllers/facultyController");
@@ -13,6 +14,7 @@ router.use(protect, authorizeRoles("faculty", "hod", "deputyhod", "dean", "princ
 
 router.get("/students/class", getClassStudents);
 router.get("/students/proctor", getProctorStudents);
+router.get("/students/all", getAllDepartmentStudents);
 router.get("/students/search", searchStudents);
 router.get("/students/:studentId", getStudentDetail);
 

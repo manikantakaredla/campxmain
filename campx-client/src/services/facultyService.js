@@ -1,6 +1,13 @@
 import api from './api'
 
 export const facultyService = {
+  // Get all assigned students
+  getAllAssignedStudents: async (params = {}) => {
+    const query = new URLSearchParams(params).toString()
+    const response = await api.get(`/faculty/students/all${query ? `?${query}` : ''}`)
+    return response.data
+  },
+
   // Get class students
   getClassStudents: async (params = {}) => {
     const query = new URLSearchParams(params).toString()
@@ -26,4 +33,26 @@ export const facultyService = {
     const response = await api.get(`/faculty/students/${studentId}`)
     return response.data
   },
+  
+  // Update Profile
+  updateProfile: async (data) => {
+    const response = await api.put('/auth/profile', data)
+    return response.data
+  },
+  
+  // Update Profile Picture
+  updateProfilePicture: async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.put('/auth/profile/picture', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return response.data
+  },
+  
+  // Change Password
+  changePassword: async (data) => {
+    const response = await api.put('/auth/change-password', data)
+    return response.data
+  }
 }

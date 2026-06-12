@@ -41,7 +41,7 @@ const ResourceDetails = () => {
         window.open(response.fileUrl, '_blank')
         toast.success('Download started')
         // Update download count locally
-        setResource(prev => ({ ...prev, downloads: (prev?.downloads || 0) + 1 }))
+
       }
     } catch (error) {
       toast.error('Failed to download')
@@ -122,7 +122,7 @@ const ResourceDetails = () => {
             </div>
             <div className="flex items-center gap-2">
               <Download className="w-4 h-4 text-gray-500" />
-              <span className="text-sm text-gray-600">{resource.downloads || 0} downloads</span>
+
             </div>
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-gray-500" />

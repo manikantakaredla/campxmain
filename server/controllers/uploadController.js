@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const supabase = require("../config/supabase");
 
 // ==================== UPLOAD FILE ====================
@@ -39,7 +40,7 @@ exports.uploadFile = async (req, res) => {
     
     // Generate unique filename
     const fileExtension = req.file.originalname.split(".").pop();
-    const fileName = `uploads/${req.user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
+    const fileName = `uploads/${req.user.id}/${Date.now()}-${crypto.randomBytes(4).toString('hex')}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
     
     // Upload to Supabase
     const { error } = await supabase.storage

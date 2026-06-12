@@ -80,8 +80,15 @@ const ResourceManagement = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Resource Management</h1>
+        <Link 
+          to="/admin/resources/upload" 
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+        >
+          <FileText className="w-5 h-5" />
+          Upload Resource
+        </Link>
       </div>
 
       {/* Filters */}
@@ -150,7 +157,7 @@ const ResourceManagement = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1 text-xs text-gray-400">
                     <Download className="w-3 h-3" />
-                    <span>{resource.downloads || 0} downloads</span>
+
                   </div>
                   <span className="text-xs text-gray-400">
                     {new Date(resource.createdAt).toLocaleDateString()}

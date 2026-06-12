@@ -6,7 +6,7 @@ import {
   Megaphone,
   FileText,
   Calendar,
-  Users,
+  Users, UserPlus,
   GraduationCap,
   Upload,
   Settings,
@@ -16,7 +16,8 @@ import {
   Bell,
   UserCircle,
   BookOpen,
-  Briefcase
+  Briefcase,
+  TrendingUp
 } from 'lucide-react'
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -30,26 +31,31 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     // Common items for all roles
     const commonItems = [
       { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-      { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
+       { path: '/announcements', icon: <UserCircle size={20} />, label: 'Announcements' },
+      { path: '/class-updates', icon: <BookOpen size={20} />, label: 'Class Updates' },
       { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
       { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
       { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
       { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' },
+     
     ]
 
     // Student specific
     if (role === 'student') {
-      return commonItems
+      return [
+        ...commonItems,
+        { path: '/opportunities', icon: <Briefcase size={20} />, label: 'Opportunities' }
+      ]
     }
     
     // Faculty specific
     if (role === 'faculty') {
       return [
         { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-        { path: '/students', icon: <Users size={20} />, label: 'My Students' },
-        { path: '/announcements', icon: <Megaphone size={20} />, label: 'My Announcements' },
-        { path: '/resources', icon: <FileText size={20} />, label: 'My Resources' },
-        { path: '/activities', icon: <Calendar size={20} />, label: 'My Activities' },
+        { path: '/students', icon: <Users size={20} />, label: 'Students' },
+        { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
+        { path: '/resources', icon: <FileText size={20} />, label: ' Resources' },
+
         { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
         { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' },
       ]
@@ -80,6 +86,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
         { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
         { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
+        { path: '/opportunities', icon: <Briefcase size={20} />, label: 'Opportunities' },
+        { path: '/placements/upload', icon: <Upload size={20} />, label: 'Upload Placements' },
+        { path: '/placements/analytics', icon: <TrendingUp size={20} />, label: 'Placement Analytics' },
         { path: '/upload-data', icon: <Upload size={20} />, label: 'Upload Data' },
         { path: '/settings', icon: <Settings size={20} />, label: 'Settings' },
       ]
@@ -118,13 +127,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         {sidebarOpen ? (
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">C</span>
+              <span className="text-white font-bold text-lg">A</span>
             </div>
-            <span className="font-semibold text-lg">CAMPX</span>
+            <span className="font-semibold text-sm">Aditya University</span>
           </div>
         ) : (
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mx-auto">
-            <span className="text-white font-bold text-lg">C</span>
+            <span className="text-white font-bold text-lg">A</span>
           </div>
         )}
         <button
@@ -177,7 +186,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       <div className="p-3 border-t border-gray-800">
         <button
           onClick={handleLogout}
-          className={`flex items-center gap-3 px-3 py-2 w-full rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-all ${
+          className={`flex items-center gap-3 px-3 py-2 w-full rounded-lg text-red-500 hover:bg-red-600 hover:text-white transition-all ${
             !sidebarOpen && 'justify-center'
           }`}
           title={!sidebarOpen ? 'Logout' : ''}

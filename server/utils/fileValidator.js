@@ -14,6 +14,10 @@ const validateStudentRow = (row, index) => {
   if (!row.branch || row.branch.trim() === "") {
     errors.push({ row: index + 2, identifier: row.roll, message: "Branch is required" });
   }
+
+  if (!row.section || row.section.trim() === "") {
+    errors.push({ row: index + 2, identifier: row.roll, message: "Section is required" });
+  }
   
   if (!row.email || row.email.trim() === "") {
     errors.push({ row: index + 2, identifier: row.roll, message: "Email is required" });

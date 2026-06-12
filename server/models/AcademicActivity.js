@@ -10,7 +10,7 @@ const academicActivitySchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["Workshop", "Internship", "CRT Program", "Placement Drive", "Guest Lecture", "Hackathon", "Exam Notice"],
+    enum: ["Workshop", "Internship", "CRT Program", "Placement Drive", "Guest Lecture", "Hackathon", "Exam Notice", "Event", "Sports"],
     required: true
   },
   startDate: {
@@ -23,10 +23,11 @@ const academicActivitySchema = new mongoose.Schema({
   venue: {
     type: String
   },
-  targetAudience: {
-    branch: { type: String },
-    year: { type: Number },
-    section: { type: String }
+  inheritedAudience: {
+    audienceType: { type: String, enum: ["all", "students", "faculty", "individual", "class", "proctor", "section", "department"] },
+    targetBranches: [{ type: String }],
+    targetSections: [{ type: String }],
+    targetSpecificStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
   },
   status: {
     type: String,
@@ -37,11 +38,16 @@ const academicActivitySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true
+  },
+  sourceAnnouncementId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Announcement",
+    sparse: true
   }
 }, { timestamps: true });
 
 // Auto-update status based on dates
-academicActivitySchema.pre("save", function(next) {
+academicActivitySchema.pre("save", function() {
   const now = new Date();
   if (this.endDate && now > this.endDate) {
     this.status = "completed";
@@ -50,7 +56,6 @@ academicActivitySchema.pre("save", function(next) {
   } else {
     this.status = "upcoming";
   }
-  next();
 });
 
 // Indexes

@@ -24,6 +24,22 @@ const settingSchema = new mongoose.Schema({
   emailDomain: {
     type: String,
     default: "@adityauniversity.in"
+  },
+  contactMobile: {
+    type: String,
+    default: ""
+  },
+  contactEmail: {
+    type: String,
+    default: ""
+  },
+  branches: {
+    type: [String],
+    default: ["CSE", "ECE", "IT", "MECH", "CIVIL"]
+  },
+  sections: {
+    type: [String],
+    default: ["A", "B", "C", "D"]
   }
 }, { timestamps: true });
 

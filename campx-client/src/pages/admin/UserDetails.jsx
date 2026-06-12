@@ -128,15 +128,17 @@ const UserDetails = () => {
                 {isEditing ? <X className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
                 {isEditing ? 'Cancel' : 'Edit'}
               </button>
-              <button
-                onClick={handleToggleStatus}
-                className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
-                  user.isActive ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-green-500 text-white hover:bg-green-600'
-                }`}
-              >
-                {user.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
-                {user.isActive ? 'Deactivate' : 'Activate'}
-              </button>
+              {user.role !== 'admin' && (
+                <button
+                  onClick={handleToggleStatus}
+                  className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
+                    user.isActive ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-green-500 text-white hover:bg-green-600'
+                  }`}
+                >
+                  {user.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                  {user.isActive ? 'Deactivate' : 'Activate'}
+                </button>
+              )}
             </div>
           </div>
         </div>

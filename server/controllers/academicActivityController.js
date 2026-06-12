@@ -6,6 +6,13 @@ const { getIO } = require("../config/socket");
 // ==================== CREATE ACTIVITY ====================
 exports.createActivity = async (req, res) => {
   try {
+    if (req.user.role === "student") {
+      return res.status(403).json({
+        success: false,
+        message: "Students are not authorized to create calendar events"
+      });
+    }
+
     const {
       title,
       description,
@@ -120,6 +127,88 @@ exports.getActivities = async (req, res) => {
       query.endDate = { $lte: new Date(endDate) };
     }
     
+    if (req.user && req.user.role === "student") {
+      const user = await User.findById(req.user.id);
+      
+      const ClassStudentAssignment = require("../models/ClassStudentAssignment");
+      const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
+      
+      const classAssignments = await ClassStudentAssignment.find({ studentId: req.user.id });
+      const classFacultyIds = classAssignments.map(a => a.facultyId);
+      
+      const proctorAssignments = await ProctorStudentAssignment.find({ studentId: req.user.id });
+      const proctorFacultyIds = proctorAssignments.map(a => a.facultyId);
+
+      query.$and = [
+        {
+          $or: [
+            { "targetAudience": { $exists: false } },
+            { "inheritedAudience": { $exists: false } },
+            { "inheritedAudience.audienceType": { $in: [null, "all"] } },
+            {
+              "inheritedAudience.audienceType": "students",
+              $and: [
+                {
+                  $or: [
+                    { "inheritedAudience.targetBranches": { $exists: false } },
+                    { "inheritedAudience.targetBranches": { $size: 0 } },
+                    { "inheritedAudience.targetBranches": user.branch }
+                  ]
+                },
+                {
+                  $or: [
+                    { "inheritedAudience.targetSections": { $exists: false } },
+                    { "inheritedAudience.targetSections": { $size: 0 } },
+                    { "inheritedAudience.targetSections": user.section }
+                  ]
+                }
+              ]
+            },
+            {
+              "inheritedAudience.audienceType": "individual",
+              "inheritedAudience.targetSpecificStudents": req.user.id
+            },
+            {
+              "inheritedAudience.audienceType": "class",
+              createdBy: { $in: classFacultyIds }
+            },
+            {
+              "inheritedAudience.audienceType": "proctor",
+              createdBy: { $in: proctorFacultyIds }
+            },
+            {
+              "inheritedAudience.audienceType": "section",
+              "inheritedAudience.targetSections": user.section
+            },
+            {
+              "inheritedAudience.audienceType": "department",
+              "inheritedAudience.targetBranches": user.branch
+            }
+          ]
+        }
+      ];
+    } else if (req.user && ["faculty", "hod", "dean"].includes(req.user.role)) {
+      const user = await User.findById(req.user.id);
+      query.$and = [
+        {
+          $or: [
+            { "targetAudience": { $exists: false } },
+            { "inheritedAudience": { $exists: false } },
+            { "inheritedAudience.audienceType": { $in: [null, "all", "faculty"] } },
+            {
+              "inheritedAudience.audienceType": "students",
+              $or: [
+                { "inheritedAudience.targetBranches": { $exists: false } },
+                { "inheritedAudience.targetBranches": { $size: 0 } },
+                { "inheritedAudience.targetBranches": user.department }
+              ]
+            },
+            { createdBy: req.user.id }
+          ]
+        }
+      ];
+    }
+    
     const skip = (parseInt(page) - 1) * parseInt(limit);
     
     const activities = await AcademicActivity.find(query)
@@ -153,10 +242,94 @@ exports.getUpcomingActivities = async (req, res) => {
   try {
     const { limit = 10 } = req.query;
     
-    const activities = await AcademicActivity.find({
+    let query = {
       status: { $in: ["upcoming", "ongoing"] },
       startDate: { $gte: new Date() }
-    })
+    };
+
+    if (req.user && req.user.role === "student") {
+      const user = await User.findById(req.user.id);
+      
+      const ClassStudentAssignment = require("../models/ClassStudentAssignment");
+      const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
+      
+      const classAssignments = await ClassStudentAssignment.find({ studentId: req.user.id });
+      const classFacultyIds = classAssignments.map(a => a.facultyId);
+      
+      const proctorAssignments = await ProctorStudentAssignment.find({ studentId: req.user.id });
+      const proctorFacultyIds = proctorAssignments.map(a => a.facultyId);
+
+      query.$and = [
+        {
+          $or: [
+            { "targetAudience": { $exists: false } },
+            { "inheritedAudience": { $exists: false } },
+            { "inheritedAudience.audienceType": { $in: [null, "all"] } },
+            {
+              "inheritedAudience.audienceType": "students",
+              $and: [
+                {
+                  $or: [
+                    { "inheritedAudience.targetBranches": { $exists: false } },
+                    { "inheritedAudience.targetBranches": { $size: 0 } },
+                    { "inheritedAudience.targetBranches": user.branch }
+                  ]
+                },
+                {
+                  $or: [
+                    { "inheritedAudience.targetSections": { $exists: false } },
+                    { "inheritedAudience.targetSections": { $size: 0 } },
+                    { "inheritedAudience.targetSections": user.section }
+                  ]
+                }
+              ]
+            },
+            {
+              "inheritedAudience.audienceType": "individual",
+              "inheritedAudience.targetSpecificStudents": req.user.id
+            },
+            {
+              "inheritedAudience.audienceType": "class",
+              createdBy: { $in: classFacultyIds }
+            },
+            {
+              "inheritedAudience.audienceType": "proctor",
+              createdBy: { $in: proctorFacultyIds }
+            },
+            {
+              "inheritedAudience.audienceType": "section",
+              "inheritedAudience.targetSections": user.section
+            },
+            {
+              "inheritedAudience.audienceType": "department",
+              "inheritedAudience.targetBranches": user.branch
+            }
+          ]
+        }
+      ];
+    } else if (req.user && ["faculty", "hod", "dean"].includes(req.user.role)) {
+      const user = await User.findById(req.user.id);
+      query.$and = [
+        {
+          $or: [
+            { "targetAudience": { $exists: false } },
+            { "inheritedAudience": { $exists: false } },
+            { "inheritedAudience.audienceType": { $in: [null, "all", "faculty"] } },
+            {
+              "inheritedAudience.audienceType": "students",
+              $or: [
+                { "inheritedAudience.targetBranches": { $exists: false } },
+                { "inheritedAudience.targetBranches": { $size: 0 } },
+                { "inheritedAudience.targetBranches": user.department }
+              ]
+            },
+            { createdBy: req.user.id }
+          ]
+        }
+      ];
+    }
+
+    const activities = await AcademicActivity.find(query)
       .populate("createdBy", "name")
       .sort({ startDate: 1 })
       .limit(parseInt(limit));

@@ -91,6 +91,29 @@ const StudentDetails = () => {
             </div>
           </div>
         </div>
+
+        {/* Engagement Metrics (Mocked for now) */}
+        <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+          <h3 className="text-sm font-medium text-gray-900 mb-4">Student Engagement Metrics</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+              <p className="text-sm font-medium text-gray-500 mb-1">Engagements</p>
+              <p className="text-2xl font-bold text-blue-600">0</p>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+              <p className="text-sm font-medium text-gray-500 mb-1">Announcements Sent</p>
+              <p className="text-2xl font-bold text-green-600">0</p>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+              <p className="text-sm font-medium text-gray-500 mb-1">View Count</p>
+              <p className="text-2xl font-bold text-purple-600">0</p>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+              <p className="text-sm font-medium text-gray-500 mb-1">Reach</p>
+              <p className="text-2xl font-bold text-orange-600">0%</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

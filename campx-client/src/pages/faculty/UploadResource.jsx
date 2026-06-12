@@ -1,12 +1,18 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { authService } from '../../services/authService'
+import { useSettings } from '../../hooks/useSettings'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { resourceService } from '../../services/resourceService'
 import { Upload, X, FileText, AlertCircle, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const UploadResource = () => {
   const navigate = useNavigate()
+  const { settings } = useSettings()
   const [loading, setLoading] = useState(false)
+  const user = authService.getStoredUser();
+  const isAdminOrHigher = user && ['admin', 'management', 'principal', 'dean'].includes(user.role);
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -14,6 +20,7 @@ const UploadResource = () => {
     visibility: 'all',
     targetBranch: '',
     targetYear: '',
+    targetSection: '',
     file: null
   })
   const [filePreview, setFilePreview] = useState(null)
@@ -83,6 +90,7 @@ const UploadResource = () => {
       submitData.append('visibility', formData.visibility)
       submitData.append('targetBranch', formData.targetBranch)
       submitData.append('targetYear', formData.targetYear)
+      submitData.append('targetSection', formData.targetSection)
       submitData.append('file', formData.file)
       
       const response = await resourceService.create(submitData)

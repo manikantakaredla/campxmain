@@ -7,10 +7,14 @@ const SystemSettings = () => {
   const [settings, setSettings] = useState({
     platformName: 'CAMPX',
     supportEmail: 'support@adityauniversity.in',
+    contactEmail: 'support@adityauniversity.in',
+    contactMobile: '',
     logoUrl: '',
     maintenanceMode: false,
     facultyRegistrationEnabled: true,
-    emailDomain: '@adityauniversity.in'
+    emailDomain: '@adityauniversity.in',
+    branches: [],
+    sections: []
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -74,6 +78,26 @@ const SystemSettings = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Support Email</label>
             <input type="email" name="supportEmail" value={settings.supportEmail} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Contact Email</label>
+              <input type="email" name="contactEmail" value={settings.contactEmail} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Contact Mobile</label>
+              <input type="text" name="contactMobile" value={settings.contactMobile} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Branches (comma separated)</label>
+              <input type="text" name="branches" value={Array.isArray(settings.branches) ? settings.branches.join(', ') : settings.branches} onChange={(e) => setSettings(prev => ({...prev, branches: e.target.value.split(',').map(s => s.trim()).filter(Boolean)}))} className="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="CSE, ECE, IT..." />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sections (comma separated)</label>
+              <input type="text" name="sections" value={Array.isArray(settings.sections) ? settings.sections.join(', ') : settings.sections} onChange={(e) => setSettings(prev => ({...prev, sections: e.target.value.split(',').map(s => s.trim()).filter(Boolean)}))} className="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="A, B, C..." />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email Domain</label>

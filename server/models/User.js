@@ -90,7 +90,11 @@ const userSchema = new mongoose.Schema({
   designation: { type: String },
   staffRole: {
     type: String,
-    enum: ["faculty", "hod", "deputyhod", "dean", "principal"]
+    enum: ["faculty", "hod", "deputyhod", "dean", "principal", "admin"]
+  },
+  managedBranches: {
+    type: [String],
+    default: []
   }
 
 }, { 

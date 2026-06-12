@@ -2,39 +2,66 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useNotifications } from '../../hooks/useNotifications'
-import { Bell, Menu, User, LogOut, Settings, ChevronDown } from 'lucide-react'
+import { Bell, User, LogOut, ChevronDown } from 'lucide-react'
 
 const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
   const { user } = useAuth()
-  const { unreadCount } = useNotifications()
+  const { notifications, unreadCount } = useNotifications()
   const [showDropdown, setShowDropdown] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
   const navigate = useNavigate()
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="flex items-center justify-between px-6 py-3">
-        {/* Left side - Menu Button */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-all"
-        >
-          <Menu size={20} className="text-gray-600" />
-        </button>
-
+      <div className="flex items-center justify-end px-6 py-3">
         {/* Right side */}
         <div className="flex items-center gap-4">
           {/* Notifications */}
-          <Link
-            to={`/${user?.role === 'student' ? 'student' : user?.role === 'faculty' ? 'faculty' : user?.role === 'admin' ? 'admin' : 'management'}/notifications`}
-            className="relative p-2 rounded-lg hover:bg-gray-100 transition-all"
-          >
-            <Bell size={20} className="text-gray-600" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2 rounded-lg hover:bg-gray-100 transition-all"
+            >
+              <Bell size={20} className="text-gray-600" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {showNotifications && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowNotifications(false)} />
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-100 z-20 overflow-hidden">
+                  <div className="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                    <h3 className="text-sm font-semibold text-gray-800">Notifications</h3>
+                  </div>
+                  <div className="max-h-64 overflow-y-auto">
+                    {notifications?.length > 0 ? (
+                      notifications.slice(0, 5).map((notif, idx) => (
+                        <div key={idx} className={`p-3 border-b border-gray-50 text-sm ${notif.isRead ? 'bg-white' : 'bg-blue-50'}`}>
+                          <p className="font-medium text-gray-800">{notif.title}</p>
+                          <p className="text-gray-600 text-xs mt-1 truncate">{notif.message}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-4 text-center text-sm text-gray-500">No notifications</div>
+                    )}
+                  </div>
+                  <div className="p-2 bg-gray-50 border-t border-gray-100">
+                    <Link
+                      to={`/${user?.role === 'student' ? 'student' : user?.role === 'faculty' ? 'faculty' : user?.role === 'admin' ? 'admin' : 'management'}/notifications`}
+                      onClick={() => setShowNotifications(false)}
+                      className="block text-center text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      View All
+                    </Link>
+                  </div>
+                </div>
+              </>
             )}
-          </Link>
+          </div>
 
           {/* User Dropdown */}
           <div className="relative">
@@ -67,31 +94,16 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
                     <p className="text-xs text-gray-400 truncate">{user?.email}</p>
                   </div>
                   <div className="py-2">
-                   
-                    <button
-                      onClick={() => {
-                        setShowDropdown(false)
-                        // Navigate to settings
-                      }}
+                    <Link
+                      to={`/${user?.role === 'student' ? 'student' : user?.role === 'faculty' ? 'faculty' : user?.role === 'admin' ? 'admin' : 'management'}/profile`}
+                      onClick={() => setShowDropdown(false)}
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full"
                     >
-                      <Settings size={16} />
-                      Settings
-                    </button>
+                      <User size={16} />
+                      Profile
+                    </Link>
                     <hr className="my-1" />
-                    <button
-                      onClick={() => {
-                        setShowDropdown(false)
-                        localStorage.removeItem('token')
-                        localStorage.removeItem('user')
-                        navigate('/')
-                        window.location.reload()
-                      }}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-gray-50 w-full"
-                    >
-                      <LogOut size={16} />
-                      Logout
-                    </button>
+                    
                   </div>
                 </div>
               </>

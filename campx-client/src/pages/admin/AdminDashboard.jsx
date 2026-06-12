@@ -48,12 +48,11 @@ const AdminDashboard = () => {
   }
 
   const statCards = [
-    { label: 'Total Students', value: stats.totalStudents, icon: GraduationCap, change: '+12%', trend: 'up', color: 'blue', link: '/admin/users?role=student' },
-    { label: 'Total Faculty', value: stats.totalFaculty, icon: Briefcase, change: '+5%', trend: 'up', color: 'purple', link: '/admin/users?role=faculty' },
+    { label: 'Total Students', value: stats.totalStudents, icon: GraduationCap, change: '+12%', trend: 'up', color: 'blue', link: '/admin/users' },
+    { label: 'Total Faculty', value: stats.totalFaculty, icon: Briefcase, change: '+5%', trend: 'up', color: 'purple', link: '/admin/users' },
     { label: 'Announcements', value: stats.totalAnnouncements, icon: Megaphone, change: '+8%', trend: 'up', color: 'orange', link: '/admin/announcements' },
     { label: 'Resources', value: stats.totalResources, icon: FileText, change: '+15%', trend: 'up', color: 'green', link: '/admin/resources' },
     { label: 'Active Users', value: stats.activeUsers, icon: Users, change: '+3%', trend: 'up', color: 'teal', link: '/admin/users' },
-    { label: 'Pending', value: stats.pendingFaculty, icon: UserPlus, change: '-2%', trend: 'down', color: 'red', link: '/admin/faculty-requests' },
   ]
 
   const quickActions = [
@@ -179,69 +178,33 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Platform Stats */}
+          {/* Department Engagements */}
           <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-900">Platform insights</h3>
+              <h3 className="text-sm font-semibold text-gray-900">Student Engagements Department Wise</h3>
             </div>
-            <div className="p-4 space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-500">Active users</span>
-                  <span className="font-medium text-gray-900">
-                    {stats.activeUsers} / {(stats.totalStudents + stats.totalFaculty) || 1}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-1.5">
-                  <div 
-                    className="bg-indigo-600 h-1.5 rounded-full" 
-                    style={{ width: `${Math.round((stats.activeUsers / ((stats.totalStudents + stats.totalFaculty) || 1)) * 100)}%` }}
-                  />
-                </div>
-              </div>
-              <div className="flex justify-between text-sm pt-2 border-t border-gray-50">
-                <span className="text-gray-500">Total content</span>
-                <span className="font-semibold text-gray-900">{stats.totalAnnouncements + stats.totalResources}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Engagement</span>
-                <span className="font-semibold text-green-600">+24% this month</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-            <div className="px-5 py-3 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-900">Recent activity</h3>
-            </div>
-            <div className="p-4 space-y-3">
-              <div className="flex gap-3">
-                <div className="w-8 h-8 bg-amber-50 rounded-full flex items-center justify-center">
-                  <Activity size={14} className="text-amber-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-700">New user registered</p>
-                  <p className="text-xs text-gray-400">2 minutes ago</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center">
-                  <Megaphone size={14} className="text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-700">Announcement posted</p>
-                  <p className="text-xs text-gray-400">1 hour ago</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center">
-                  <FileText size={14} className="text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-700">Resource uploaded</p>
-                  <p className="text-xs text-gray-400">3 hours ago</p>
-                </div>
+            <div className="p-4">
+              <div className="space-y-4">
+                {[
+                  { dept: 'CSE', count: 450, color: 'blue' },
+                  { dept: 'ECE', count: 320, color: 'purple' },
+                  { dept: 'IT', count: 280, color: 'green' },
+                  { dept: 'MECH', count: 150, color: 'orange' },
+                  { dept: 'CIVIL', count: 120, color: 'teal' }
+                ].map((item, idx) => (
+                  <div key={idx}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-700 font-medium">{item.dept}</span>
+                      <span className="font-semibold text-gray-900">{item.count}</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-1.5">
+                      <div 
+                        className={`bg-${item.color}-500 h-1.5 rounded-full`} 
+                        style={{ width: `${Math.min((item.count / 500) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

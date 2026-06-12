@@ -34,7 +34,7 @@ const facultyRegisterValidation = [
 
 // Login validators
 const loginValidation = [
-  body("email").isEmail().withMessage("Valid email is required"),
+  body("rollNoOrEmpId").notEmpty().withMessage("Roll No / Employee ID is required"),
   body("password").notEmpty().withMessage("Password is required")
 ];
 

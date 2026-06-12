@@ -9,10 +9,14 @@ exports.getSettings = async (req, res) => {
       settings = await Setting.create({
         platformName: "CAMPX",
         supportEmail: "support@adityauniversity.in",
+        contactEmail: "support@adityauniversity.in",
+        contactMobile: "",
         logoUrl: "",
         maintenanceMode: false,
         facultyRegistrationEnabled: true,
-        emailDomain: "@adityauniversity.in"
+        emailDomain: "@adityauniversity.in",
+        branches: ["CSE", "ECE", "IT", "MECH", "CIVIL"],
+        sections: ["A", "B", "C", "D"]
       });
     }
     
@@ -35,10 +39,14 @@ exports.updateSettings = async (req, res) => {
     const {
       platformName,
       supportEmail,
+      contactEmail,
+      contactMobile,
       logoUrl,
       maintenanceMode,
       facultyRegistrationEnabled,
-      emailDomain
+      emailDomain,
+      branches,
+      sections
     } = req.body;
     
     let settings = await Setting.findOne();
@@ -49,10 +57,14 @@ exports.updateSettings = async (req, res) => {
     
     if (platformName !== undefined) settings.platformName = platformName;
     if (supportEmail !== undefined) settings.supportEmail = supportEmail;
+    if (contactEmail !== undefined) settings.contactEmail = contactEmail;
+    if (contactMobile !== undefined) settings.contactMobile = contactMobile;
     if (logoUrl !== undefined) settings.logoUrl = logoUrl;
     if (maintenanceMode !== undefined) settings.maintenanceMode = maintenanceMode;
     if (facultyRegistrationEnabled !== undefined) settings.facultyRegistrationEnabled = facultyRegistrationEnabled;
     if (emailDomain !== undefined) settings.emailDomain = emailDomain;
+    if (branches !== undefined) settings.branches = branches;
+    if (sections !== undefined) settings.sections = sections;
     
     await settings.save();
     

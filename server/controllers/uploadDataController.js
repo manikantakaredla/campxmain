@@ -42,6 +42,7 @@ exports.uploadStudents = async (req, res) => {
           name: row.name,
           roll: row.roll.toUpperCase(),
           branch: row.branch,
+          section: row.section,
           email: row.email.toLowerCase(),
           course: row.course,
           ph_no: row.ph_no,

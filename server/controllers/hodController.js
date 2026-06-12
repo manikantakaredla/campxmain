@@ -9,17 +9,23 @@ exports.getDepartmentFaculty = async (req, res) => {
   try {
     // Get HOD's department
     const hod = await User.findById(req.user.id);
-    const department = hod.department;
+    
+    let branches = [];
+    if (["dean", "principal", "management"].includes(hod.role)) {
+        branches = hod.managedBranches && hod.managedBranches.length > 0 ? hod.managedBranches : [hod.department].filter(Boolean);
+    } else {
+        branches = [hod.department].filter(Boolean);
+    }
 
-    if (!department) {
+    if (branches.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Department not assigned to your profile"
+        message: "Department/Branches not assigned to your profile"
       });
     }
 
     const faculty = await User.find({
-      department: department,
+      department: { $in: branches },
       role: { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] },
       isActive: true
     }).select("name email employeeId department designation staffRole profilePicture");
@@ -45,17 +51,22 @@ exports.getDepartmentStudents = async (req, res) => {
     const { page = 1, limit = 20, search, section, year } = req.query;
     
     const hod = await User.findById(req.user.id);
-    const department = hod.department;
+    let branches = [];
+    if (["dean", "principal", "management"].includes(hod.role)) {
+        branches = hod.managedBranches && hod.managedBranches.length > 0 ? hod.managedBranches : [hod.department].filter(Boolean);
+    } else {
+        branches = [hod.department].filter(Boolean);
+    }
 
-    if (!department) {
+    if (branches.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Department not assigned to your profile"
+        message: "Department/Branches not assigned to your profile"
       });
     }
 
     let query = { 
-      branch: department, 
+      branch: { $in: branches }, 
       role: "student",
       isActive: true 
     };

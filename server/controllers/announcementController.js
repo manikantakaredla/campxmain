@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const Announcement = require("../models/Announcement");
 const Notification = require("../models/Notification");
 const AcademicActivity = require("../models/AcademicActivity");
@@ -14,7 +15,6 @@ const CALENDAR_TYPES = [
 // Helper function to create calendar event from announcement
 async function createCalendarEventFromAnnouncement(announcement) {
   try {
-    // Map announcement type to activity type
     const typeMapping = {
       exam: "Exam Notice",
       workshop: "Workshop",
@@ -27,27 +27,47 @@ async function createCalendarEventFromAnnouncement(announcement) {
     };
 
     const activityType = typeMapping[announcement.type] || "Workshop";
-    
-    // Use eventDate if available, otherwise startDate
     const eventStartDate = announcement.eventDate || announcement.startDate;
 
-    const activity = await AcademicActivity.create({
-      title: announcement.title,
-      description: announcement.description,
-      type: activityType,
-      startDate: eventStartDate,
-      endDate: announcement.expiryDate || null,
-      venue: announcement.eventVenue || announcement.location || null,
-      status: "upcoming",
-      createdBy: announcement.createdBy,
+    const existingActivity = await AcademicActivity.findOne({
       sourceAnnouncementId: announcement._id
     });
 
-    // Mark announcement as having calendar event created
+    let activity = existingActivity;
+
+    if (!existingActivity) {
+      let inheritedAudience = {
+        audienceType: announcement.audience,
+        targetBranches: announcement.targetBranches || [],
+        targetSections: announcement.targetSections || [],
+        targetSpecificStudents: announcement.targetSpecificStudents || []
+      };
+
+      if (announcement.targetMyClass) inheritedAudience.audienceType = "class";
+      else if (announcement.targetMyProctor) inheritedAudience.audienceType = "proctor";
+      else if (announcement.targetMySection) inheritedAudience.audienceType = "section";
+      else if (announcement.targetMyDepartment) inheritedAudience.audienceType = "department";
+
+      activity = await AcademicActivity.create({
+        title: announcement.title,
+        description: announcement.description,
+        type: activityType,
+        startDate: eventStartDate,
+        endDate: announcement.expiryDate || null,
+        venue: announcement.eventVenue || announcement.location || null,
+        status: "upcoming",
+        createdBy: announcement.createdBy,
+        sourceAnnouncementId: announcement._id,
+        inheritedAudience
+      });
+      console.log(`✅ Calendar event created for announcement: ${announcement.title}`);
+    } else {
+      console.log(`⚠️ Duplicate calendar event detected, skipping creation for: ${announcement.title}`);
+    }
+
     announcement.calendarEventCreated = true;
     await announcement.save();
 
-    console.log(`✅ Calendar event created for announcement: ${announcement.title}`);
     return activity;
   } catch (error) {
     console.error("Error creating calendar event:", error);
@@ -60,31 +80,52 @@ async function createNotificationsForAnnouncement(announcement) {
   try {
     let targetUsers = [];
 
-    // Get target users based on audience
     if (announcement.audience === "all") {
       targetUsers = await User.find({ isActive: true }).select("_id");
-    } else if (announcement.audience === "students") {
-      let query = { role: "student", isActive: true };
+    } 
+    else if (announcement.audience === "class" || announcement.targetMyClass) {
+      const ClassStudentAssignment = require("../models/ClassStudentAssignment");
+      const assignments = await ClassStudentAssignment.find({ facultyId: announcement.createdBy._id || announcement.createdBy }).select("studentId");
+      const studentIds = assignments.map(a => a.studentId);
+      targetUsers = await User.find({ _id: { $in: studentIds }, isActive: true }).select("_id");
+    } 
+    else if (announcement.audience === "proctor" || announcement.targetMyProctor) {
+      const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
+      const assignments = await ProctorStudentAssignment.find({ facultyId: announcement.createdBy._id || announcement.createdBy }).select("studentId");
+      const studentIds = assignments.map(a => a.studentId);
+      targetUsers = await User.find({ _id: { $in: studentIds }, isActive: true }).select("_id");
+    } 
+    else if (announcement.audience === "students" || announcement.audience === "faculty") {
+      let query = { isActive: true };
       
-      // Apply department filter if specified
-      if (announcement.targetDepartment) {
-        query.branch = announcement.targetDepartment;
-      }
-      // Apply year filter if specified
-      if (announcement.targetYear) {
-        query.currentYear = announcement.targetYear;
-      }
-      // Apply section filter if specified
-      if (announcement.targetSection) {
-        query.section = announcement.targetSection;
+      if (announcement.audience === "students") {
+        query.role = "student";
+      } else {
+        query.role = { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] };
       }
       
-      targetUsers = await User.find(query).select("_id");
-    } else if (announcement.audience === "faculty") {
-      let query = { role: { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] }, isActive: true };
+      if (announcement.targetBranches && announcement.targetBranches.length > 0) {
+        query.branch = { $in: announcement.targetBranches };
+        if (announcement.audience === "faculty") {
+          query.department = { $in: announcement.targetBranches };
+          delete query.branch;
+        }
+      }
       
-      if (announcement.targetDepartment) {
-        query.department = announcement.targetDepartment;
+      if (announcement.targetMySection) {
+         const creator = await User.findById(announcement.createdBy._id || announcement.createdBy);
+         if (creator && creator.section) query.section = creator.section;
+      } else if (announcement.targetMyDepartment) {
+         const creator = await User.findById(announcement.createdBy._id || announcement.createdBy);
+         if (creator && creator.department) query.branch = creator.department;
+      }
+      
+      if (announcement.targetYears && announcement.targetYears.length > 0) {
+        query.currentYear = { $in: announcement.targetYears };
+      }
+      
+      if (announcement.targetSections && announcement.targetSections.length > 0) {
+        query.section = { $in: announcement.targetSections };
       }
       
       targetUsers = await User.find(query).select("_id");
@@ -102,20 +143,163 @@ async function createNotificationsForAnnouncement(announcement) {
 
       await Notification.insertMany(notifications);
 
-      // Emit realtime notifications
       const io = getIO();
-      targetUsers.forEach(user => {
-        io.to(user._id.toString()).emit("new-notification", {
-          title: `New Announcement: ${announcement.title}`,
-          message: announcement.description.substring(0, 100),
-          type: announcement.type
+      if (io) {
+        targetUsers.forEach(user => {
+          io.to(user._id.toString()).emit("new-notification", {
+            title: `New Announcement: ${announcement.title}`,
+            message: announcement.description.substring(0, 100),
+            type: announcement.type
+          });
         });
-      });
+      }
     }
   } catch (error) {
     console.error("Error creating notifications:", error);
   }
 }
+
+// Add these new functions after existing ones
+
+// Get ONLY class teacher announcements
+exports.getClassTeacherAnnouncements = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const ClassStudentAssignment = require("../models/ClassStudentAssignment");
+    
+    const classAssignment = await ClassStudentAssignment.findOne({ studentId }).populate("facultyId");
+    
+    if (!classAssignment?.facultyId) {
+      return res.status(200).json({
+        success: true,
+        announcements: []
+      });
+    }
+    
+    const announcements = await Announcement.find({
+      createdBy: classAssignment.facultyId._id,
+      status: "active"
+    })
+    .populate("createdBy", "name email role profilePicture")
+    .sort({ priority: -1, createdAt: -1 })
+    .limit(parseInt(req.query.limit) || 50);
+    
+    res.status(200).json({
+      success: true,
+      announcements
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get ONLY proctor announcements
+exports.getProctorAnnouncements = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
+    
+    const proctorAssignment = await ProctorStudentAssignment.findOne({ studentId }).populate("facultyId");
+    
+    if (!proctorAssignment?.facultyId) {
+      return res.status(200).json({
+        success: true,
+        announcements: []
+      });
+    }
+    
+    const announcements = await Announcement.find({
+      createdBy: proctorAssignment.facultyId._id,
+      status: "active"
+    })
+    .populate("createdBy", "name email role profilePicture")
+    .sort({ priority: -1, createdAt: -1 })
+    .limit(parseInt(req.query.limit) || 50);
+    
+    res.status(200).json({
+      success: true,
+      announcements
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+// ==================== SEARCH STUDENTS ====================
+exports.searchStudents = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.length < 2) {
+      return res.status(200).json({ success: true, students: [] });
+    }
+    
+    const User = require("../models/User");
+    const regex = new RegExp(q, "i");
+    
+    const students = await User.find({
+      role: "student",
+      $or: [
+        { name: regex },
+        { employeeId: regex }, // Roll number
+        { email: regex }
+      ]
+    })
+    .select("name employeeId email branch currentYear section profilePicture")
+    .limit(20);
+    
+    res.status(200).json({ success: true, students });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ==================== PREVIEW RECIPIENTS ====================
+exports.previewRecipients = async (req, res) => {
+  try {
+    const { audience, targetBranches, targetYears, targetSections, targetSpecificStudents } = req.body;
+    const User = require("../models/User");
+    
+    let query = { isActive: true };
+    let studentCount = 0;
+    let facultyCount = 0;
+
+    if (audience === "all") {
+      studentCount = await User.countDocuments({ ...query, role: "student" });
+      facultyCount = await User.countDocuments({ ...query, role: { $in: ["faculty", "hod", "dean"] } });
+    } else if (audience === "faculty") {
+      if (targetBranches && targetBranches.length > 0) {
+        query.department = { $in: targetBranches };
+      }
+      facultyCount = await User.countDocuments({ ...query, role: { $in: ["faculty", "hod", "dean"] } });
+    } else if (audience === "students") {
+      query.role = "student";
+      if (targetBranches && targetBranches.length > 0) query.branch = { $in: targetBranches };
+      if (targetYears && targetYears.length > 0) query.currentYear = { $in: targetYears };
+      if (targetSections && targetSections.length > 0) query.section = { $in: targetSections };
+      studentCount = await User.countDocuments(query);
+    } else if (audience === "individual") {
+      if (targetSpecificStudents && targetSpecificStudents.length > 0) {
+        studentCount = await User.countDocuments({ _id: { $in: targetSpecificStudents }, role: "student" });
+      }
+    }
+    
+    res.status(200).json({
+      success: true,
+      counts: {
+        students: studentCount,
+        faculty: facultyCount,
+        total: studentCount + facultyCount
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 // ==================== CREATE ANNOUNCEMENT ====================
 exports.createAnnouncement = async (req, res) => {
@@ -138,15 +322,31 @@ exports.createAnnouncement = async (req, res) => {
       feeLastDate,
       eventDate,
       eventVenue,
-      registrationLink
+      registrationLink,
+      url,
+      targetBranches,
+      targetYears,
+      targetSections,
+      targetMyClass,
+      targetMyProctor,
+      targetMySection,
+      targetMyDepartment,
+      addToCalendar,
+      isImportant,
+      isPinned,
+      sendReminder,
+      status,
+      targetSpecificStudents,
+      showInClassUpdates,
+      allowReadTracking,
+      sendNotification
     } = req.body;
 
     let attachment = null;
     let attachmentType = null;
 
-    // Upload attachment to Supabase if exists
     if (req.file) {
-      const fileName = `announcements/${Date.now()}-${req.file.originalname}`;
+      const fileName = `announcements/${Date.now()}-${crypto.randomBytes(4).toString('hex')}-${req.file.originalname}`;
       const { error } = await supabase.storage
         .from("campx-files")
         .upload(fileName, req.file.buffer, {
@@ -168,10 +368,47 @@ exports.createAnnouncement = async (req, res) => {
       attachmentType = req.file.mimetype.startsWith("image/") ? "image" : "pdf";
     }
 
-    // Parse contacts if sent as string
     let parsedContacts = contacts;
     if (typeof contacts === "string") {
       parsedContacts = JSON.parse(contacts);
+    }
+
+    const currentUser = await User.findById(req.user.id);
+
+    // Permission Check: Prevent faculty from making university-wide announcements
+    if (audience === "all" && !["admin", "management"].includes(currentUser.role)) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to create university-wide announcements."
+      });
+    }
+
+    // Parse targeting arrays
+    let parsedTargetBranches = [];
+    let parsedTargetYears = [];
+    let parsedTargetSections = [];
+    let parsedTargetSpecificStudents = [];
+    
+    if (targetSpecificStudents) {
+      try {
+        parsedTargetSpecificStudents = typeof targetSpecificStudents === 'string' ? JSON.parse(targetSpecificStudents) : targetSpecificStudents;
+      } catch(e) { parsedTargetSpecificStudents = []; }
+    }
+    
+    if (targetBranches) {
+      try {
+        parsedTargetBranches = typeof targetBranches === 'string' ? JSON.parse(targetBranches) : targetBranches;
+      } catch(e) { parsedTargetBranches = []; }
+    }
+    if (targetYears) {
+      try {
+        parsedTargetYears = typeof targetYears === 'string' ? JSON.parse(targetYears) : targetYears;
+      } catch(e) { parsedTargetYears = []; }
+    }
+    if (targetSections) {
+      try {
+        parsedTargetSections = typeof targetSections === 'string' ? JSON.parse(targetSections) : targetSections;
+      } catch(e) { parsedTargetSections = []; }
     }
 
     // Build announcement data
@@ -183,6 +420,7 @@ exports.createAnnouncement = async (req, res) => {
       audience: audience || "all",
       attachment,
       attachmentType,
+      url: url || null,
       contacts: parsedContacts || [],
       location: location || null,
       startDate: startDate || new Date(),
@@ -190,18 +428,27 @@ exports.createAnnouncement = async (req, res) => {
       tags: tags || [],
       createdBy: req.user.id,
       status: "active",
-      targetDepartment: targetDepartment || null,
-      targetYear: targetYear ? parseInt(targetYear) : null,
-      targetSection: targetSection || null
+      targetMyClass: targetMyClass === 'true' || targetMyClass === true,
+      targetMyProctor: targetMyProctor === 'true' || targetMyProctor === true,
+      targetMySection: targetMySection === 'true' || targetMySection === true,
+      targetMyDepartment: targetMyDepartment === 'true' || targetMyDepartment === true,
+      targetBranches: parsedTargetBranches,
+      targetYears: parsedTargetYears,
+      targetSections: parsedTargetSections,
+      targetSpecificStudents: parsedTargetSpecificStudents,
+      isImportant: isImportant === 'true' || isImportant === true,
+      isPinned: isPinned === 'true' || isPinned === true,
+      sendReminder: sendReminder === 'true' || sendReminder === true,
+      showInClassUpdates: showInClassUpdates === 'true' || showInClassUpdates === true,
+      allowReadTracking: allowReadTracking === 'true' || allowReadTracking === true,
+      status: status || "active"
     };
 
-    // Add fee-specific fields
     if (type === "fee") {
       announcementData.feeAmount = feeAmount ? parseFloat(feeAmount) : null;
       announcementData.feeLastDate = feeLastDate || null;
     }
 
-    // Add event-specific fields
     if (["exam", "workshop", "internship", "hackathon", "placement", "crt", "sports", "event"].includes(type)) {
       announcementData.eventDate = eventDate || startDate || new Date();
       announcementData.eventVenue = eventVenue || location || null;
@@ -211,15 +458,15 @@ exports.createAnnouncement = async (req, res) => {
     const announcement = await Announcement.create(announcementData);
     await announcement.populate("createdBy", "name email role");
 
-    // Auto-create calendar event if type is calendar-related
-    if (CALENDAR_TYPES.includes(announcement.type)) {
+    if (CALENDAR_TYPES.includes(announcement.type) || addToCalendar === 'true' || addToCalendar === true) {
       await createCalendarEventFromAnnouncement(announcement);
     }
 
-    // Create notifications for target users
-    await createNotificationsForAnnouncement(announcement);
+    const shouldSendNotification = sendNotification !== 'false' && sendNotification !== false;
+    if (announcementData.status === "active" && shouldSendNotification) {
+      await createNotificationsForAnnouncement(announcement);
+    }
 
-    // Emit realtime event
     const io = getIO();
     io.emit("new-announcement", announcement);
 
@@ -240,7 +487,7 @@ exports.createAnnouncement = async (req, res) => {
 // ==================== GET ALL ANNOUNCEMENTS ====================
 exports.getAnnouncements = async (req, res) => {
   try {
-    const { page = 1, limit = 10, priority, search, status = "active", type } = req.query;
+    const { page = 1, limit = 10, priority, search, status = "active", type, forClass } = req.query;
     
     let query = { status };
     
@@ -259,40 +506,101 @@ exports.getAnnouncements = async (req, res) => {
       ];
     }
     
-    // Filter by user role
-    if (req.user.role === "student") {
+    if (!query.$and) query.$and = [];
+
+    // ========== CLASS UPDATES FILTER (for students) ==========
+  // Find this section (around line 180-230) and replace it:
+
+// ========== CLASS UPDATES FILTER (for students) ==========
+if (forClass === "true" && req.user.role === "student") {
+  const studentId = req.user.id;
+  const user = await User.findById(studentId);
+  
+  const ClassStudentAssignment = require("../models/ClassStudentAssignment");
+  const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
+  
+  const classAssignment = await ClassStudentAssignment.findOne({ studentId }).populate("facultyId");
+  const proctorAssignment = await ProctorStudentAssignment.findOne({ studentId }).populate("facultyId");
+  
+  const assignedFacultyIds = [];
+  if (classAssignment?.facultyId) assignedFacultyIds.push(classAssignment.facultyId._id);
+  if (proctorAssignment?.facultyId) assignedFacultyIds.push(proctorAssignment.facultyId._id);
+  
+  // MODIFIED: Only show announcements from class teacher and proctor
+  // Remove all other filters like targetSection, targetBranches, etc.
+  query.$and.push({
+    $or: [
+      { createdBy: { $in: assignedFacultyIds } },  // Only class teacher & proctor
+      // Remove these lines to exclude section/branch/year announcements:
+      // { targetSection: user?.section },
+      // { targetMyClass: true },
+      // { targetMyProctor: true },
+      // { targetMySection: true },
+      // { targetMyDepartment: true },
+      // { audience: "my_class" },
+      // { audience: "my_proctor" },
+      // { audience: "my_section" },
+      // { audience: "my_department" },
+      // { targetBranches: user?.branch },
+      // { targetDepartment: user?.branch }
+    ]
+  });
+}
+    // ========== REGULAR STUDENT FILTER ==========
+    else if (req.user.role === "student") {
       const user = await User.findById(req.user.id);
-      query.$and = [
-        {
-          $or: [
-            { audience: "all" },
-            { audience: "students" }
-          ]
-        }
-      ];
+      
+      query.$and.push({
+        $or: [
+          { audience: "all" },
+          { audience: "students" },
+          { audience: "specific", targetSpecificStudents: { $elemMatch: { userId: user._id } } }
+        ]
+      });
       
       if (user.branch) {
-        query.$or = [
-          { targetDepartment: { $exists: false } },
-          { targetDepartment: null },
-          { targetDepartment: user.branch }
-        ];
+        query.$and.push({
+          $or: [
+            { targetBranches: { $exists: false } },
+            { targetBranches: { $size: 0 } },
+            { targetBranches: "ALL" },
+            { targetBranches: user.branch }
+          ]
+        });
       }
       
       if (user.currentYear) {
-        query.$or = [
-          { targetYear: { $exists: false } },
-          { targetYear: null },
-          { targetYear: user.currentYear }
-        ];
+        query.$and.push({
+          $or: [
+            { targetYears: { $exists: false } },
+            { targetYears: { $size: 0 } },
+            { targetYears: user.currentYear }
+          ]
+        });
+      }
+      
+      if (user.section) {
+        query.$and.push({
+          $or: [
+            { targetSections: { $exists: false } },
+            { targetSections: { $size: 0 } },
+            { targetSections: user.section }
+          ]
+        });
       }
     }
+    // ========== FACULTY FILTER ==========
+    else if (req.user.role !== "admin" && req.user.role !== "management" && req.user.role !== "dean" && req.user.role !== "principal") {
+      query.$and.push({
+        $or: [
+          { audience: "all" },
+          { audience: "faculty" }
+        ]
+      });
+    }
     
-    if (req.user.role !== "student" && req.user.role !== "admin") {
-      query.$or = [
-        { audience: "all" },
-        { audience: "faculty" }
-      ];
+    if (query.$and.length === 0) {
+      delete query.$and;
     }
     
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -382,12 +690,19 @@ exports.updateAnnouncement = async (req, res) => {
       });
     }
     
-    // Check ownership
     if (announcement.createdBy.toString() !== req.user.id && req.user.role !== "admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to update this announcement"
-      });
+      // Management can edit any
+      // HOD can edit within department
+      const creator = await User.findById(announcement.createdBy);
+      const isManagement = req.user.role === "management";
+      const isHodInSameDept = (req.user.role === "hod" || req.user.role === "dean") && creator && creator.department === req.user.department;
+
+      if (!isManagement && !isHodInSameDept) {
+        return res.status(403).json({
+          success: false,
+          message: "Not authorized to update this announcement"
+        });
+      }
     }
     
     const {
@@ -400,35 +715,8 @@ exports.updateAnnouncement = async (req, res) => {
       location,
       expiryDate,
       tags,
-      status,
-      targetDepartment,
-      targetYear,
-      targetSection,
-      feeAmount,
-      feeLastDate,
-      eventDate,
-      eventVenue,
-      registrationLink
+      status
     } = req.body;
-    
-    // Handle new attachment if uploaded
-    if (req.file) {
-      const fileName = `announcements/${Date.now()}-${req.file.originalname}`;
-      const { error } = await supabase.storage
-        .from("campx-files")
-        .upload(fileName, req.file.buffer, {
-          contentType: req.file.mimetype
-        });
-      
-      if (!error) {
-        const { data: publicUrl } = supabase.storage
-          .from("campx-files")
-          .getPublicUrl(fileName);
-        
-        req.body.attachment = publicUrl.publicUrl;
-        req.body.attachmentType = req.file.mimetype.startsWith("image/") ? "image" : "pdf";
-      }
-    }
     
     let parsedContacts = contacts;
     if (typeof contacts === "string") {
@@ -445,28 +733,41 @@ exports.updateAnnouncement = async (req, res) => {
       location,
       expiryDate,
       tags,
-      status,
-      targetDepartment,
-      targetYear: targetYear ? parseInt(targetYear) : null,
-      targetSection
+      status
     };
-    
-    if (type === "fee") {
-      updateData.feeAmount = feeAmount ? parseFloat(feeAmount) : null;
-      updateData.feeLastDate = feeLastDate || null;
-    }
-    
-    if (CALENDAR_TYPES.includes(type)) {
-      updateData.eventDate = eventDate || new Date();
-      updateData.eventVenue = eventVenue || location || null;
-      updateData.registrationLink = registrationLink || null;
-    }
     
     const updatedAnnouncement = await Announcement.findByIdAndUpdate(
       req.params.id,
       updateData,
       { new: true, runValidators: true }
     ).populate("createdBy", "name email role");
+
+    // Sync Calendar Update
+    if (updatedAnnouncement.calendarEventCreated) {
+      let inheritedAudience = {
+        audienceType: updatedAnnouncement.audience,
+        targetBranches: updatedAnnouncement.targetBranches || [],
+        targetSections: updatedAnnouncement.targetSections || [],
+        targetSpecificStudents: updatedAnnouncement.targetSpecificStudents || []
+      };
+
+      if (updatedAnnouncement.targetMyClass) inheritedAudience.audienceType = "class";
+      else if (updatedAnnouncement.targetMyProctor) inheritedAudience.audienceType = "proctor";
+      else if (updatedAnnouncement.targetMySection) inheritedAudience.audienceType = "section";
+      else if (updatedAnnouncement.targetMyDepartment) inheritedAudience.audienceType = "department";
+
+      await AcademicActivity.findOneAndUpdate(
+        { sourceAnnouncementId: updatedAnnouncement._id },
+        { 
+          title: updatedAnnouncement.title, 
+          description: updatedAnnouncement.description,
+          startDate: updatedAnnouncement.eventDate || updatedAnnouncement.startDate,
+          endDate: updatedAnnouncement.expiryDate || null,
+          venue: updatedAnnouncement.eventVenue || updatedAnnouncement.location || null,
+          inheritedAudience
+        }
+      );
+    }
     
     res.status(200).json({
       success: true,
@@ -494,15 +795,21 @@ exports.deleteAnnouncement = async (req, res) => {
       });
     }
     
-    // Check ownership
     if (announcement.createdBy.toString() !== req.user.id && req.user.role !== "admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to delete this announcement"
-      });
+      // Management can delete any
+      // HOD can delete within department
+      const creator = await User.findById(announcement.createdBy);
+      const isManagement = req.user.role === "management";
+      const isHodInSameDept = (req.user.role === "hod" || req.user.role === "dean") && creator && creator.department === req.user.department;
+
+      if (!isManagement && !isHodInSameDept) {
+        return res.status(403).json({
+          success: false,
+          message: "Not authorized to delete this announcement"
+        });
+      }
     }
     
-    // Also delete associated calendar event if exists
     if (announcement.calendarEventCreated) {
       await AcademicActivity.deleteOne({ sourceAnnouncementId: announcement._id });
     }
@@ -526,20 +833,20 @@ exports.deleteAnnouncement = async (req, res) => {
 exports.getAnnouncementTypes = async (req, res) => {
   try {
     const types = [
-      { value: "exam", label: "📚 Exam", color: "bg-red-100 text-red-700" },
-      { value: "workshop", label: "🔧 Workshop", color: "bg-blue-100 text-blue-700" },
-      { value: "internship", label: "💼 Internship", color: "bg-purple-100 text-purple-700" },
-      { value: "hackathon", label: "💻 Hackathon", color: "bg-pink-100 text-pink-700" },
-      { value: "placement", label: "🎯 Placement", color: "bg-green-100 text-green-700" },
-      { value: "crt", label: "📝 CRT", color: "bg-indigo-100 text-indigo-700" },
-      { value: "sports", label: "🏆 Sports", color: "bg-orange-100 text-orange-700" },
-      { value: "fee", label: "💰 Fee", color: "bg-yellow-100 text-yellow-700" },
-      { value: "lab", label: "🔬 Lab", color: "bg-cyan-100 text-cyan-700" },
-      { value: "academic", label: "📖 Academic", color: "bg-emerald-100 text-emerald-700" },
-      { value: "event", label: "🎉 Event", color: "bg-rose-100 text-rose-700" },
-      { value: "general", label: "📢 General", color: "bg-gray-100 text-gray-700" },
-      { value: "holiday", label: "🎊 Holiday", color: "bg-teal-100 text-teal-700" },
-      { value: "result", label: "📊 Result", color: "bg-violet-100 text-violet-700" }
+      { value: "exam", label: "Exam", color: "bg-red-100 text-red-700" },
+      { value: "workshop", label: "Workshop", color: "bg-blue-100 text-blue-700" },
+      { value: "internship", label: "Internship", color: "bg-purple-100 text-purple-700" },
+      { value: "hackathon", label: "Hackathon", color: "bg-pink-100 text-pink-700" },
+      { value: "placement", label: "Placement", color: "bg-green-100 text-green-700" },
+      { value: "crt", label: "CRT", color: "bg-indigo-100 text-indigo-700" },
+      { value: "sports", label: "Sports", color: "bg-orange-100 text-orange-700" },
+      { value: "fee", label: "Fee", color: "bg-yellow-100 text-yellow-700" },
+      { value: "lab", label: "Lab", color: "bg-cyan-100 text-cyan-700" },
+      { value: "academic", label: "Academic", color: "bg-emerald-100 text-emerald-700" },
+      { value: "event", label: "Event", color: "bg-rose-100 text-rose-700" },
+      { value: "general", label: "General", color: "bg-gray-100 text-gray-700" },
+      { value: "holiday", label: "Holiday", color: "bg-teal-100 text-teal-700" },
+      { value: "result", label: "Result", color: "bg-violet-100 text-violet-700" }
     ];
     
     res.status(200).json({

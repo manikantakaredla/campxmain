@@ -1,6 +1,9 @@
+const crypto = require('crypto');
 const Resource = require("../models/Resource");
 const Notification = require("../models/Notification");
 const User = require("../models/User");
+const ClassStudentAssignment = require("../models/ClassStudentAssignment");
+const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
 const { getIO } = require("../config/socket");
 const supabase = require("../config/supabase");
 
@@ -25,7 +28,7 @@ exports.createResource = async (req, res) => {
     }
 
     // Upload file to Supabase
-    const fileName = `resources/${Date.now()}-${req.file.originalname}`;
+    const fileName = `resources/${Date.now()}-${crypto.randomBytes(4).toString('hex')}-${req.file.originalname}`;
     const { error } = await supabase.storage
       .from("campx-files")
       .upload(fileName, req.file.buffer, {
@@ -43,6 +46,25 @@ exports.createResource = async (req, res) => {
       .from("campx-files")
       .getPublicUrl(fileName);
 
+    
+    const currentUser = await User.findById(req.user.id);
+    let finalTargetBranch = targetBranch || null;
+    
+    if (["faculty", "hod", "deputyhod"].includes(currentUser.role)) {
+      finalTargetBranch = currentUser.department;
+    } else if (["dean", "principal", "management"].includes(currentUser.role)) {
+      const allowedBranches = currentUser.managedBranches && currentUser.managedBranches.length > 0 
+        ? currentUser.managedBranches 
+        : [currentUser.department];
+      
+      if (targetBranch && !allowedBranches.includes(targetBranch)) {
+        return res.status(403).json({
+          success: false,
+          message: "You can only target your managed branches."
+        });
+      }
+    }
+
     const resource = await Resource.create({
       title,
       description,
@@ -52,7 +74,7 @@ exports.createResource = async (req, res) => {
       fileType: req.file.mimetype,
       fileSize: req.file.size,
       visibility: visibility || "all",
-      targetBranch,
+      targetBranch: finalTargetBranch,
       targetYear,
       targetSection,
       uploadedBy: req.user.id
@@ -100,6 +122,18 @@ async function createNotificationsForResource(resource) {
         currentYear: resource.targetYear,
         isActive: true 
       }).select("_id");
+    } else if (resource.visibility === "section" && resource.targetSection) {
+      targetUsers = await User.find({ 
+        role: "student", 
+        section: resource.targetSection,
+        isActive: true 
+      }).select("_id");
+    } else if (resource.visibility === "class") {
+      const assignments = await ClassStudentAssignment.find({ facultyId: resource.uploadedBy._id }).select("studentId");
+      targetUsers = assignments.map(a => ({ _id: a.studentId }));
+    } else if (resource.visibility === "proctor") {
+      const assignments = await ProctorStudentAssignment.find({ facultyId: resource.uploadedBy._id }).select("studentId");
+      targetUsers = assignments.map(a => ({ _id: a.studentId }));
     }
 
     if (targetUsers.length > 0) {
@@ -130,7 +164,7 @@ async function createNotificationsForResource(resource) {
 // ==================== GET ALL RESOURCES ====================
 exports.getResources = async (req, res) => {
   try {
-    const { page = 1, limit = 10, category, search, branch, year } = req.query;
+    const { page = 1, limit = 10, category, search, branch, year, forClass } = req.query;
     
     let query = { status: "active" };
     
@@ -146,14 +180,41 @@ exports.getResources = async (req, res) => {
     }
     
     // Filter by user's branch and year for students
-    if (req.user.role === "student") {
-      const user = await User.findById(req.user.id);
-      query.$or = [
-        { visibility: "all" },
-        { visibility: "branch", targetBranch: user.branch },
-        { visibility: "year", targetYear: user.currentYear }
-      ];
+  // Find this section (around line 130-160) and replace it:
+
+if (req.user.role === "student") {
+  const user = await User.findById(req.user.id);
+  const classAssignment = await ClassStudentAssignment.findOne({ studentId: req.user.id }).select("facultyId");
+  const proctorAssignment = await ProctorStudentAssignment.findOne({ studentId: req.user.id }).select("facultyId");
+
+  if (forClass === "true") {
+    // MODIFIED: Only show resources from class teacher and proctor
+    const facultyIds = [];
+    if (classAssignment?.facultyId) facultyIds.push(classAssignment.facultyId);
+    if (proctorAssignment?.facultyId) facultyIds.push(proctorAssignment.facultyId);
+    
+    query.$or = [
+      { uploadedBy: { $in: facultyIds } }  // Only class teacher & proctor
+      // Remove section filter:
+      // { visibility: "section", targetSection: user.section }
+    ];
+  } else {
+    // Keep existing logic for regular resources
+    query.$or = [
+      { visibility: "all" },
+      { visibility: "branch", targetBranch: user.branch },
+      { visibility: "year", targetYear: user.currentYear },
+      { visibility: "section", targetSection: user.section }
+    ];
+
+    if (classAssignment) {
+      query.$or.push({ visibility: "class", uploadedBy: classAssignment.facultyId });
     }
+    if (proctorAssignment) {
+      query.$or.push({ visibility: "proctor", uploadedBy: proctorAssignment.facultyId });
+    }
+  }
+}
     
     const skip = (parseInt(page) - 1) * parseInt(limit);
     

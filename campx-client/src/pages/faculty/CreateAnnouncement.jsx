@@ -1,36 +1,72 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { announcementService } from '../../services/announcementService'
-import { Upload, X, MapPin, Calendar, Users, AlertCircle, Plus, Trash2 } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { ArrowLeft, Upload, X, Plus, Trash2, Search, Users, AlertCircle, Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
+import { useSettings } from '../../hooks/useSettings'
 
 const CreateAnnouncement = () => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { settings } = useSettings()
   const [loading, setLoading] = useState(false)
+  const targetParam = new URLSearchParams(location.search).get('target')
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    type: 'general',
     priority: 'medium',
-    audience: 'all',
-    location: '',
-    expiryDate: '',
+    audienceType: targetParam === 'class' ? 'class' : (targetParam === 'proctor' ? 'proctor' : 'class'),
+    addToCalendar: false,
+    sendNotification: true,
+    isPinned: false,
+    allowReadTracking: false,
+    eventDate: '',
+    eventTime: '',
+    eventVenue: '',
     contacts: [],
-    attachment: null
+    attachment: null,
+    targetSections: '' // For faculty, targetSections is usually a string from the dropdown
   })
-  const [newContact, setNewContact] = useState({ role: '', name: '', phone: '' })
-  const [attachmentPreview, setAttachmentPreview] = useState(null)
 
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+  const [assignedSections, setAssignedSections] = useState([])
+  const [newContact, setNewContact] = useState({ role: '', name: '', phone: '' })
+
+  // Fetch assigned sections for faculty
+  useEffect(() => {
+    api.get('/faculty/students/class?limit=500')
+      .then(res => {
+        if (res.data?.students) {
+          const unique = [...new Set(res.data.students.map(s => s.section).filter(Boolean))];
+          setAssignedSections(unique);
+        }
+      })
+      .catch(err => console.error("Failed to load sections", err));
+  }, [])
+
+  const calendarEventCategories = ["workshop", "seminar", "hackathon", "internship", "placement", "event", "examination"];
+
+  useEffect(() => {
+    if (calendarEventCategories.includes(formData.type)) {
+      setFormData(prev => ({ ...prev, addToCalendar: true }));
+    }
+  }, [formData.type]);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target
+    if (type === 'checkbox') {
+      setFormData({ ...formData, [name]: checked })
+    } else {
+      setFormData({ ...formData, [name]: value })
+    }
   }
 
   const handleAddContact = () => {
     if (!newContact.name || !newContact.phone) {
-      toast.error('Please enter contact name and phone number')
+      toast.error('Please enter contact name and phone')
       return
     }
-    
     setFormData({
       ...formData,
       contacts: [...formData.contacts, { 
@@ -50,350 +86,280 @@ const CreateAnnouncement = () => {
   }
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      // Validate file size (10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error('File size must be less than 10MB')
-        return
-      }
-      
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
-      if (!allowedTypes.includes(file.type)) {
-        toast.error('Invalid file type. Allowed: Images and PDF')
-        return
-      }
-      
-      setFormData({ ...formData, attachment: file })
-      setAttachmentPreview({
-        name: file.name,
-        size: (file.size / 1024 / 1024).toFixed(2) + ' MB',
-        type: file.type
-      })
-    }
+    setFormData({ ...formData, attachment: e.target.files[0] })
   }
 
-  const removeAttachment = () => {
-    setFormData({ ...formData, attachment: null })
-    setAttachmentPreview(null)
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async (e, status = 'active') => {
+    if (e) e.preventDefault()
     
     if (!formData.title || !formData.description) {
       toast.error('Please fill in title and description')
       return
     }
     
+    if (formData.audienceType === 'section' && !formData.targetSections) {
+      toast.error('Please select an assigned section')
+      return
+    }
+
     setLoading(true)
     try {
       const submitData = new FormData()
+
       submitData.append('title', formData.title)
       submitData.append('description', formData.description)
+      submitData.append('type', formData.type)
       submitData.append('priority', formData.priority)
-      submitData.append('audience', formData.audience)
-      submitData.append('location', formData.location || '')
-      submitData.append('expiryDate', formData.expiryDate || '')
+      submitData.append('audience', formData.audienceType)
+      submitData.append('status', status)
+      
+      // Faculty Specific Target Flags
+      submitData.append('targetMyClass', formData.audienceType === 'class')
+      submitData.append('targetMyProctor', formData.audienceType === 'proctor')
+      submitData.append('targetMySection', formData.audienceType === 'section')
+      submitData.append('targetMyDepartment', formData.audienceType === 'department')
+
+      submitData.append('addToCalendar', formData.addToCalendar)
+      submitData.append('sendNotification', formData.sendNotification)
+      submitData.append('isPinned', formData.isPinned)
+      submitData.append('allowReadTracking', formData.allowReadTracking)
+      
+      if (formData.addToCalendar) {
+        submitData.append('eventDate', formData.eventDate)
+        submitData.append('eventVenue', formData.eventVenue)
+        // Combine date and time if time is provided
+        if (formData.eventDate && formData.eventTime) {
+           const dateTime = new Date(`${formData.eventDate}T${formData.eventTime}`)
+           submitData.append('startDate', dateTime.toISOString())
+        }
+      }
+
       submitData.append('contacts', JSON.stringify(formData.contacts))
+      
+      if (formData.audienceType === 'section' && formData.targetSections) {
+        submitData.append('targetSections', JSON.stringify([formData.targetSections]))
+      }
+
       if (formData.attachment) {
         submitData.append('attachment', formData.attachment)
       }
       
-      const response = await api.post('/announcements', submitData, {
+      await api.post('/announcements', submitData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       
-      if (response.data.success) {
-        toast.success('Announcement created successfully!')
-        navigate('/faculty/announcements')
-      } else {
-        toast.error(response.data.message || 'Failed to create announcement')
-      }
+      toast.success(`Announcement ${status === 'draft' ? 'saved as draft' : 'published successfully'}`)
+      navigate('/faculty/announcements')
     } catch (error) {
-      console.error('Create error:', error)
       toast.error(error.response?.data?.message || 'Failed to create announcement')
     } finally {
       setLoading(false)
     }
   }
 
-  const getAttachmentIcon = () => {
-    if (!attachmentPreview) return <Upload className="w-10 h-10 text-gray-400" />
-    if (attachmentPreview.type.includes('pdf')) return '📄'
-    if (attachmentPreview.type.includes('image')) return '🖼️'
-    return '📎'
-  }
-
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Create Announcement</h1>
-        <p className="text-gray-500 mt-1">Share important updates with students and faculty</p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Information Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100 bg-gray-50">
-            <h2 className="font-semibold text-gray-800">Basic Information</h2>
-          </div>
-          <div className="p-6 space-y-4">
-            {/* Title */}
+      <button onClick={() => navigate('/faculty/announcements')} className="flex items-center gap-2 text-gray-600 mb-6 hover:text-gray-900 font-medium">
+        <ArrowLeft size={18} /> Back to Announcements
+      </button>
+      
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-gray-50 border-b border-gray-100 p-6">
+          <h1 className="text-2xl font-bold text-gray-800">Create Announcement</h1>
+          <p className="text-gray-500 mt-1">Share important updates with your students and branch</p>
+        </div>
+        
+        <form className="p-6 space-y-8">
+          
+          {/* Section 1: Basic Info */}
+          <div className="space-y-4">
+            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">1. Basic Information</h2>
+            
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Title <span className="text-red-500">*</span>
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
               <input
                 type="text"
                 name="title"
                 value={formData.title}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                 placeholder="Enter announcement title"
                 required
               />
             </div>
-
-            {/* Description */}
+            
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description <span className="text-red-500">*</span>
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
               <textarea
                 name="description"
                 value={formData.description}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 rows={5}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter detailed announcement content..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="Enter detailed description"
                 required
               />
             </div>
-
-            {/* Priority & Audience */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select name="type" value={formData.type} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                  <option value="general">General</option>
+                  <option value="academic">Academic</option>
+                  <option value="examination">Examination</option>
+                  <option value="internship">Internship</option>
+                  <option value="placement">Placement</option>
+                  <option value="hackathon">Hackathon</option>
+                  <option value="event">Event</option>
+                  <option value="holiday">Holiday</option>
+                  <option value="emergency">Emergency</option>
+                </select>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                <select
-                  name="priority"
-                  value={formData.priority}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="low">🟢 Low - Normal Information</option>
-                  <option value="medium">🟡 Medium - Important</option>
-                  <option value="high">🟠 High - Very Important</option>
-                  <option value="urgent">🔴 Urgent - Immediate Attention</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Audience</label>
-                <select
-                  name="audience"
-                  value={formData.audience}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">👥 All Users</option>
-                  <option value="students">🎓 Students Only</option>
-                  <option value="faculty">👨‍🏫 Faculty Only</option>
+                <select name="priority" value={formData.priority} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
                 </select>
               </div>
             </div>
-
-            {/* Location & Expiry */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <MapPin className="w-4 h-4 inline mr-1" />
-                  Location (Optional)
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Main Auditorium, Online, Room 201"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <Calendar className="w-4 h-4 inline mr-1" />
-                  Expiry Date (Optional)
-                </label>
-                <input
-                  type="date"
-                  name="expiryDate"
-                  value={formData.expiryDate}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+          </div>
+          
+          <hr className="border-gray-100" />
+          
+          {/* Section 2: Target Audience */}
+          <div className="space-y-4">
+            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">2. Target Audience</h2>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Audience Scope</label>
+              <select name="audienceType" value={formData.audienceType} onChange={handleChange} className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                <option value="class">My Classes</option>
+                <option value="proctor">My Proctor Students</option>
+                <option value="section">My Sections</option>
+                
+              </select>
             </div>
-          </div>
-        </div>
-
-        {/* Contacts Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100 bg-gray-50">
-            <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Contact Persons
-            </h2>
-            <p className="text-xs text-gray-500 mt-1">Add people to contact for this announcement</p>
-          </div>
-          <div className="p-6 space-y-4">
-            {/* Existing Contacts */}
-            {formData.contacts.length > 0 && (
-              <div className="space-y-2 mb-4">
-                {formData.contacts.map((contact, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <span className="font-medium text-gray-800">{contact.role}</span>
-                        <span className="text-gray-600">{contact.name}</span>
-                        <span className="text-gray-500 text-sm">{contact.phone}</span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveContact(idx)}
-                      className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
+            
+            {formData.audienceType === 'section' && (
+              <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                <label className="block text-sm font-medium text-blue-900 mb-2">Select Assigned Section</label>
+                <select name="targetSections" value={formData.targetSections} onChange={handleChange} className="w-full md:w-1/2 px-4 py-2 border border-blue-200 rounded-lg bg-white">
+                  <option value="">-- Choose Section --</option>
+                  {assignedSections.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
               </div>
             )}
-
-            {/* Add New Contact */}
-            <div className="flex flex-wrap gap-3">
-              <input
-                type="text"
-                placeholder="Role (e.g., Coordinator, HOD)"
-                value={newContact.role}
-                onChange={(e) => setNewContact({ ...newContact, role: e.target.value })}
-                className="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={newContact.name}
-                onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
-                className="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                value={newContact.phone}
-                onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })}
-                className="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="button"
-                onClick={handleAddContact}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all flex items-center gap-1"
-              >
-                <Plus className="w-4 h-4" />
-                Add
-              </button>
-            </div>
           </div>
-        </div>
-
-        {/* Attachment Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100 bg-gray-50">
-            <h2 className="font-semibold text-gray-800">Attachment (Optional)</h2>
-            <p className="text-xs text-gray-500 mt-1">Upload images or PDF files (Max 10MB)</p>
-          </div>
-          <div className="p-6">
-            {!attachmentPreview ? (
-              <div 
-                className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-all cursor-pointer"
-                onClick={() => document.getElementById('attachment-input').click()}
-              >
-                <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600">Click to upload attachment</p>
-                <p className="text-xs text-gray-400 mt-1">JPEG, PNG, PDF up to 10MB</p>
-                <input
-                  id="attachment-input"
-                  type="file"
-                  onChange={handleFileChange}
-                  accept="image/jpeg,image/jpg,image/png,application/pdf"
-                  className="hidden"
-                />
-              </div>
-            ) : (
-              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">{getAttachmentIcon()}</div>
-                    <div>
-                      <p className="font-medium text-gray-800">{attachmentPreview.name}</p>
-                      <p className="text-xs text-gray-400">{attachmentPreview.size}</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={removeAttachment}
-                    className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+          
+          <hr className="border-gray-100" />
+          
+          {/* Section 3: Calendar Options */}
+          <div className="space-y-4">
+            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">3. Calendar Event</h2>
+            
+            <label className={`flex items-center p-4 border border-gray-200 rounded-xl transition-colors w-fit ${calendarEventCategories.includes(formData.type) ? 'bg-gray-50 opacity-70 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}>
+              <input
+                type="checkbox"
+                name="addToCalendar"
+                checked={formData.addToCalendar}
+                disabled={calendarEventCategories.includes(formData.type)}
+                onChange={handleChange}
+                className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50"
+              />
+              <span className="ml-3 font-medium text-gray-800">Add to Academic Calendar {calendarEventCategories.includes(formData.type) && <span className="text-xs text-blue-600 ml-1">(Required for this category)</span>}</span>
+            </label>
+            
+            {formData.addToCalendar && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Event Date *</label>
+                  <input type="date" name="eventDate" value={formData.eventDate} onChange={handleChange} required className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Event Time</label>
+                  <input type="time" name="eventTime" value={formData.eventTime} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Venue</label>
+                  <input type="text" name="eventVenue" value={formData.eventVenue} onChange={handleChange} placeholder="e.g. Main Auditorium" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
                 </div>
               </div>
             )}
           </div>
-        </div>
-
-        {/* Guidelines Card */}
-        <div className="bg-blue-50 rounded-xl p-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-blue-800">
-            <p className="font-medium">Announcement Guidelines:</p>
-            <ul className="list-disc list-inside mt-1 text-xs text-blue-700 space-y-0.5">
-              <li>Keep announcements clear and concise</li>
-              <li>Use priority levels appropriately (Urgent for critical updates only)</li>
-              <li>Add contact persons for students to reach out</li>
-              <li>Set expiry date for time-sensitive announcements</li>
-              <li>Attachments will be visible to all targeted users</li>
-            </ul>
+          
+          <hr className="border-gray-100" />
+          
+          {/* Section 4: Other Options */}
+          <div className="space-y-4">
+            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">4. Options & Attachments</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label className="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" name="sendNotification" checked={formData.sendNotification} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded" />
+                <span className="ml-3 font-medium text-gray-700">Send Notification</span>
+              </label>
+              
+              <label className="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" name="isPinned" checked={formData.isPinned} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded" />
+                <span className="ml-3 font-medium text-gray-700">Pin Announcement</span>
+              </label>
+              
+              <label className="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" name="allowReadTracking" checked={formData.allowReadTracking} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded" />
+                <span className="ml-3 font-medium text-gray-700">Allow Read Tracking</span>
+              </label>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Attachment</label>
+              <div className="border border-gray-300 border-dashed rounded-xl p-6 text-center hover:bg-gray-50 transition-colors">
+                <input type="file" id="attachment" onChange={handleFileChange} className="hidden" />
+                <label htmlFor="attachment" className="cursor-pointer flex flex-col items-center">
+                  <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                  <span className="text-sm font-medium text-blue-600">Click to upload a file</span>
+                  <span className="text-xs text-gray-500 mt-1">PDF, DOCX, PPT, Images up to 10MB</span>
+                </label>
+                {formData.attachment && (
+                  <div className="mt-4 inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg border border-blue-100">
+                    <span className="text-sm font-medium truncate max-w-xs">{formData.attachment.name}</span>
+                    <button type="button" onClick={(e) => { e.preventDefault(); setFormData({...formData, attachment: null}) }} className="text-blue-400 hover:text-blue-600">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-4">
-          <button
-            type="button"
-            onClick={() => navigate('/faculty/announcements')}
-            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {loading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Creating...
-              </>
-            ) : (
-              <>
-                <Upload className="w-4 h-4" />
-                Publish Announcement
-              </>
-            )}
-          </button>
-        </div>
-      </form>
+          
+          {/* Action Footer */}
+          <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-6 -mb-6 flex justify-end items-center z-10 shadow-lg">
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={(e) => handleSubmit(e, 'draft')}
+                disabled={loading}
+                className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Save Draft
+              </button>
+              <button
+                type="button"
+                onClick={(e) => handleSubmit(e, 'active')}
+                disabled={loading}
+                className="px-8 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center min-w-[180px]"
+              >
+                {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Publish Announcement'}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }

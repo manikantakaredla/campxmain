@@ -9,6 +9,7 @@ const StudentAnnouncements = () => {
   const [announcements, setAnnouncements] = useState([])
   const [loading, setLoading] = useState(true)
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 })
+  const [forClass, setForClass] = useState(false)
   
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedPriority, setSelectedPriority] = useState('')
@@ -44,7 +45,7 @@ const StudentAnnouncements = () => {
       fetchAnnouncements()
     }, 400)
     return () => clearTimeout(timer)
-  }, [pagination.page, searchTerm, selectedPriority, selectedType])
+  }, [pagination.page, searchTerm, selectedPriority, selectedType, forClass])
 
   const fetchAnnouncements = async () => {
     setLoading(true)
@@ -54,7 +55,8 @@ const StudentAnnouncements = () => {
         limit: pagination.limit,
         search: searchTerm,
         priority: selectedPriority,
-        type: selectedType
+        type: selectedType,
+        ...(forClass && { forClass: 'true' })
       }
       const response = await announcementService.getAll(params)
       setAnnouncements(response.announcements || [])
@@ -133,6 +135,7 @@ const StudentAnnouncements = () => {
                   className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
                 />
               </div>
+              
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border transition-all ${
@@ -309,27 +312,30 @@ const StudentAnnouncements = () => {
                       </p>
                       
                       {/* Meta info */}
-                      <div className="flex items-center gap-4 text-xs text-gray-400">
-                        <div className="flex items-center gap-1">
-                          <Calendar size={12} />
-                          {new Date(item.createdAt).toLocaleDateString()}
-                        </div>
-                        {item.location && (
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 text-xs text-gray-400">
                           <div className="flex items-center gap-1">
-                            <MapPin size={12} />
-                            {item.location}
+                            <Calendar size={12} />
+                            {new Date(item.createdAt).toLocaleDateString()}
                           </div>
-                        )}
-                        {item.expiryDate && new Date(item.expiryDate) > new Date() && (
-                          <div className="flex items-center gap-1 text-amber-600">
-                            <Bell size={12} />
-                            Expires {new Date(item.expiryDate).toLocaleDateString()}
-                          </div>
-                        )}
+                          {item.location && (
+                            <div className="flex items-center gap-1">
+                              <MapPin size={12} />
+                              {item.location}
+                            </div>
+                          )}
+                          {item.expiryDate && new Date(item.expiryDate) > new Date() && (
+                            <div className="flex items-center gap-1 text-amber-600">
+                              <Bell size={12} />
+                              Expires {new Date(item.expiryDate).toLocaleDateString()}
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-blue-600 text-sm font-medium hover:text-blue-700 flex items-center gap-1">
+                          Read More <ChevronRight size={14} />
+                        </span>
                       </div>
                     </div>
-                    
-                    <ChevronRight size={18} className="text-gray-300 group-hover:text-blue-500 transition-colors flex-shrink-0 mt-1" />
                   </div>
                 </div>
               </Link>
