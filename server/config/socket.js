@@ -5,7 +5,7 @@ let io;
 const initSocket = (server) => {
   io = socketIO(server, {
     cors: {
-      origin: process.env.CLIENT_URL || "http://localhost:5173",
+      origin: process.env.CLIENT_URL || "https://mycampx.vercel.app",
       credentials: true
     }
   });
