@@ -2,8 +2,15 @@ const nodemailer = require("nodemailer");
 
 const sendEmail = async (to, subject, text, html = null) => {
   try {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.error("❌ CRITICAL ERROR: EMAIL_USER or EMAIL_PASS environment variables are missing!");
+      return false;
+    }
+
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port: process.env.SMTP_PORT || 465,
+      secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS

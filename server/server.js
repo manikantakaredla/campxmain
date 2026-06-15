@@ -48,7 +48,11 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || "https://mycampx.vercel.app",
+  origin: [
+    "http://localhost:5173", 
+    "https://mycampx.vercel.app", 
+    process.env.CLIENT_URL
+  ].filter(Boolean),
   credentials: true,
   optionsSuccessStatus: 200
 }));
