@@ -8,6 +8,51 @@ const Setting = require("../models/Setting");
 const calculateAcademicInfo = require("../utils/academicCalculator");
 const bcrypt = require("bcryptjs");
 
+const normalizeBranchName = (input, validBranches) => {
+  if (!input) return input;
+  const cleanInput = input.trim().toUpperCase();
+
+  // 1. Direct case-insensitive match
+  const exactMatch = validBranches.find(b => b.toUpperCase() === cleanInput);
+  if (exactMatch) return exactMatch;
+
+  // 2. Common abbreviations -> Long names
+  const abbreviations = {
+    "CSE": "COMPUTER SCIENCE AND ENGINEERING",
+    "ECE": "ELECTRONICS AND COMMUNICATION ENGINEERING",
+    "EEE": "ELECTRICAL AND ELECTRONICS ENGINEERING",
+    "IT": "INFORMATION TECHNOLOGY",
+    "MECH": "MECHANICAL ENGINEERING",
+    "CIVIL": "CIVIL ENGINEERING",
+    "AIML": "ARTIFICIAL INTELLIGENCE & MACHINE LEARNING",
+    "AI & ML": "ARTIFICIAL INTELLIGENCE & MACHINE LEARNING",
+    "DS": "DATA SCIENCE",
+    "AGRI": "AGRICULTURAL ENGINEERING",
+    "MINING": "MINING ENGINEERING",
+    "PETRO": "PETROLEUM TECHNOLOGY"
+  };
+
+  const expandedInput = abbreviations[cleanInput] || cleanInput;
+
+  // 3. Substring match against valid branches
+  // E.g. "Computer Science" will match "B.Tech. - Computer Science and Engineering"
+  // First, check if valid branch contains the input
+  let bestMatch = validBranches.find(b => b.toUpperCase().includes(expandedInput));
+  if (bestMatch) return bestMatch;
+
+  // 4. Reverse substring: If the input contains a known abbreviation
+  for (const [abbr, expanded] of Object.entries(abbreviations)) {
+    // If user typed "B.Tech CSE"
+    if (cleanInput.includes(abbr) || cleanInput.includes(expanded)) {
+      const match = validBranches.find(b => b.toUpperCase().includes(expanded));
+      if (match) return match;
+    }
+  }
+
+  return input.trim(); // fallback
+};
+
+
 // ==================== DASHBOARD STATISTICS ====================
 exports.getDashboardStats = async (req, res) => {
   try {
@@ -297,10 +342,13 @@ exports.createUser = async (req, res) => {
     if (role === "student") {
       userData.rollNumber = rollNumber ? rollNumber.toUpperCase() : undefined;
       userData.branch = branch;
-      userData.section = section;
+      userData.section = section ? section.trim().toUpperCase() : section;
       
       const settings = await Setting.findOne();
       if (settings && settings.branchConfigs && settings.branchConfigs.length > 0) {
+        const validBranches = settings.branchConfigs.map(c => c.branch);
+        userData.branch = normalizeBranchName(userData.branch, validBranches);
+        
         const branchConfig = settings.branchConfigs.find(c => c.branch === userData.branch);
         if (!branchConfig) {
           return res.status(400).json({ success: false, message: `Branch ${userData.branch} is not configured in Settings` });
@@ -327,7 +375,13 @@ exports.createUser = async (req, res) => {
       }
     } else if (["faculty", "hod", "dean", "principal", "admin"].includes(role)) {
       userData.employeeId = employeeId ? employeeId.toUpperCase() : undefined;
-      userData.department = department;
+      
+      const settings = await Setting.findOne();
+      let validBranches = [];
+      if (settings && settings.branchConfigs) {
+        validBranches = settings.branchConfigs.map(c => c.branch);
+      }
+      userData.department = department ? normalizeBranchName(department, validBranches) : department;
       userData.designation = designation;
     }
 
@@ -384,9 +438,12 @@ exports.bulkCreateUsers = async (req, res) => {
         if (userData.role === "student") {
           userData.rollNumber = row.rollNumber ? row.rollNumber.toUpperCase() : undefined;
           userData.branch = row.branch;
-          userData.section = row.section;
+          userData.section = row.section ? row.section.trim().toUpperCase() : row.section;
           
           if (settings && settings.branchConfigs && settings.branchConfigs.length > 0) {
+            const validBranches = settings.branchConfigs.map(c => c.branch);
+            userData.branch = normalizeBranchName(userData.branch, validBranches);
+
             const branchConfig = settings.branchConfigs.find(c => c.branch === userData.branch);
             if (!branchConfig) {
               throw new Error(`Branch ${userData.branch} is not configured in Settings`);
@@ -413,7 +470,11 @@ exports.bulkCreateUsers = async (req, res) => {
           }
         } else if (["faculty", "hod", "dean", "principal", "admin"].includes(userData.role)) {
           userData.employeeId = row.employeeId ? row.employeeId.toUpperCase() : undefined;
-          userData.department = row.department;
+          let validBranches = [];
+          if (settings && settings.branchConfigs) {
+            validBranches = settings.branchConfigs.map(c => c.branch);
+          }
+          userData.department = row.department ? normalizeBranchName(row.department, validBranches) : row.department;
           userData.designation = row.designation;
         }
         
