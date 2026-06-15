@@ -12,7 +12,7 @@ const StudentSearchSelect = ({ value, onChange, placeholder = "Search students..
   const searchStudents = async (query) => {
     if (!query || query.length < 2) {
       setStudents([]);
-      return;
+        return;
     }
     setLoading(true);
     try {
