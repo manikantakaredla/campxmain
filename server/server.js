@@ -130,6 +130,38 @@ app.use("/api/placements", placementRoutes);
 app.use("/api/interviews", interviewRoutes);
 app.use("/api/success-stories", successStoryRoutes);
 
+app.get("/test-brevo", async (req, res) => {
+  try {
+    const nodemailer = require("nodemailer");
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp-relay.brevo.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      connectionTimeout: 5000,
+    });
+
+    await transporter.verify();
+
+    res.json({
+      success: true,
+      message: "SMTP Connected Successfully"
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      message: err.message,
+      code: err.code
+    });
+  }
+});
 // ==================== 404 HANDLER ====================
 app.use((req, res) => {
   res.status(404).json({
