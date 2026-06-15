@@ -1,58 +1,29 @@
-const nodemailer = require("nodemailer");
-
-let transporter = null;
-
-const getTransporter = async () => {
-  if (transporter) return transporter;
-
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp-relay.brevo.com",
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 15000,
-  });
-
-  await transporter.verify();
-  console.log("✅ SMTP VERIFIED");
-
-  return transporter;
-};
+const SibApiV3Sdk = require("sib-api-v3-sdk");
 
 const sendEmail = async (to, subject, text, html = null) => {
   try {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.error("❌ EMAIL_USER or EMAIL_PASS is missing");
-      return false;
-    }
+    const client = SibApiV3Sdk.ApiClient.instance;
 
-    const mailTransporter = await getTransporter();
+    client.authentications["api-key"].apiKey =
+      process.env.BREVO_API_KEY;
 
-    const mailOptions = {
-      from: `CAMPX <${process.env.EMAIL_USER}>`,
-      to,
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+    await apiInstance.sendTransacEmail({
+      sender: {
+        email: "luckyha0637k@gmail.com",
+        name: "CAMPX",
+      },
+      to: [{ email: to }],
       subject,
-      text,
-      html: html || `<p>${text}</p>`,
-    };
+      htmlContent: html || `<p>${text}</p>`,
+    });
 
-    console.log(`📧 Sending email to: ${to}`);
-
-    const info = await mailTransporter.sendMail(mailOptions);
-
-    console.log("✅ Email Sent Successfully");
-    console.log("Message ID:", info.messageId);
-    console.log("Response:", info.response);
+    console.log("✅ Email sent successfully");
 
     return true;
   } catch (error) {
-    console.error("❌ EMAIL ERROR");
-    console.error(error.message || error);
+    console.error("❌ Email error:", error);
     return false;
   }
 };
