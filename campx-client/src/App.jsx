@@ -1,7 +1,7 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
-import Layout from './components/Layout/Layout'
+import Layout from './components/layout/Layout'
 
 // Auth Pages
 import LandingPage from './pages/auth/LandingPage'
