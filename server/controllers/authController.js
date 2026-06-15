@@ -84,7 +84,7 @@ exports.registerStudent = async (req, res) => {
       expiresAt: new Date(Date.now() + 10 * 60 * 1000)
     });
 
-    await sendEmail(
+    sendEmail(
       email,
       "CAMPX - Verify Your Email",
       `Your OTP for registration is: ${otp}\nValid for 10 minutes.`
@@ -163,7 +163,7 @@ exports.registerFaculty = async (req, res) => {
       expiresAt: new Date(Date.now() + 10 * 60 * 1000)
     });
 
-    await sendEmail(
+    sendEmail(
       email,
       "CAMPX - Verify Your Email",
       `Your OTP for faculty registration is: ${otp}\nValid for 10 minutes.`
@@ -308,7 +308,7 @@ exports.resendOTP = async (req, res) => {
     otpRecord.expiresAt = new Date(Date.now() + 10 * 60 * 1000);
     await otpRecord.save();
 
-    await sendEmail(
+    sendEmail(
       email,
       "CAMPX - New OTP",
       `Your new OTP is: ${newOtp}\nValid for 10 minutes.`
@@ -475,7 +475,7 @@ exports.forgotPassword = async (req, res) => {
       expiresAt: new Date(Date.now() + 10 * 60 * 1000)
     });
 
-    await sendEmail(
+    sendEmail(
       targetEmail,
       "CAMPX - Password Reset OTP",
       `Your OTP to reset password is: ${otp}\nValid for 10 minutes.`
