@@ -15,15 +15,18 @@ const sendEmail = async (to, subject, text, html = null) => {
     console.log("=========================================");
 
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  requireTLS: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000
+});
     console.log("🔍 Verifying SMTP connection...");
 
     await transporter.verify();
