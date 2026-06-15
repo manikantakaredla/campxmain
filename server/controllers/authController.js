@@ -22,12 +22,12 @@ exports.registerStudent = async (req, res) => {
   try {
     const { rollNumber, email, password } = req.body;
 
-    // if (!email.endsWith("@adityauniversity.in")) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "Please use your college email (@adityauniversity.in)"
-    //   });
-    // }
+    if (!email.endsWith("@adityauniversity.in")) {
+      return res.status(400).json({
+        success: false,
+        message: "Please use your college email (@adityauniversity.in)"
+      });
+    }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -106,12 +106,12 @@ exports.registerFaculty = async (req, res) => {
   try {
     const { employeeId, email, password } = req.body;
 
-    // if (!email.endsWith("@adityauniversity.in")) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "Please use your college email (@adityauniversity.in)"
-    //   });
-    // }
+    if (!email.endsWith("@adityauniversity.in")) {
+      return res.status(400).json({
+        success: false,
+        message: "Please use your college email (@adityauniversity.in)"
+      });
+    }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {

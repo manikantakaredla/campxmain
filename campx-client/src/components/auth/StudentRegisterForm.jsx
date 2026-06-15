@@ -36,11 +36,11 @@ const StudentRegisterForm = ({ setActiveTab, setEmail, setRegistrationData, regi
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    // Temporary bypass for testing
-    // if (!formData.email.endsWith(domain)) {
-    //   toast.error(`Please use your ${domain} email address`)
-    //   return
-    // }
+    // Validate email domain
+    if (!formData.email.endsWith(domain)) {
+      toast.error(`Please use your ${domain} email address`)
+      return
+    }
     
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match')
