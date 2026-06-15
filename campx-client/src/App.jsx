@@ -1,5 +1,5 @@
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import Layout from './components/layout/Layout'
 
@@ -15,8 +15,8 @@ import StudentResources from './pages/student/StudentResources'
 import StudentCalendar from './pages/student/StudentCalendar'
 import StudentProfile from './pages/student/StudentProfile'
 import StudentNotifications from './pages/student/StudentNotifications'
-import ClassUpdates from './pages/student/ClassUpdates';
-import OpportunitiesDashboard from './pages/student/Opportunities/OpportunitiesDashboard';
+import ClassUpdates from './pages/student/ClassUpdates'
+import OpportunitiesDashboard from './pages/student/Opportunities/OpportunitiesDashboard'
 
 // Shared Pages
 import AnnouncementDetails from './pages/shared/AnnouncementDetails'
@@ -39,7 +39,7 @@ import FacultyProfile from './pages/faculty/FacultyProfile'
 import FacultyNotifications from './pages/faculty/FacultyNotifications'
 import FacultyStudentDetails from './pages/faculty/StudentDetails'
 
-// Management Pages (HOD/Dean/Principal)
+// Management Pages
 import ManagementDashboard from './pages/management/ManagementDashboard'
 import FacultyManagement from './pages/management/FacultyManagement'
 import FacultyDetails from './pages/management/FacultyDetails'
@@ -51,7 +51,6 @@ import UploadAssignments from './pages/management/UploadAssignments'
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard'
 import UserManagement from './pages/admin/UserManagement'
-import AddUsers from './pages/admin/AddUsers'
 import UserDetails from './pages/admin/UserDetails'
 import AnnouncementManagement from './pages/admin/AnnouncementManagement'
 import ResourceManagement from './pages/admin/ResourceManagement'
@@ -60,22 +59,37 @@ import DataUpload from './pages/admin/DataUpload'
 import SystemSettings from './pages/admin/SystemSettings'
 import AdminCreateAnnouncement from './pages/admin/CreateAnnouncement'
 import AdminEditAnnouncement from './pages/admin/EditAnnouncement'
-import AdminOpportunities from './pages/admin/Opportunities/AdminOpportunities';
-import PlacementUpload from './pages/admin/Opportunities/PlacementUpload';
-import PlacementAnalytics from './pages/admin/Opportunities/PlacementAnalytics';
+import AdminOpportunities from './pages/admin/Opportunities/AdminOpportunities'
+import PlacementUpload from './pages/admin/Opportunities/PlacementUpload'
+import PlacementAnalytics from './pages/admin/Opportunities/PlacementAnalytics'
+
+// Loading Component (inline to avoid import issues)
+const LoadingSpinner = () => (
+  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+  </div>
+)
+
+// Role-based route guard
+const RoleBasedRedirect = ({ role }) => {
+  const redirectMap = {
+    student: '/student/dashboard',
+    faculty: '/faculty/dashboard',
+    hod: '/management/dashboard',
+    deputyhod: '/management/dashboard',
+    dean: '/management/dashboard',
+    principal: '/management/dashboard',
+    admin: '/admin/dashboard'
+  }
+  return <Navigate to={redirectMap[role] || '/'} replace />
+}
 
 function App() {
   const { user, isAuthenticated, loading } = useAuth()
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
+  if (loading) return <LoadingSpinner />
 
-  // Not authenticated - show landing page
+  // Not authenticated - show auth routes
   if (!isAuthenticated) {
     return (
       <Routes>
@@ -93,6 +107,7 @@ function App() {
     return (
       <Routes>
         <Route element={<Layout />}>
+          <Route path="/" element={<Navigate to="/student/dashboard" replace />} />
           <Route path="/student/dashboard" element={<StudentDashboard />} />
           <Route path="/student/announcements" element={<StudentAnnouncements />} />
           <Route path="/student/resources" element={<StudentResources />} />
@@ -100,13 +115,14 @@ function App() {
           <Route path="/student/profile" element={<StudentProfile />} />
           <Route path="/student/notifications" element={<StudentNotifications />} />
           <Route path="/student/opportunities" element={<OpportunitiesDashboard />} />
+          <Route path="/student/class-updates" element={<ClassUpdates />} />
           
+          {/* Shared routes */}
           <Route path="/announcement/:id" element={<AnnouncementDetails />} />
           <Route path="/resource/:id" element={<ResourceDetails />} />
           <Route path="/activity/:id" element={<ActivityDetails />} />
           
-          <Route path="/student/class-updates" element={<ClassUpdates />} />
-          <Route path="*" element={<StudentDashboard />} />
+          <Route path="*" element={<Navigate to="/student/dashboard" replace />} />
         </Route>
       </Routes>
     )
@@ -117,6 +133,7 @@ function App() {
     return (
       <Routes>
         <Route element={<Layout />}>
+          <Route path="/" element={<Navigate to="/faculty/dashboard" replace />} />
           <Route path="/faculty/dashboard" element={<FacultyDashboard />} />
           <Route path="/faculty/students" element={<MyStudents />} />
           <Route path="/faculty/students/:id" element={<FacultyStudentDetails />} />
@@ -136,28 +153,26 @@ function App() {
           <Route path="/resource/:id" element={<ResourceDetails />} />
           <Route path="/activity/:id" element={<ActivityDetails />} />
           
-          <Route path="*" element={<FacultyDashboard />} />
+          <Route path="*" element={<Navigate to="/faculty/dashboard" replace />} />
         </Route>
       </Routes>
     )
   }
 
-  // Management Routes (HOD/Dean/Principal)
+  // Management Routes
   if (['hod', 'deputyhod', 'dean', 'principal'].includes(role)) {
     return (
       <Routes>
         <Route element={<Layout />}>
+          <Route path="/" element={<Navigate to="/management/dashboard" replace />} />
           <Route path="/management/dashboard" element={<ManagementDashboard />} />
           <Route path="/management/faculty" element={<FacultyManagement />} />
           <Route path="/management/faculty/:id" element={<FacultyDetails />} />
           <Route path="/management/assign-students" element={<AssignStudents />} />
           <Route path="/management/students" element={<DepartmentStudents />} />
           <Route path="/management/students/:id" element={<ManagementStudentDetails />} />
-          
-          {/* Upload Assignment Routes - ADD THESE */}
           <Route path="/management/upload/class" element={<UploadAssignments />} />
           <Route path="/management/upload/proctor" element={<UploadAssignments />} />
-          
           <Route path="/management/announcements" element={<MyAnnouncements />} />
           <Route path="/management/announcements/create" element={<FacultyCreateAnnouncement />} />
           <Route path="/management/announcements/edit/:id" element={<FacultyEditAnnouncement />} />
@@ -174,7 +189,7 @@ function App() {
           <Route path="/resource/:id" element={<ResourceDetails />} />
           <Route path="/activity/:id" element={<ActivityDetails />} />
           
-          <Route path="*" element={<ManagementDashboard />} />
+          <Route path="*" element={<Navigate to="/management/dashboard" replace />} />
         </Route>
       </Routes>
     )
@@ -185,6 +200,7 @@ function App() {
     return (
       <Routes>
         <Route element={<Layout />}>
+          <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<UserManagement />} />
           <Route path="/admin/users/:id" element={<UserDetails />} />
@@ -195,8 +211,6 @@ function App() {
           <Route path="/admin/calendar" element={<CalendarManagement />} />
           <Route path="/admin/upload-data" element={<DataUpload />} />
           <Route path="/admin/settings" element={<SystemSettings />} />
-          
-          {/* Opportunities Module */}
           <Route path="/admin/opportunities" element={<AdminOpportunities />} />
           <Route path="/admin/placements/upload" element={<PlacementUpload />} />
           <Route path="/admin/placements/analytics" element={<PlacementAnalytics />} />
@@ -205,18 +219,14 @@ function App() {
           <Route path="/resource/:id" element={<ResourceDetails />} />
           <Route path="/activity/:id" element={<ActivityDetails />} />
           
-          <Route path="*" element={<AdminDashboard />} />
+          <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Route>
       </Routes>
     )
   }
 
-  // Fallback
-  return (
-    <Routes>
-      <Route path="/*" element={<LandingPage />} />
-    </Routes>
-  )
+  // Fallback - should not reach here normally
+  return <RoleBasedRedirect role={role} />
 }
 
 export default App
