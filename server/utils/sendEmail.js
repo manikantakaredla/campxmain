@@ -3,42 +3,63 @@ const nodemailer = require("nodemailer");
 const sendEmail = async (to, subject, text, html = null) => {
   try {
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.error("❌ CRITICAL ERROR: EMAIL_USER or EMAIL_PASS environment variables are missing!");
+      console.error("❌ EMAIL_USER or EMAIL_PASS is missing!");
       return false;
     }
 
+    console.log("=========================================");
+    console.log("📧 EMAIL CONFIG");
+    console.log("EMAIL_USER:", process.env.EMAIL_USER);
+    console.log("SMTP_HOST:", process.env.SMTP_HOST || "smtp.gmail.com");
+    console.log("SMTP_PORT:", process.env.SMTP_PORT || 587);
+    console.log("=========================================");
+
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || "smtp.gmail.com",
-      port: process.env.SMTP_PORT || 465,
-      secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
+        pass: process.env.EMAIL_PASS,
+      },
     });
+
+    console.log("🔍 Verifying SMTP connection...");
+
+    await transporter.verify();
+
+    console.log("✅ SMTP VERIFIED");
 
     const mailOptions = {
       from: `"CAMPX" <${process.env.EMAIL_USER}>`,
       to,
       subject,
-      text
+      text,
     };
 
     if (html) {
       mailOptions.html = html;
     }
 
-    console.log(`\n=========================================`);
+    console.log("=========================================");
     console.log(`📧 SENDING EMAIL TO: ${to}`);
     console.log(`📝 SUBJECT: ${subject}`);
     console.log(`📄 TEXT: ${text}`);
-    console.log(`=========================================\n`);
+    console.log("=========================================");
 
-    await transporter.sendMail(mailOptions);
-    console.log(`✅ Email successfully sent to ${to}`);
+    console.log("🚀 Before sendMail");
+
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log("🚀 After sendMail");
+    console.log("✅ Email Sent Successfully");
+    console.log("Message ID:", info.messageId);
+    console.log("Response:", info.response);
+
     return true;
   } catch (error) {
-    console.error("Email error:", error);
+    console.error("❌ EMAIL ERROR");
+    console.error(error);
     return false;
   }
 };
