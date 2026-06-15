@@ -14,15 +14,30 @@ exports.getSettings = async (req, res) => {
         logoUrl: "",
         maintenanceMode: false,
         facultyRegistrationEnabled: true,
-        emailDomain: "@adityauniversity.in",
-        branches: ["CSE", "ECE", "IT", "MECH", "CIVIL"],
-        sections: ["A", "B", "C", "D"]
+        emailDomain: "@adityauniversity.in"
       });
     }
     
+    const settingsObj = settings.toObject();
+    settingsObj.branches = settings.branchConfigs?.map(c => c.branch) || [];
+    
+    const allSections = new Set();
+    if (settingsObj.branchConfigs) {
+      settingsObj.branchConfigs.forEach(c => {
+        if (c.years) {
+          Object.values(c.years).forEach(sections => {
+            if (Array.isArray(sections)) {
+              sections.forEach(s => allSections.add(s));
+            }
+          });
+        }
+      });
+    }
+    settingsObj.sections = Array.from(allSections).sort();
+
     res.status(200).json({
       success: true,
-      settings
+      settings: settingsObj
     });
   } catch (error) {
     console.error("Get settings error:", error);
@@ -45,8 +60,7 @@ exports.updateSettings = async (req, res) => {
       maintenanceMode,
       facultyRegistrationEnabled,
       emailDomain,
-      branches,
-      sections
+      branchConfigs
     } = req.body;
     
     let settings = await Setting.findOne();
@@ -63,15 +77,30 @@ exports.updateSettings = async (req, res) => {
     if (maintenanceMode !== undefined) settings.maintenanceMode = maintenanceMode;
     if (facultyRegistrationEnabled !== undefined) settings.facultyRegistrationEnabled = facultyRegistrationEnabled;
     if (emailDomain !== undefined) settings.emailDomain = emailDomain;
-    if (branches !== undefined) settings.branches = branches;
-    if (sections !== undefined) settings.sections = sections;
+    if (branchConfigs !== undefined) settings.branchConfigs = branchConfigs;
     
     await settings.save();
     
+    const settingsObj = settings.toObject();
+    settingsObj.branches = settings.branchConfigs?.map(c => c.branch) || [];
+    const allSections = new Set();
+    if (settingsObj.branchConfigs) {
+      settingsObj.branchConfigs.forEach(c => {
+        if (c.years) {
+          Object.values(c.years).forEach(sections => {
+            if (Array.isArray(sections)) {
+              sections.forEach(s => allSections.add(s));
+            }
+          });
+        }
+      });
+    }
+    settingsObj.sections = Array.from(allSections).sort();
+
     res.status(200).json({
       success: true,
       message: "Settings updated successfully",
-      settings
+      settings: settingsObj
     });
   } catch (error) {
     console.error("Update settings error:", error);

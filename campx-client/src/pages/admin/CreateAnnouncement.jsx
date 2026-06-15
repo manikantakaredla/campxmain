@@ -30,6 +30,7 @@ const CreateAnnouncement = () => {
     attachment: null,
     targetBranches: [],
     sectionBranch: '',
+    sectionYear: '',
     targetSections: [],
     targetSpecificStudents: [] // Array of student objects {id, name, rollNumber}
   })
@@ -142,6 +143,7 @@ const CreateAnnouncement = () => {
       const payload = {
         audience: audiencePayload,
         targetBranches: formData.audienceType === 'branch_wise' ? formData.targetBranches : (formData.audienceType === 'section_wise' ? [formData.sectionBranch] : []),
+        targetYears: formData.audienceType === 'section_wise' && formData.sectionYear ? [parseInt(formData.sectionYear)] : [],
         targetSections: formData.audienceType === 'section_wise' ? formData.targetSections : [],
         targetSpecificStudents: formData.audienceType === 'individual' ? formData.targetSpecificStudents.map(s => s._id) : []
       }
@@ -215,6 +217,9 @@ const CreateAnnouncement = () => {
         submitData.append('targetBranches', JSON.stringify(formData.targetBranches))
       } else if (formData.audienceType === 'section_wise') {
         submitData.append('targetBranches', JSON.stringify([formData.sectionBranch]))
+        if (formData.sectionYear) {
+          submitData.append('targetYears', JSON.stringify([parseInt(formData.sectionYear)]))
+        }
         submitData.append('targetSections', JSON.stringify(formData.targetSections))
       } else if (formData.audienceType === 'individual') {
         submitData.append('targetSpecificStudents', JSON.stringify(formData.targetSpecificStudents.map(s => s._id)))
@@ -338,21 +343,36 @@ const CreateAnnouncement = () => {
             )}
             
             {formData.audienceType === 'section_wise' && (
-              <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-blue-900 mb-2">Select Branch</label>
-                  <select name="sectionBranch" value={formData.sectionBranch} onChange={handleChange} className="w-full px-4 py-2 border border-blue-200 rounded-lg bg-white">
+                  <select name="sectionBranch" value={formData.sectionBranch} onChange={(e) => { handleChange(e); setFormData(p => ({...p, sectionBranch: e.target.value, sectionYear: '', targetSections: []})) }} className="w-full px-4 py-2 border border-blue-200 rounded-lg bg-white">
                     <option value="">-- Choose Branch --</option>
-                    {settings?.branches?.map(b => (
+                    {settings?.branchConfigs?.map(c => c.branch).map(b => (
                       <option key={b} value={b}>{b}</option>
                     ))}
                   </select>
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-blue-900 mb-2">Select Year</label>
+                  <select name="sectionYear" value={formData.sectionYear} onChange={(e) => { handleChange(e); setFormData(p => ({...p, sectionYear: e.target.value, targetSections: []})) }} disabled={!formData.sectionBranch} className="w-full px-4 py-2 border border-blue-200 rounded-lg bg-white disabled:bg-gray-100 disabled:text-gray-400">
+                    <option value="">-- Choose Year --</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                  </select>
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-blue-900 mb-2">Select Sections (Multi-select)</label>
-                  <select multiple name="targetSections" value={formData.targetSections} onChange={handleChange} disabled={!formData.sectionBranch} className="w-full px-4 py-2 border border-blue-200 rounded-lg bg-white h-32 disabled:bg-gray-100 disabled:text-gray-400">
-                    {settings?.sections?.map(s => (
-                      <option key={s} value={s} className="p-2 hover:bg-blue-50">{s}</option>
+                  <select multiple name="targetSections" value={formData.targetSections} onChange={handleChange} disabled={!formData.sectionYear} className="w-full px-4 py-2 border border-blue-200 rounded-lg bg-white h-32 disabled:bg-gray-100 disabled:text-gray-400">
+                    {(() => {
+                      if (!formData.sectionBranch || !formData.sectionYear) return [];
+                      const config = settings?.branchConfigs?.find(c => c.branch === formData.sectionBranch);
+                      if (!config || !config.years || !config.years[formData.sectionYear]) return [];
+                      return config.years[formData.sectionYear];
+                    })().map(s => (
+                      <option key={s} value={s} className="p-2 hover:bg-blue-50">Section {s}</option>
                     ))}
                   </select>
                 </div>

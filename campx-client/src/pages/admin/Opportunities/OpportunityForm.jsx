@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { createOpportunity, updateOpportunity } from '../../../services/opportunityService';
 import toast from 'react-hot-toast';
 import { X, Save } from 'lucide-react';
+import { useSettings } from '../../../hooks/useSettings';
 
 const OpportunityForm = ({ isOpen, onClose, opportunity, onRefresh }) => {
+  const { settings } = useSettings();
   const [formData, setFormData] = useState({
     title: '', description: '', type: 'Placement Drive', companyName: '',
     package: '', location: '', registrationDeadline: '', eventDate: '',
@@ -127,7 +129,7 @@ const OpportunityForm = ({ isOpen, onClose, opportunity, onRefresh }) => {
               <div className="mb-4">
                 <label className="block text-xs font-medium text-gray-700 mb-2">Allowed Branches</label>
                 <div className="flex flex-wrap gap-2">
-                  {['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'AIML', 'DS'].map(branch => (
+                  {(settings?.branches || []).map(branch => (
                     <label key={branch} className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded border border-gray-300 cursor-pointer hover:bg-blue-50">
                       <input 
                         type="checkbox" 

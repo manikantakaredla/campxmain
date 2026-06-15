@@ -23,6 +23,26 @@ const AddUsers = () => {
     designation: ''
   })
 
+  const departments = settings?.branchConfigs 
+    ? settings.branchConfigs.map(c => c.branch) 
+    : (settings?.branches || []);
+
+  const getAvailableSections = () => {
+    if (!settings?.branchConfigs || !formData.branch) {
+      return settings?.sections || [];
+    }
+    const config = settings.branchConfigs.find(c => c.branch === formData.branch);
+    if (!config || !config.years) return [];
+    
+    const allSecs = new Set();
+    Object.values(config.years).forEach(secs => {
+      if (Array.isArray(secs)) secs.forEach(s => allSecs.add(s));
+    });
+    return Array.from(allSecs).sort();
+  };
+
+  const availableSections = getAvailableSections();
+
   // Bulk Upload state
   const fileInputRef = useRef(null)
   const [selectedFile, setSelectedFile] = useState(null)
@@ -157,14 +177,14 @@ const AddUsers = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
                       <select name="branch" value={formData.branch} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg">
                         <option value="">Select Branch</option>
-                        {settings?.branches?.map(b => <option key={b} value={b}>{b}</option>)}
+                        {departments.map(b => <option key={b} value={b}>{b}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
                       <select name="section" value={formData.section} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg">
                         <option value="">Select Section</option>
-                        {settings?.sections?.map(s => <option key={s} value={s}>{s}</option>)}
+                        {availableSections.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                   </>
@@ -180,7 +200,7 @@ const AddUsers = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
                       <select name="department" value={formData.department} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg">
                         <option value="">Select Department</option>
-                        {settings?.branches?.map(b => <option key={b} value={b}>{b}</option>)}
+                        {departments.map(b => <option key={b} value={b}>{b}</option>)}
                       </select>
                     </div>
                     <div>

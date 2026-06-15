@@ -34,8 +34,27 @@ const UserManagement = () => {
   
   const itemsPerPage = 10
 
-  const departments = (settings?.branches || [])
-  const sections = (settings?.sections || [])
+  const departments = settings?.branchConfigs 
+    ? settings.branchConfigs.map(c => c.branch) 
+    : (settings?.branches || []);
+
+  let currentSections = [];
+  if (settings?.branchConfigs && selectedDept) {
+    const config = settings.branchConfigs.find(c => c.branch === selectedDept);
+    if (config && config.years) {
+       if (yearFilter && config.years[yearFilter]) {
+          currentSections = config.years[yearFilter];
+       } else {
+          const allSecs = new Set();
+          Object.values(config.years).forEach(secs => {
+            if (Array.isArray(secs)) secs.forEach(s => allSecs.add(s));
+          });
+          currentSections = Array.from(allSecs).sort();
+       }
+    }
+  } else {
+    currentSections = settings?.sections || [];
+  }
   
   const roleCards = [
     { id: 'admin', label: 'Admins', icon: Shield, color: 'text-gray-700 bg-gray-100', border: 'border-gray-200' },
@@ -61,13 +80,9 @@ const UserManagement = () => {
       
       if (viewState === 'students') {
         params.role = 'student'
-        params.branch = selectedDept
-        if (selectedSection) {
-          params.section = selectedSection
-        }
-        if (yearFilter) {
-          params.currentYear = yearFilter
-        }
+        if (selectedDept) params.branch = selectedDept
+        if (selectedSection) params.section = selectedSection
+        if (yearFilter) params.currentYear = yearFilter
       } else if (viewState === 'role_users') {
         params.role = selectedRole
       }
@@ -129,11 +144,18 @@ const UserManagement = () => {
   const renderBreadcrumbs = () => {
     return (
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        <button onClick={() => setViewState('main')} className="hover:text-blue-600 font-medium">Departments</button>
+        <button onClick={() => {
+          setViewState('main')
+          setSelectedDept(null)
+          setSelectedSection(null)
+        }} className="hover:text-blue-600 font-medium">Departments</button>
         {selectedDept && (
           <>
             <span>/</span>
-            <button onClick={() => setViewState('sections')} className="hover:text-blue-600 font-medium">{selectedDept}</button>
+            <button onClick={() => {
+              setViewState('sections')
+              setSelectedSection(null)
+            }} className="hover:text-blue-600 font-medium">{selectedDept}</button>
           </>
         )}
         {selectedSection && viewState === 'students' && (
@@ -154,201 +176,101 @@ const UserManagement = () => {
 
   // --- Views --- //
   
-  if (viewState === 'main') {
-    return (
-      <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
-          <p className="text-gray-500 mt-1">Manage users across departments and roles.</p>
-        </div>
-        
-        <h2 className="text-lg font-semibold text-gray-700 mb-4">Roles</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {roleCards.map(role => (
-            <div 
-              key={role.id}
-              onClick={() => {
-                setSelectedRole(role.id)
-                setViewState('role_users')
-                setCurrentPage(1)
-                setSearchTerm('')
-              }}
-              className={`p-6 bg-white rounded-xl shadow-sm border ${role.border} hover:shadow-md cursor-pointer transition-all flex items-center gap-4`}
-            >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${role.color}`}>
-                <role.icon className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-800">{role.label}</h3>
-                <p className="text-sm text-gray-500">View all {role.label.toLowerCase()}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <h2 className="text-lg font-semibold text-gray-700 mb-4">Departments</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {departments.map(dept => (
-            <div 
-              key={dept}
-              onClick={() => {
-                setSelectedDept(dept)
-                setViewState('sections')
-              }}
-              className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-300 cursor-pointer transition-all text-center group"
-            >
-              <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                <BookOpen className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800">{dept}</h3>
-              <p className="text-sm text-gray-500 mt-1">View Sections</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
+  const handleBackClick = () => {
+    if (viewState === 'students') {
+      if (selectedSection) {
+        setViewState('sections')
+      } else if (selectedDept) {
+        setViewState('sections')
+      } else {
+        setViewState('main')
+      }
+    } else if (viewState === 'sections' || viewState === 'role_users') {
+      setViewState('main')
+      setSelectedDept(null)
+      setSelectedRole(null)
+    }
   }
 
-  if (viewState === 'sections') {
-    return (
-      <div className="p-6">
-        {renderBreadcrumbs()}
-        <div className="mb-6 flex items-center gap-4">
-          <button onClick={() => setViewState('main')} className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200">
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">{selectedDept} Sections</h1>
-            <p className="text-gray-500 mt-1">Select a section to view students.</p>
-          </div>
-        </div>
-
-        <div className="mb-6 flex flex-col md:flex-row gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder={`Search student in ${selectedDept}...`}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && searchTerm) {
-                  setSelectedSection(null)
-                  setViewState('students')
-                  setCurrentPage(1)
-                }
-              }}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <select
-            value={yearFilter}
-            onChange={(e) => {
-              setYearFilter(e.target.value)
-              if (e.target.value) {
-                setSelectedSection(null)
-                setViewState('students')
-                setCurrentPage(1)
-              }
-            }}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Filter by Year</option>
-            <option value="1">1st Year</option>
-            <option value="2">2nd Year</option>
-            <option value="3">3rd Year</option>
-            <option value="4">4th Year</option>
-          </select>
-          <button
-            onClick={() => {
-              setSelectedSection(null)
-              setViewState('students')
-              setCurrentPage(1)
-            }}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium flex items-center justify-center gap-2"
-          >
-            <Search className="w-4 h-4" /> Search
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {sections.map(sec => (
-            <div 
-              key={sec}
-              onClick={() => {
-                setSelectedSection(sec)
-                setViewState('students')
-                setCurrentPage(1)
-                setSearchTerm('')
-              }}
-              className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-green-300 cursor-pointer transition-all text-center group"
-            >
-              <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                <Layers className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800">Section {sec}</h3>
-              <p className="text-sm text-gray-500 mt-1">View Students</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  // Common Table View for Students & Roles
   return (
     <div className="p-6">
-      {renderBreadcrumbs()}
+      {viewState !== 'main' && renderBreadcrumbs()}
+      
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <button 
-            onClick={() => {
-              if (viewState === 'students') setViewState('sections')
-              else setViewState('main')
-            }} 
-            className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
-          </button>
+          {viewState !== 'main' && (
+            <button 
+              onClick={handleBackClick}
+              className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
+            </button>
+          )}
           <div>
             <h1 className="text-2xl font-bold text-gray-800">
-              {viewState === 'students' ? (selectedSection ? `${selectedDept} - Section ${selectedSection} Students` : `${selectedDept} - All Students`) : `${selectedRole.toUpperCase()} Users`}
+              {viewState === 'main' && "User Management"}
+              {viewState === 'sections' && `${selectedDept} Sections`}
+              {viewState === 'students' && (selectedSection ? `${selectedDept} - Section ${selectedSection} Students` : selectedDept ? `${selectedDept} - All Students` : "All Students")}
+              {viewState === 'role_users' && `${selectedRole?.toUpperCase()} Users`}
             </h1>
-            <p className="text-gray-500 mt-1">Manage users in this category.</p>
+            <p className="text-gray-500 mt-1">
+              {viewState === 'main' && "Manage users across departments and roles."}
+              {viewState === 'sections' && "Select a section to view students."}
+              {(viewState === 'students' || viewState === 'role_users') && "Manage users in this category."}
+            </p>
           </div>
         </div>
-        <button
-          onClick={fetchUsers}
-          className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all"
-        >
-          <RefreshCw className="w-4 h-4" /> Refresh
-        </button>
+        
+        {(viewState === 'students' || viewState === 'role_users') && (
+          <button
+            onClick={fetchUsers}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all"
+          >
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </button>
+        )}
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-col md:flex-row gap-4">
+      <div className="mb-6 flex flex-col md:flex-row gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
             type="text"
-            placeholder="Search by name, email, roll number..."
+            placeholder={
+              viewState === 'role_users' ? `Search ${selectedRole}s by name, email...` :
+              selectedSection ? `Search student in ${selectedDept} - Sec ${selectedSection}...` :
+              selectedDept ? `Search student in ${selectedDept}...` :
+              "Search all students..."
+            }
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && searchTerm) {
+                if (viewState !== 'role_users') setViewState('students');
+                setCurrentPage(1);
+              }
+            }}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+        
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Status</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
-        {viewState === 'students' && (
+
+        {viewState !== 'role_users' && (
           <select
             value={yearFilter}
-            onChange={(e) => { setYearFilter(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => {
+              setYearFilter(e.target.value)
+              setCurrentPage(1)
+            }}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All Years</option>
@@ -358,119 +280,211 @@ const UserManagement = () => {
             <option value="4">4th Year</option>
           </select>
         )}
+        
+        <button
+          onClick={() => {
+            if (viewState !== 'role_users') setViewState('students');
+            setCurrentPage(1);
+          }}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium flex items-center justify-center gap-2"
+        >
+          <Search className="w-4 h-4" /> Search
+        </button>
+
         {(searchTerm || statusFilter || yearFilter) && (
           <button
             onClick={() => { setSearchTerm(''); setStatusFilter(''); setYearFilter(''); setCurrentPage(1); }}
             className="px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-all"
           >
-            Clear Filters
+            Clear
           </button>
         )}
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
-        {loading ? (
-          <div className="flex items-center justify-center p-12">
-            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-100">
-                  <tr>
-                    <th className="text-left p-4 font-semibold text-gray-600">User</th>
-                    <th className="text-left p-4 font-semibold text-gray-600">Contact</th>
-                    <th className="text-left p-4 font-semibold text-gray-600">Role</th>
-                    <th className="text-left p-4 font-semibold text-gray-600">Status</th>
-                    <th className="text-left p-4 font-semibold text-gray-600">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" className="p-8 text-center text-gray-500">
-                        <Users className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                        No users found
-                      </td>
-                    </tr>
-                  ) : (
-                    users.map((user) => (
-                      <tr key={user._id} className="border-t border-gray-100 hover:bg-gray-50 transition-all">
-                        <td className="p-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-indigo-100 text-indigo-700 font-bold rounded-full flex items-center justify-center">
-                              {user.name?.charAt(0) || 'U'}
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-800">{user.name}</p>
-                              <p className="text-xs text-gray-400">
-                                {user.rollNumber || user.employeeId || 'N/A'}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <p className="text-sm text-gray-600">{user.email}</p>
-                          <p className="text-xs text-gray-400">{user.phoneNumber || 'No phone'}</p>
-                        </td>
-                        <td className="p-4">
-                          <span className="inline-flex text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex flex-col gap-1 items-start">
-                            {user.isActive ? (
-                              <span className="inline-flex text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full"><CheckCircle className="w-3 h-3 mr-1"/> Active</span>
-                            ) : (
-                              <span className="inline-flex text-xs px-2 py-1 bg-red-100 text-red-700 rounded-full"><XCircle className="w-3 h-3 mr-1"/> Inactive</span>
-                            )}
-                            {user.role !== 'admin' && (
-                              <button onClick={() => toggleUserStatus(user)} className="text-xs text-blue-600 hover:underline">
-                                {user.isActive ? 'Deactivate' : 'Activate'}
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex gap-2">
-                            <Link to={`/admin/users/${user._id}`} className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors" title="View Details">
-                              <Eye className="w-4 h-4" />
-                            </Link>
-                            <button onClick={() => { setSelectedUser(user); setShowResetModal(user); }} className="p-1.5 text-gray-400 hover:text-orange-600 transition-colors" title="Reset Password">
-                              <RefreshCw className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => { setSelectedUser(user); setNewRole(user.role); setShowRoleModal(user); }} className="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Change Role">
-                              <Shield className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => setShowDeleteModal(user)} className="p-1.5 text-gray-400 hover:text-red-600 transition-colors" title="Delete User">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-                <div className="text-sm text-gray-500">
-                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalUsers)} of {totalUsers} users
+      {viewState === 'main' && (
+        <>
+          <h2 className="text-lg font-semibold text-gray-700 mb-4">Roles</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {roleCards.map(role => (
+              <div 
+                key={role.id}
+                onClick={() => {
+                  setSelectedRole(role.id)
+                  setViewState('role_users')
+                  setCurrentPage(1)
+                  setSearchTerm('')
+                }}
+                className={`p-6 bg-white rounded-xl shadow-sm border ${role.border} hover:shadow-md cursor-pointer transition-all flex items-center gap-4`}
+              >
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${role.color}`}>
+                  <role.icon className="w-6 h-6" />
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"><ChevronLeft className="w-4 h-4" /></button>
-                  <span className="px-4 py-2 text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
-                  <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"><ChevronRight className="w-4 h-4" /></button>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800">{role.label}</h3>
+                  <p className="text-sm text-gray-500">View all {role.label.toLowerCase()}</p>
                 </div>
               </div>
-            )}
-          </>
-        )}
-      </div>
+            ))}
+          </div>
+
+          <h2 className="text-lg font-semibold text-gray-700 mb-4">Departments</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {departments.map(dept => (
+              <div 
+                key={dept}
+                onClick={() => {
+                  setSelectedDept(dept)
+                  setSelectedSection(null)
+                  setViewState('sections')
+                }}
+                className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-300 cursor-pointer transition-all text-center group"
+              >
+                <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800">{dept}</h3>
+                <p className="text-sm text-gray-500 mt-1">View Sections</p>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {viewState === 'sections' && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {currentSections.length === 0 ? (
+            <div className="col-span-full p-8 text-center text-gray-500 bg-white rounded-xl shadow-sm border border-gray-100">
+              <Layers className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+              <p>No sections configured for this branch {yearFilter ? `and year ${yearFilter}` : ''}.</p>
+            </div>
+          ) : (
+            currentSections.map(sec => (
+              <div 
+                key={sec}
+                onClick={() => {
+                  setSelectedSection(sec)
+                  setViewState('students')
+                  setCurrentPage(1)
+                  setSearchTerm('')
+                }}
+                className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-green-300 cursor-pointer transition-all text-center group"
+              >
+                <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                  <Layers className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800">Section {sec}</h3>
+                <p className="text-sm text-gray-500 mt-1">View Students</p>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {(viewState === 'students' || viewState === 'role_users') && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+          {loading ? (
+            <div className="flex items-center justify-center p-12">
+              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                      <th className="text-left p-4 font-semibold text-gray-600">User</th>
+                      <th className="text-left p-4 font-semibold text-gray-600">Contact</th>
+                      <th className="text-left p-4 font-semibold text-gray-600">Role</th>
+                      <th className="text-left p-4 font-semibold text-gray-600">Status</th>
+                      <th className="text-left p-4 font-semibold text-gray-600">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="p-8 text-center text-gray-500">
+                          <Users className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                          No users found
+                        </td>
+                      </tr>
+                    ) : (
+                      users.map((user) => (
+                        <tr key={user._id} className="border-t border-gray-100 hover:bg-gray-50 transition-all">
+                          <td className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-indigo-100 text-indigo-700 font-bold rounded-full flex items-center justify-center">
+                                {user.name?.charAt(0) || 'U'}
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-800">{user.name}</p>
+                                <p className="text-xs text-gray-400">
+                                  {user.rollNumber || user.employeeId || 'N/A'}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <p className="text-sm text-gray-600">{user.email}</p>
+                            <p className="text-xs text-gray-400">{user.phoneNumber || 'No phone'}</p>
+                          </td>
+                          <td className="p-4">
+                            <span className="inline-flex text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                              {user.role}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex flex-col gap-1 items-start">
+                              {user.isActive ? (
+                                <span className="inline-flex text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full"><CheckCircle className="w-3 h-3 mr-1"/> Active</span>
+                              ) : (
+                                <span className="inline-flex text-xs px-2 py-1 bg-red-100 text-red-700 rounded-full"><XCircle className="w-3 h-3 mr-1"/> Inactive</span>
+                              )}
+                              {user.role !== 'admin' && (
+                                <button onClick={() => toggleUserStatus(user)} className="text-xs text-blue-600 hover:underline">
+                                  {user.isActive ? 'Deactivate' : 'Activate'}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex gap-2">
+                              <Link to={`/admin/users/${user._id}`} className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors" title="View Details">
+                                <Eye className="w-4 h-4" />
+                              </Link>
+                              <button onClick={() => { setShowResetModal(user); }} className="p-1.5 text-gray-400 hover:text-orange-600 transition-colors" title="Reset Password">
+                                <RefreshCw className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => { setNewRole(user.role); setShowRoleModal(user); }} className="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Change Role">
+                                <Shield className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => setShowDeleteModal(user)} className="p-1.5 text-gray-400 hover:text-red-600 transition-colors" title="Delete User">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+                  <div className="text-sm text-gray-500">
+                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalUsers)} of {totalUsers} users
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"><ChevronLeft className="w-4 h-4" /></button>
+                    <span className="px-4 py-2 text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
+                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"><ChevronRight className="w-4 h-4" /></button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (

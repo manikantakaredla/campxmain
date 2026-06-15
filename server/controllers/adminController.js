@@ -4,6 +4,8 @@ const Announcement = require("../models/Announcement");
 const Resource = require("../models/Resource");
 const ClassStudentAssignment = require("../models/ClassStudentAssignment");
 const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
+const Setting = require("../models/Setting");
+const calculateAcademicInfo = require("../utils/academicCalculator");
 const bcrypt = require("bcryptjs");
 
 // ==================== DASHBOARD STATISTICS ====================
@@ -296,6 +298,33 @@ exports.createUser = async (req, res) => {
       userData.rollNumber = rollNumber ? rollNumber.toUpperCase() : undefined;
       userData.branch = branch;
       userData.section = section;
+      
+      const settings = await Setting.findOne();
+      if (settings && settings.branchConfigs && settings.branchConfigs.length > 0) {
+        const branchConfig = settings.branchConfigs.find(c => c.branch === userData.branch);
+        if (!branchConfig) {
+          return res.status(400).json({ success: false, message: `Branch ${userData.branch} is not configured in Settings` });
+        }
+        
+        let calculatedYear;
+        if (userData.rollNumber) {
+          const academicInfo = calculateAcademicInfo(userData.rollNumber);
+          calculatedYear = academicInfo.currentYear;
+        }
+        
+        let allowedSections = [];
+        if (calculatedYear && branchConfig.years && branchConfig.years[calculatedYear.toString()]) {
+          allowedSections = branchConfig.years[calculatedYear.toString()];
+        } else if (branchConfig.years) {
+          Object.values(branchConfig.years).forEach(secs => {
+            if (Array.isArray(secs)) allowedSections.push(...secs);
+          });
+        }
+        
+        if (!allowedSections.includes(userData.section)) {
+          return res.status(400).json({ success: false, message: `Please add section ${userData.section} in branch ${userData.branch}${calculatedYear ? ` for year ${calculatedYear}` : ''} in Admin Settings` });
+        }
+      }
     } else if (["faculty", "hod", "dean", "principal", "admin"].includes(role)) {
       userData.employeeId = employeeId ? employeeId.toUpperCase() : undefined;
       userData.department = department;
@@ -323,6 +352,7 @@ exports.bulkCreateUsers = async (req, res) => {
     }
     
     const data = await parseFile(req.file.buffer, req.file.mimetype, req.file.originalname);
+    const settings = await Setting.findOne();
     const errors = [];
     let successCount = 0;
     
@@ -355,6 +385,32 @@ exports.bulkCreateUsers = async (req, res) => {
           userData.rollNumber = row.rollNumber ? row.rollNumber.toUpperCase() : undefined;
           userData.branch = row.branch;
           userData.section = row.section;
+          
+          if (settings && settings.branchConfigs && settings.branchConfigs.length > 0) {
+            const branchConfig = settings.branchConfigs.find(c => c.branch === userData.branch);
+            if (!branchConfig) {
+              throw new Error(`Branch ${userData.branch} is not configured in Settings`);
+            }
+            
+            let calculatedYear;
+            if (userData.rollNumber) {
+              const academicInfo = calculateAcademicInfo(userData.rollNumber);
+              calculatedYear = academicInfo.currentYear;
+            }
+            
+            let allowedSections = [];
+            if (calculatedYear && branchConfig.years && branchConfig.years[calculatedYear.toString()]) {
+              allowedSections = branchConfig.years[calculatedYear.toString()];
+            } else if (branchConfig.years) {
+              Object.values(branchConfig.years).forEach(secs => {
+                if (Array.isArray(secs)) allowedSections.push(...secs);
+              });
+            }
+            
+            if (!allowedSections.includes(userData.section)) {
+              throw new Error(`Please add section ${userData.section} in branch ${userData.branch}${calculatedYear ? ` for year ${calculatedYear}` : ''}`);
+            }
+          }
         } else if (["faculty", "hod", "dean", "principal", "admin"].includes(userData.role)) {
           userData.employeeId = row.employeeId ? row.employeeId.toUpperCase() : undefined;
           userData.department = row.department;

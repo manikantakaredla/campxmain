@@ -1,9 +1,10 @@
 import React from 'react';
-
-const branches = ["CSE", "ECE", "EEE", "MECH", "CIVIL", "IT", "AI&DS", "CSBS"];
-const sections = ["A", "B", "C", "D"];
+import { useSettings } from '../../../hooks/useSettings';
 
 const BranchSectionSelect = ({ value, onChange }) => {
+  const { settings } = useSettings();
+  const branches = settings?.branchConfigs?.map(c => c.branch) || [];
+  const sections = settings?.sections || [];
   const handleBranchToggle = (branch) => {
     const exists = value.find(v => v.branch === branch);
     if (exists) {
