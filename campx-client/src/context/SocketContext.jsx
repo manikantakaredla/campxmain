@@ -10,7 +10,7 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      const socketInstance = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000')
+      const socketInstance = io(import.meta.env.VITE_SOCKET_URL || 'https://campxserver.onrender.com')
       
       socketInstance.on('connect', () => {
         console.log('Socket connected')
