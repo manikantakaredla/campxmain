@@ -21,8 +21,8 @@ const validateStudentRow = (row, index) => {
   
   if (!row.email || row.email.trim() === "") {
     errors.push({ row: index + 2, identifier: row.roll, message: "Email is required" });
-  } else if (!row.email.endsWith("@adityauniversity.in")) {
-    errors.push({ row: index + 2, identifier: row.roll, message: "Email must end with @adityauniversity.in" });
+  // } else if (!row.email.endsWith("@adityauniversity.in")) {
+  //   errors.push({ row: index + 2, identifier: row.roll, message: "Email must end with @adityauniversity.in" });
   }
   
   if (!row.course || row.course.trim() === "") {

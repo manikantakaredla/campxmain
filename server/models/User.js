@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
     unique: true,  // This creates index automatically
     lowercase: true,
     trim: true,
-    match: [/^[a-zA-Z0-9._%+-]+@adityauniversity\.in$/, "Please use a valid @adityauniversity.in email"]
+    // match: [/^[a-zA-Z0-9._%+-]+@adityauniversity\.in$/, "Please use a valid @adityauniversity.in email"]
   },
   password: {
     type: String,
