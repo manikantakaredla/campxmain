@@ -66,6 +66,9 @@ exports.getAllUsers = async (req, res) => {
     if (req.query.section) {
       query.section = req.query.section;
     }
+    if (req.query.currentYear) {
+      query.currentYear = parseInt(req.query.currentYear);
+    }
     
     if (search) {
       query.$or = [

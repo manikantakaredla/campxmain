@@ -21,6 +21,7 @@ const UserManagement = () => {
   const { settings } = useSettings()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [yearFilter, setYearFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalUsers, setTotalUsers] = useState(0)
@@ -46,7 +47,7 @@ const UserManagement = () => {
     if (viewState === 'students' || viewState === 'role_users') {
       fetchUsers()
     }
-  }, [viewState, currentPage, searchTerm, statusFilter])
+  }, [viewState, currentPage, searchTerm, statusFilter, yearFilter, selectedSection])
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -61,7 +62,12 @@ const UserManagement = () => {
       if (viewState === 'students') {
         params.role = 'student'
         params.branch = selectedDept
-        params.section = selectedSection
+        if (selectedSection) {
+          params.section = selectedSection
+        }
+        if (yearFilter) {
+          params.currentYear = yearFilter
+        }
       } else if (viewState === 'role_users') {
         params.role = selectedRole
       }
@@ -217,6 +223,54 @@ const UserManagement = () => {
           </div>
         </div>
 
+        <div className="mb-6 flex flex-col md:flex-row gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder={`Search student in ${selectedDept}...`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchTerm) {
+                  setSelectedSection(null)
+                  setViewState('students')
+                  setCurrentPage(1)
+                }
+              }}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <select
+            value={yearFilter}
+            onChange={(e) => {
+              setYearFilter(e.target.value)
+              if (e.target.value) {
+                setSelectedSection(null)
+                setViewState('students')
+                setCurrentPage(1)
+              }
+            }}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Filter by Year</option>
+            <option value="1">1st Year</option>
+            <option value="2">2nd Year</option>
+            <option value="3">3rd Year</option>
+            <option value="4">4th Year</option>
+          </select>
+          <button
+            onClick={() => {
+              setSelectedSection(null)
+              setViewState('students')
+              setCurrentPage(1)
+            }}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium flex items-center justify-center gap-2"
+          >
+            <Search className="w-4 h-4" /> Search
+          </button>
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {sections.map(sec => (
             <div 
@@ -258,7 +312,7 @@ const UserManagement = () => {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-800">
-              {viewState === 'students' ? `${selectedDept} - Section ${selectedSection} Students` : `${selectedRole.toUpperCase()} Users`}
+              {viewState === 'students' ? (selectedSection ? `${selectedDept} - Section ${selectedSection} Students` : `${selectedDept} - All Students`) : `${selectedRole.toUpperCase()} Users`}
             </h1>
             <p className="text-gray-500 mt-1">Manage users in this category.</p>
           </div>
@@ -291,9 +345,22 @@ const UserManagement = () => {
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
-        {(searchTerm || statusFilter) && (
+        {viewState === 'students' && (
+          <select
+            value={yearFilter}
+            onChange={(e) => { setYearFilter(e.target.value); setCurrentPage(1); }}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All Years</option>
+            <option value="1">1st Year</option>
+            <option value="2">2nd Year</option>
+            <option value="3">3rd Year</option>
+            <option value="4">4th Year</option>
+          </select>
+        )}
+        {(searchTerm || statusFilter || yearFilter) && (
           <button
-            onClick={() => { setSearchTerm(''); setStatusFilter(''); setCurrentPage(1); }}
+            onClick={() => { setSearchTerm(''); setStatusFilter(''); setYearFilter(''); setCurrentPage(1); }}
             className="px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-all"
           >
             Clear Filters
