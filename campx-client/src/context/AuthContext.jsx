@@ -8,28 +8,47 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
 
+  const clearStorage = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('user')
+  }
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        const token =
+          localStorage.getItem('token') ||
+          sessionStorage.getItem('token')
+
+        if (!token) {
+          setLoading(false)
+          return
+        }
+
         const response = await authService.getMe()
+
         if (response.success && response.user) {
           setUser(response.user)
           setIsAuthenticated(true)
         } else {
-          localStorage.removeItem('token')
-          localStorage.removeItem('user')
+          clearStorage()
         }
       } catch (error) {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
+        console.error('Auth check failed:', error)
+        clearStorage()
       } finally {
         setLoading(false)
       }
     }
+
     checkAuth()
   }, [])
 
   const login = (userData, token, rememberMe = false) => {
+    clearStorage()
+
     if (rememberMe) {
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(userData))
@@ -37,6 +56,7 @@ export const AuthProvider = ({ children }) => {
       sessionStorage.setItem('token', token)
       sessionStorage.setItem('user', JSON.stringify(userData))
     }
+
     setUser(userData)
     setIsAuthenticated(true)
   }
@@ -44,24 +64,38 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authService.logout()
-    } catch (e) {
-      // ignore
+    } catch (error) {
+      console.error(error)
     }
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+
+    clearStorage()
     setUser(null)
     setIsAuthenticated(false)
   }
 
   const updateUser = (updatedUser) => {
     setUser(updatedUser)
+
     if (localStorage.getItem('user')) {
       localStorage.setItem('user', JSON.stringify(updatedUser))
+    }
+
+    if (sessionStorage.getItem('user')) {
+      sessionStorage.setItem('user', JSON.stringify(updatedUser))
     }
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout, updateUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        loading,
+        login,
+        logout,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

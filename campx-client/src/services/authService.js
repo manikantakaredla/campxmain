@@ -57,6 +57,8 @@ export const authService = {
   },
   
   getStoredToken: () => {
-    return localStorage.getItem('token')
+    const token =
+  localStorage.getItem('token') ||
+  sessionStorage.getItem('token')
   },
 }
