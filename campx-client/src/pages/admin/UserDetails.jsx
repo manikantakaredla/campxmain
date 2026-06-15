@@ -6,7 +6,7 @@ import {
   CheckCircle, XCircle, Shield, Lock, BookOpen, Award,
   CalendarDays, MapPin, Hash
 } from 'lucide-react'
-import { Loader } from '../../components/Common/Loader'
+import { Loader } from '../../components/common/Loader'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 

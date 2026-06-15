@@ -5,7 +5,7 @@ import {
   Users, GraduationCap, Calendar, UserCheck, UserPlus,
   ChevronRight
 } from 'lucide-react'
-import { Loader } from '../../components/Common/Loader'
+import { Loader } from '../../components/common/Loader'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 

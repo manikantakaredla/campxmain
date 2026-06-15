@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { calendarService } from '../../services/calendarService'
-import { Loader } from '../../components/Common/Loader'
+import { Loader } from '../../components/common/Loader'
 import { 
   Calendar, ChevronLeft, ChevronRight, MapPin, Clock, 
   GraduationCap, Briefcase, Code, BookOpen, X,

@@ -4,7 +4,7 @@ import {
   ArrowLeft, Mail, Phone, GraduationCap, BookOpen, 
   Calendar, UserCheck, UserPlus, Building
 } from 'lucide-react'
-import { Loader } from '../../components/Common/Loader'
+import { Loader } from '../../components/common/Loader'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 

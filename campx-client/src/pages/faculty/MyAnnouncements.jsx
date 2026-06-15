@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useSettings } from '../../hooks/useSettings'
 import { announcementService } from '../../services/announcementService'
-import { SearchBar } from '../../components/Common/SearchBar'
-import { Pagination } from '../../components/Common/Pagination'
-import { Loader } from '../../components/Common/Loader'
-import { EmptyState } from '../../components/Common/EmptyState'
+import { SearchBar } from '../../components/common/SearchBar'
+import { Pagination } from '../../components/common/Pagination'
+import { Loader } from '../../components/common/Loader'
+import { EmptyState } from '../../components/common/EmptyState'
 import { 
   Megaphone, Plus, Edit, Trash2, Eye, 
   MapPin, X

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { announcementService } from '../../services/announcementService'
-import { Pagination } from '../../components/Common/Pagination'
-import { Loader } from '../../components/Common/Loader'
+import { Pagination } from '../../components/common/Pagination'
+import { Loader } from '../../components/common/Loader'
 import { Search, Filter, X, Calendar, MapPin, ChevronRight, Bell, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 

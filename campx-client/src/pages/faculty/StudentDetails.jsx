@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { facultyService } from '../../services/facultyService'
-import { Loader } from '../../components/Common/Loader'
+import { Loader } from '../../components/common/Loader'
 import { User, Mail, Phone, GraduationCap, BookOpen, Calendar, ArrowLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
 
