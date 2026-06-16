@@ -64,27 +64,22 @@ exports.updateSettings = async (req, res) => {
     } = req.body;
     
     let settings = await Setting.findOne();
+    
     if (!settings) {
       settings = new Setting();
-      await settings.save();
     }
     
-    const updateData = {};
-    if (platformName !== undefined) updateData.platformName = platformName;
-    if (supportEmail !== undefined) updateData.supportEmail = supportEmail;
-    if (contactEmail !== undefined) updateData.contactEmail = contactEmail;
-    if (contactMobile !== undefined) updateData.contactMobile = contactMobile;
-    if (logoUrl !== undefined) updateData.logoUrl = logoUrl;
-    if (maintenanceMode !== undefined) updateData.maintenanceMode = maintenanceMode;
-    if (facultyRegistrationEnabled !== undefined) updateData.facultyRegistrationEnabled = facultyRegistrationEnabled;
-    if (emailDomain !== undefined) updateData.emailDomain = emailDomain;
-    if (branchConfigs !== undefined) updateData.branchConfigs = branchConfigs;
+    if (platformName !== undefined) settings.platformName = platformName;
+    if (supportEmail !== undefined) settings.supportEmail = supportEmail;
+    if (contactEmail !== undefined) settings.contactEmail = contactEmail;
+    if (contactMobile !== undefined) settings.contactMobile = contactMobile;
+    if (logoUrl !== undefined) settings.logoUrl = logoUrl;
+    if (maintenanceMode !== undefined) settings.maintenanceMode = maintenanceMode;
+    if (facultyRegistrationEnabled !== undefined) settings.facultyRegistrationEnabled = facultyRegistrationEnabled;
+    if (emailDomain !== undefined) settings.emailDomain = emailDomain;
+    if (branchConfigs !== undefined) settings.branchConfigs = branchConfigs;
     
-    settings = await Setting.findOneAndUpdate(
-      {},
-      { $set: updateData },
-      { new: true }
-    );
+    await settings.save();
     
     const settingsObj = settings.toObject();
     settingsObj.branches = settings.branchConfigs?.map(c => c.branch) || [];

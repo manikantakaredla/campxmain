@@ -21,7 +21,7 @@ const UserManagement = () => {
   const { settings } = useSettings()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [yearFilter, setYearFilter] = useState('1')
+  const [yearFilter, setYearFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalUsers, setTotalUsers] = useState(0)
@@ -285,10 +285,6 @@ const UserManagement = () => {
             onChange={(e) => {
               setYearFilter(e.target.value)
               setCurrentPage(1)
-              if (selectedDept) {
-                setViewState('sections')
-                setSelectedSection(null)
-              }
             }}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
