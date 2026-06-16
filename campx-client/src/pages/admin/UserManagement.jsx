@@ -38,6 +38,21 @@ const UserManagement = () => {
     ? settings.branchConfigs.map(c => c.branch) 
     : (settings?.branches || []);
 
+  const formatDeptName = (name) => {
+    if (!name) return '';
+    const n = name.toUpperCase();
+    if (n.includes('COMPUTER SCIENCE')) return 'CSE';
+    if (n.includes('ELECTRONICS AND COMMUNICATION')) return 'ECE';
+    if (n.includes('ELECTRICAL AND ELECTRONICS')) return 'EEE';
+    if (n.includes('ARTIFICIAL INTELLIGENCE') || n.includes('AI ML')) return 'AI ML';
+    if (n.includes('DATA SCIENCE')) return 'DS';
+    if (n.includes('MECHANICAL')) return 'MECH';
+    if (n.includes('CIVIL')) return 'CIVIL';
+    if (n.includes('AGRICULTURAL')) return 'AGRI';
+    if (n.includes('INFORMATION TECHNOLOGY')) return 'IT';
+    return name;
+  };
+
   let currentSections = [];
   if (settings?.branchConfigs && selectedDept) {
     const config = settings.branchConfigs.find(c => c.branch === selectedDept);
@@ -209,8 +224,8 @@ const UserManagement = () => {
           <div>
             <h1 className="text-2xl font-bold text-gray-800">
               {viewState === 'main' && "User Management"}
-              {viewState === 'sections' && `${selectedDept} Sections`}
-              {viewState === 'students' && (selectedSection ? `${selectedDept} - Section ${selectedSection} Students` : selectedDept ? `${selectedDept} - All Students` : "All Students")}
+              {viewState === 'sections' && `${formatDeptName(selectedDept)} Sections`}
+              {viewState === 'students' && (selectedSection ? `${formatDeptName(selectedDept)} - Section ${selectedSection} Students` : selectedDept ? `${formatDeptName(selectedDept)} - All Students` : "All Students")}
               {viewState === 'role_users' && `${selectedRole?.toUpperCase()} Users`}
             </h1>
             <p className="text-gray-500 mt-1">
@@ -238,8 +253,8 @@ const UserManagement = () => {
             type="text"
             placeholder={
               viewState === 'role_users' ? `Search ${selectedRole}s by name, email...` :
-              selectedSection ? `Search student in ${selectedDept} - Sec ${selectedSection}...` :
-              selectedDept ? `Search student in ${selectedDept}...` :
+              selectedSection ? `Search student in ${formatDeptName(selectedDept)} - Sec ${selectedSection}...` :
+              selectedDept ? `Search student in ${formatDeptName(selectedDept)}...` :
               "Search all students..."
             }
             value={searchTerm}
@@ -342,7 +357,7 @@ const UserManagement = () => {
                 <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                   <BookOpen className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800">{dept}</h3>
+                <h3 className="text-xl font-bold text-gray-800">{formatDeptName(dept)}</h3>
                 <p className="text-sm text-gray-500 mt-1">View Sections</p>
               </div>
             ))}
@@ -354,19 +369,8 @@ const UserManagement = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {currentSections.length === 0 ? (
             <div className="col-span-full p-8 text-center text-gray-500 bg-white rounded-xl shadow-sm border border-gray-100">
-              <Layers className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="mb-4">No sections configured for this branch {yearFilter ? `and year ${yearFilter}` : ''}.</p>
-              <button 
-                onClick={() => {
-                  setSelectedSection(null)
-                  setViewState('students')
-                  setCurrentPage(1)
-                  setSearchTerm('')
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium inline-flex items-center gap-2"
-              >
-                <Users className="w-4 h-4" /> View All Students in {selectedDept}
-              </button>
+              <Layers className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+              <p>No sections configured for this branch {yearFilter ? `and year ${yearFilter}` : ''}.</p>
             </div>
           ) : (
             currentSections.map(sec => (

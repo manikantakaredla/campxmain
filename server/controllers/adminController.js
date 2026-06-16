@@ -42,9 +42,9 @@ const normalizeBranchName = (input, validBranches) => {
 
   // 4. Reverse substring: If the input contains a known abbreviation
   for (const [abbr, expanded] of Object.entries(abbreviations)) {
-    // If user typed "B.Tech CSE" or "Computer Science"
+    // If user typed "B.Tech CSE"
     if (cleanInput.includes(abbr) || cleanInput.includes(expanded)) {
-      const match = validBranches.find(b => b.toUpperCase().includes(expanded) || b.toUpperCase() === abbr);
+      const match = validBranches.find(b => b.toUpperCase().includes(expanded));
       if (match) return match;
     }
   }
@@ -108,10 +108,37 @@ exports.getAllUsers = async (req, res) => {
       query.role = role;
     }
     if (req.query.branch) {
-      query.branch = { $regex: new RegExp(`^${req.query.branch}$`, 'i') };
+      const branchInput = req.query.branch.toUpperCase();
+      const variations = [req.query.branch];
+      
+      const map = {
+        "CSE": ["COMPUTER SCIENCE AND ENGINEERING", "B.TECH COMPUTER SCIENCE AND ENGINEERING", "CS"],
+        "ECE": ["ELECTRONICS AND COMMUNICATION ENGINEERING", "B.TECH ELECTRONICS AND COMMUNICATION ENGINEERING", "EC"],
+        "EEE": ["ELECTRICAL AND ELECTRONICS ENGINEERING", "B.TECH ELECTRICAL AND ELECTRONICS ENGINEERING", "EE"],
+        "IT": ["INFORMATION TECHNOLOGY", "B.TECH INFORMATION TECHNOLOGY"],
+        "MECH": ["MECHANICAL ENGINEERING", "B.TECH MECHANICAL ENGINEERING", "ME"],
+        "CIVIL": ["CIVIL ENGINEERING", "B.TECH CIVIL ENGINEERING", "CE"],
+        "AIML": ["ARTIFICIAL INTELLIGENCE & MACHINE LEARNING", "ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING", "AI ML", "AI"],
+        "DS": ["DATA SCIENCE", "B.TECH DATA SCIENCE", "DATA"],
+        "AGRI": ["AGRICULTURAL ENGINEERING", "AGRICULTURAL", "AG"]
+      };
+      
+      if (map[branchInput]) {
+        variations.push(...map[branchInput]);
+      } else {
+        // Also check reverse if it's a long name
+        for (const [key, vals] of Object.entries(map)) {
+          if (vals.some(v => v === branchInput || branchInput.includes(v))) {
+            variations.push(key, ...vals);
+          }
+        }
+      }
+      
+      // Case-insensitive regex array
+      query.branch = { $in: variations.map(v => new RegExp(`^${v}$`, 'i')) };
     }
     if (req.query.section) {
-      query.section = { $regex: new RegExp(`^${req.query.section}$`, 'i') };
+      query.section = req.query.section;
     }
     if (req.query.currentYear) {
       query.currentYear = parseInt(req.query.currentYear);
@@ -341,23 +368,26 @@ exports.createUser = async (req, res) => {
 
     if (role === "student") {
       userData.rollNumber = rollNumber ? rollNumber.toUpperCase() : undefined;
-      userData.branch = branch;
       userData.section = section ? section.trim().toUpperCase() : section;
+      
+      let calculatedYear;
+      if (userData.rollNumber) {
+        const academicInfo = calculateAcademicInfo(userData.rollNumber);
+        calculatedYear = academicInfo.currentYear;
+        userData.branch = academicInfo.branch !== "Unknown" ? academicInfo.branch : branch;
+      } else {
+        userData.branch = branch;
+      }
       
       const settings = await Setting.findOne();
       if (settings && settings.branchConfigs && settings.branchConfigs.length > 0) {
         const validBranches = settings.branchConfigs.map(c => c.branch);
+        // Ensure branch is mapped to the configured name in settings
         userData.branch = normalizeBranchName(userData.branch, validBranches);
         
         const branchConfig = settings.branchConfigs.find(c => c.branch === userData.branch);
         if (!branchConfig) {
           return res.status(400).json({ success: false, message: `Branch ${userData.branch} is not configured in Settings` });
-        }
-        
-        let calculatedYear;
-        if (userData.rollNumber) {
-          const academicInfo = calculateAcademicInfo(userData.rollNumber);
-          calculatedYear = academicInfo.currentYear;
         }
         
         let allowedSections = [];
@@ -437,8 +467,16 @@ exports.bulkCreateUsers = async (req, res) => {
         
         if (userData.role === "student") {
           userData.rollNumber = row.rollNumber ? row.rollNumber.toUpperCase() : undefined;
-          userData.branch = row.branch;
           userData.section = row.section ? row.section.trim().toUpperCase() : row.section;
+          
+          let calculatedYear;
+          if (userData.rollNumber) {
+            const academicInfo = calculateAcademicInfo(userData.rollNumber);
+            calculatedYear = academicInfo.currentYear;
+            userData.branch = academicInfo.branch !== "Unknown" ? academicInfo.branch : row.branch;
+          } else {
+            userData.branch = row.branch;
+          }
           
           if (settings && settings.branchConfigs && settings.branchConfigs.length > 0) {
             const validBranches = settings.branchConfigs.map(c => c.branch);
@@ -447,12 +485,6 @@ exports.bulkCreateUsers = async (req, res) => {
             const branchConfig = settings.branchConfigs.find(c => c.branch === userData.branch);
             if (!branchConfig) {
               throw new Error(`Branch ${userData.branch} is not configured in Settings`);
-            }
-            
-            let calculatedYear;
-            if (userData.rollNumber) {
-              const academicInfo = calculateAcademicInfo(userData.rollNumber);
-              calculatedYear = academicInfo.currentYear;
             }
             
             let allowedSections = [];

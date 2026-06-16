@@ -28,16 +28,50 @@ const AddUsers = () => {
     : (settings?.branches || []);
 
   const getAvailableSections = () => {
-    if (!settings?.branchConfigs || !formData.branch) {
+    if (!settings?.branchConfigs) {
       return settings?.sections || [];
     }
-    const config = settings.branchConfigs.find(c => c.branch === formData.branch);
-    if (!config || !config.years) return [];
+    
+    let targetBranch = formData.branch;
+    
+    // For students, try to calculate branch from roll number
+    if (formData.role === 'student' && formData.rollNumber && formData.rollNumber.length >= 7) {
+      const branchCode = formData.rollNumber.substring(5, 7).toUpperCase();
+      const branchMapping = {
+        CS: "CSE", EC: "ECE", EE: "EEE", ME: "Mechanical Engineering",
+        CE: "Civil Engineering", IT: "IT", AI: "AI ML", DS: "Data Science",
+        AG: "Agricultural Engineering"
+      };
+      // Try mapping, or search within branches
+      targetBranch = branchMapping[branchCode];
+    }
     
     const allSecs = new Set();
-    Object.values(config.years).forEach(secs => {
-      if (Array.isArray(secs)) secs.forEach(s => allSecs.add(s));
+    
+    if (targetBranch) {
+      // Find branch config that matches (ignoring case)
+      const config = settings.branchConfigs.find(c => 
+        c.branch.toUpperCase() === targetBranch?.toUpperCase() || 
+        c.branch.toUpperCase().includes(targetBranch?.toUpperCase())
+      );
+      
+      if (config && config.years) {
+        Object.values(config.years).forEach(secs => {
+          if (Array.isArray(secs)) secs.forEach(s => allSecs.add(s));
+        });
+        return Array.from(allSecs).sort();
+      }
+    }
+    
+    // Fallback: return all sections from all branches
+    settings.branchConfigs.forEach(config => {
+      if (config.years) {
+        Object.values(config.years).forEach(secs => {
+          if (Array.isArray(secs)) secs.forEach(s => allSecs.add(s));
+        });
+      }
     });
+    
     return Array.from(allSecs).sort();
   };
 
@@ -173,13 +207,7 @@ const AddUsers = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Roll Number *</label>
                       <input type="text" name="rollNumber" required value={formData.rollNumber} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg" />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
-                      <select name="branch" value={formData.branch} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg">
-                        <option value="">Select Branch</option>
-                        {departments.map(b => <option key={b} value={b}>{b}</option>)}
-                      </select>
-                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
                       <select name="section" value={formData.section} onChange={handleInputChange} className="w-full px-4 py-2 border rounded-lg">
@@ -220,10 +248,9 @@ const AddUsers = () => {
                 <h3 className="text-sm font-medium text-blue-800 mb-2">CSV Format Guidelines:</h3>
                 <ul className="text-sm text-blue-700 list-disc list-inside space-y-1">
                   <li><strong>Required Columns:</strong> name, email, password, role</li>
-                  <li><strong>For Students:</strong> rollNumber, branch, section</li>
+                  <li><strong>For Students:</strong> rollNumber, section</li>
                   <li><strong>For Staff:</strong> employeeId, department, designation</li>
                   <li><strong>Valid Roles:</strong> student, faculty, hod, admin, dean, principal</li>
-                  <li><strong>Valid Branches:</strong> Use exact short names like: {departments.join(', ') || 'CSE, ECE, MECH'}</li>
                 </ul>
               </div>
 
