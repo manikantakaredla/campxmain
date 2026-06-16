@@ -77,7 +77,10 @@ exports.updateSettings = async (req, res) => {
     if (maintenanceMode !== undefined) settings.maintenanceMode = maintenanceMode;
     if (facultyRegistrationEnabled !== undefined) settings.facultyRegistrationEnabled = facultyRegistrationEnabled;
     if (emailDomain !== undefined) settings.emailDomain = emailDomain;
-    if (branchConfigs !== undefined) settings.branchConfigs = branchConfigs;
+    if (branchConfigs !== undefined) {
+      settings.branchConfigs = branchConfigs;
+      settings.markModified('branchConfigs');
+    }
     
     await settings.save();
     
