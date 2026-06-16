@@ -2,111 +2,18 @@
  * Calculate academic details from roll number
  */
 
-const branchMapping = {
-  CS: "CSE",
-  EC: "ECE",
-  EE: "EEE",
-  ME: "Mechanical Engineering",
-  CE: "Civil Engineering",
-  IT: "IT",
-  AI: "AI ML",
-  DS: "Data Science",
-  AG: "Agricultural Engineering",
-  CY: "CS",
-  BT: "BT",
-};
-
-const calculateAcademicInfo = (rollNumber) => {
-  try {
-    if (!rollNumber || typeof rollNumber !== "string") {
-      return getDefaultData(rollNumber);
-    }
-
-    const roll = rollNumber.toUpperCase().trim();
-
-    if (roll.length < 10) {
-      return getDefaultData(roll);
-    }
-
-    const admissionYearCode = parseInt(roll.substring(0, 2), 10);
-    const admissionYear = 2000 + admissionYearCode;
-
-    const studentCode = roll.substring(2, 5);
-    const branchCode = roll.substring(5, 7);
-
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth();
-
-    const branch = branchMapping[branchCode] || "Unknown";
-
-    let studentType = "regular";
-    let totalYears = 4;
-    let startSemester = 1;
-
-    if (studentCode === "B21") {
-      studentType = "lateral";
-      totalYears = 3;
-      startSemester = 3;
-    }
-
-    const batch = `${admissionYear}-${admissionYear + totalYears}`;
-
-    // Academic year starts in July
-    let academicYearsPassed;
-
-    if (currentMonth >= 6) {
-      // Jul-Dec
-      academicYearsPassed = currentYear - admissionYear;
-    } else {
-      // Jan-Jun
-      academicYearsPassed = currentYear - admissionYear - 1;
-    }
-
-    if (academicYearsPassed < 0) {
-      academicYearsPassed = 0;
-    }
-
-    let currentSemester;
-
-    if (studentType === "regular") {
-      if (currentMonth >= 6) {
-        // Jul-Dec
-        currentSemester = (academicYearsPassed * 2) + 1;
-      } else {
-        // Jan-Jun
-        currentSemester = (academicYearsPassed * 2) + 2;
-      }
-    } else {
-      if (currentMonth >= 6) {
-        // Jul-Dec
-        currentSemester = (academicYearsPassed * 2) + 3;
-      } else {
-        // Jan-Jun
-        currentSemester = (academicYearsPassed * 2) + 4;
-      }
-    }
-
-    currentSemester = Math.min(8, Math.max(startSemester, currentSemester));
-
-    const currentYearNum = Math.ceil(currentSemester / 2);
-
-    return {
-      admissionYear,
-      studentType,
-      totalYears,
-      batch,
-      branch,
-      currentYear: currentYearNum,
-      currentSemester,
-      startSemester,
-      rollNumber: roll,
-    };
-
-  } catch (error) {
-    console.error("Academic calculation error:", error);
-    return getDefaultData(rollNumber);
-  }
+const BRANCH_MAPPING = {
+  CS: "B.Tech. - Computer Science and Engineering",
+  EC: "B.Tech. - Electronics and Communication Engineering",
+  EE: "B.Tech. - Electrical and Electronics Engineering",
+  IT: "B.Tech. - Information Technology",
+  ME: "B.Tech. - Mechanical Engineering",
+  CE: "B.Tech. - Civil Engineering",
+  AI: "B.Tech. - Artificial Intelligence & Machine Learning (AI & ML)",
+  DS: "B.Tech. - Computer Science and Engineering - Data Science",
+  AG: "B.Tech. - Agricultural Engineering",
+  MN: "B.Tech. - Mining Engineering",
+  PT: "B.Tech. - Petroleum Technology",
 };
 
 const getDefaultData = (rollNumber = "") => ({
@@ -120,5 +27,85 @@ const getDefaultData = (rollNumber = "") => ({
   startSemester: 1,
   rollNumber,
 });
+
+const calculateAcademicInfo = (rollNumber) => {
+  try {
+    if (!rollNumber || typeof rollNumber !== "string") {
+      return getDefaultData(rollNumber);
+    }
+
+    const roll = rollNumber.toUpperCase().trim();
+
+    if (roll.length < 10) {
+      return getDefaultData(roll);
+    }
+
+    // Example: 25B21CS052
+
+    const admissionYearCode = Number(roll.slice(0, 2));
+    const admissionYear = 2000 + admissionYearCode;
+
+    const studentCode = roll.slice(2, 5);
+    const branchCode = roll.slice(5, 7);
+
+    const branch =
+      BRANCH_MAPPING[branchCode] || "Unknown";
+
+    const isLateral = studentCode === "B21";
+
+    const studentType = isLateral ? "lateral" : "regular";
+    const totalYears = isLateral ? 3 : 4;
+    const startSemester = isLateral ? 3 : 1;
+
+    const batch = `${admissionYear}-${admissionYear + totalYears}`;
+
+    const currentDate = new Date();
+    const currentCalendarYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth();
+
+    // Academic year starts in July
+    let academicYearsPassed;
+
+    if (currentMonth >= 6) {
+      academicYearsPassed = currentCalendarYear - admissionYear;
+    } else {
+      academicYearsPassed = currentCalendarYear - admissionYear - 1;
+    }
+
+    academicYearsPassed = Math.max(0, academicYearsPassed);
+
+    let currentSemester;
+
+    if (studentType === "regular") {
+      currentSemester =
+        academicYearsPassed * 2 + (currentMonth >= 6 ? 1 : 2);
+    } else {
+      currentSemester =
+        academicYearsPassed * 2 + (currentMonth >= 6 ? 3 : 4);
+    }
+
+    currentSemester = Math.min(
+      8,
+      Math.max(startSemester, currentSemester)
+    );
+
+    const currentYear = Math.ceil(currentSemester / 2);
+
+    return {
+      admissionYear,
+      studentType,
+      totalYears,
+      batch,
+      branch, // Full branch name
+      currentYear,
+      currentSemester,
+      startSemester,
+      rollNumber: roll,
+    };
+  } catch (error) {
+    console.error("Academic calculation error:", error);
+    return getDefaultData(rollNumber);
+  }
+};
 
 module.exports = calculateAcademicInfo;
