@@ -20,17 +20,28 @@ const SystemSettings = () => {
   const [showAddBranch, setShowAddBranch] = useState(false)
   const [newBranchName, setNewBranchName] = useState('')
 
+  const saveImmediate = async (newSettings) => {
+    setSettings(newSettings);
+    try {
+      await api.put('/settings', newSettings);
+      toast.success('Saved automatically', { id: 'autosave', duration: 1500 });
+    } catch (error) {
+      toast.error('Failed to auto-save');
+    }
+  }
+
   const handleAddBranch = () => {
     if (newBranchName.trim()) {
-      setSettings(prev => ({
-        ...prev,
+      const newSettings = {
+        ...settings,
         branchConfigs: [
-          ...(prev.branchConfigs || []),
+          ...(settings.branchConfigs || []),
           { branch: newBranchName.trim().toUpperCase(), years: { "1": ["A", "B", "C"], "2": ["A", "B", "C"], "3": ["A", "B", "C"], "4": ["A", "B", "C"] } }
         ]
-      }))
-      setNewBranchName('')
-      setShowAddBranch(false)
+      };
+      saveImmediate(newSettings);
+      setNewBranchName('');
+      setShowAddBranch(false);
     }
   }
 
@@ -171,10 +182,10 @@ const SystemSettings = () => {
                 <h3 className="font-bold text-gray-800">{config.branch}</h3>
                 <button onClick={() => {
                   if(window.confirm("Are you sure you want to remove this branch?")) {
-                    setSettings(prev => ({
-                      ...prev,
-                      branchConfigs: prev.branchConfigs.filter((_, i) => i !== index)
-                    }))
+                    saveImmediate({
+                      ...settings,
+                      branchConfigs: settings.branchConfigs.filter((_, i) => i !== index)
+                    });
                   }
                 }} className="text-red-500 text-sm hover:underline opacity-0 group-hover:opacity-100 transition-opacity">Remove Branch</button>
               </div>
@@ -189,11 +200,9 @@ const SystemSettings = () => {
                           <button 
                             type="button"
                             onClick={() => {
-                              setSettings(prev => {
-                                const newConfigs = [...prev.branchConfigs]
-                                newConfigs[index].years[year] = newConfigs[index].years[year].filter((_, i) => i !== secIdx)
-                                return { ...prev, branchConfigs: newConfigs }
-                              })
+                              const newConfigs = [...settings.branchConfigs]
+                              newConfigs[index].years[year] = newConfigs[index].years[year].filter((_, i) => i !== secIdx)
+                              saveImmediate({ ...settings, branchConfigs: newConfigs })
                             }}
                             className="text-blue-600 hover:text-red-600 focus:outline-none transition-colors"
                             title="Remove section"
@@ -214,16 +223,14 @@ const SystemSettings = () => {
                           e.preventDefault();
                           const val = e.target.value.trim().toUpperCase();
                           if (val) {
-                            setSettings(prev => {
-                              const newConfigs = [...prev.branchConfigs]
-                              if (!newConfigs[index].years) newConfigs[index].years = {}
-                              if (!newConfigs[index].years[year]) newConfigs[index].years[year] = []
-                              if (!newConfigs[index].years[year].includes(val)) {
-                                newConfigs[index].years[year].push(val)
-                                newConfigs[index].years[year].sort()
-                              }
-                              return { ...prev, branchConfigs: newConfigs }
-                            })
+                            const newConfigs = [...settings.branchConfigs]
+                            if (!newConfigs[index].years) newConfigs[index].years = {}
+                            if (!newConfigs[index].years[year]) newConfigs[index].years[year] = []
+                            if (!newConfigs[index].years[year].includes(val)) {
+                              newConfigs[index].years[year].push(val)
+                              newConfigs[index].years[year].sort()
+                            }
+                            saveImmediate({ ...settings, branchConfigs: newConfigs })
                             e.target.value = '';
                           }
                         }
@@ -235,6 +242,12 @@ const SystemSettings = () => {
               </div>
             </div>
           ))}
+        </div>
+        <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end">
+          <button onClick={handleSave} disabled={saving} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+            {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Save Settings
+          </button>
         </div>
       </div>
     </div>
