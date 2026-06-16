@@ -142,6 +142,7 @@ const SystemSettings = () => {
           }} className="px-4 py-1.5 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">Add Branch</button>
         </div>
         <div className="p-6 space-y-4">
+          
           {(settings.branchConfigs || []).map((config, index) => (
             <div key={index} className="border border-gray-200 rounded-lg p-4 relative group hover:border-blue-300 transition-colors">
               <div className="flex justify-between items-center mb-4">
