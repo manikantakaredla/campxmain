@@ -119,12 +119,15 @@ async function createNotificationsForResource(resource) {
     } else if (resource.visibility === "year" && resource.targetYear) {
       targetUsers = await User.find({ 
         role: "student", 
+        branch: resource.targetBranch,
         currentYear: resource.targetYear,
         isActive: true 
       }).select("_id");
     } else if (resource.visibility === "section" && resource.targetSection) {
       targetUsers = await User.find({ 
         role: "student", 
+        branch: resource.targetBranch,
+        currentYear: resource.targetYear,
         section: resource.targetSection,
         isActive: true 
       }).select("_id");
@@ -203,8 +206,8 @@ if (req.user.role === "student") {
     query.$or = [
       { visibility: "all" },
       { visibility: "branch", targetBranch: user.branch },
-      { visibility: "year", targetYear: user.currentYear },
-      { visibility: "section", targetSection: user.section }
+      { visibility: "year", targetBranch: user.branch, targetYear: user.currentYear },
+      { visibility: "section", targetBranch: user.branch, targetYear: user.currentYear, targetSection: user.section }
     ];
 
     if (classAssignment) {

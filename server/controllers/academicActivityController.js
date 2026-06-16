@@ -157,6 +157,13 @@ exports.getActivities = async (req, res) => {
                 },
                 {
                   $or: [
+                    { "inheritedAudience.targetYears": { $exists: false } },
+                    { "inheritedAudience.targetYears": { $size: 0 } },
+                    { "inheritedAudience.targetYears": user.currentYear }
+                  ]
+                },
+                {
+                  $or: [
                     { "inheritedAudience.targetSections": { $exists: false } },
                     { "inheritedAudience.targetSections": { $size: 0 } },
                     { "inheritedAudience.targetSections": user.section }
@@ -273,6 +280,13 @@ exports.getUpcomingActivities = async (req, res) => {
                     { "inheritedAudience.targetBranches": { $exists: false } },
                     { "inheritedAudience.targetBranches": { $size: 0 } },
                     { "inheritedAudience.targetBranches": user.branch }
+                  ]
+                },
+                {
+                  $or: [
+                    { "inheritedAudience.targetYears": { $exists: false } },
+                    { "inheritedAudience.targetYears": { $size: 0 } },
+                    { "inheritedAudience.targetYears": user.currentYear }
                   ]
                 },
                 {

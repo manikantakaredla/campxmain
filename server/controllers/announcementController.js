@@ -39,6 +39,7 @@ async function createCalendarEventFromAnnouncement(announcement) {
       let inheritedAudience = {
         audienceType: announcement.audience,
         targetBranches: announcement.targetBranches || [],
+        targetYears: announcement.targetYears || [],
         targetSections: announcement.targetSections || [],
         targetSpecificStudents: announcement.targetSpecificStudents || []
       };
@@ -94,6 +95,9 @@ async function createNotificationsForAnnouncement(announcement) {
       const assignments = await ProctorStudentAssignment.find({ facultyId: announcement.createdBy._id || announcement.createdBy }).select("studentId");
       const studentIds = assignments.map(a => a.studentId);
       targetUsers = await User.find({ _id: { $in: studentIds }, isActive: true }).select("_id");
+    } 
+    else if (announcement.audience === "individual") {
+      targetUsers = await User.find({ _id: { $in: announcement.targetSpecificStudents }, isActive: true }).select("_id");
     } 
     else if (announcement.audience === "students" || announcement.audience === "faculty") {
       let query = { isActive: true };
@@ -554,7 +558,7 @@ if (forClass === "true" && req.user.role === "student") {
         $or: [
           { audience: "all" },
           { audience: "students" },
-          { audience: "specific", targetSpecificStudents: { $elemMatch: { userId: user._id } } }
+          { audience: "individual", targetSpecificStudents: user._id }
         ]
       });
       
@@ -747,6 +751,7 @@ exports.updateAnnouncement = async (req, res) => {
       let inheritedAudience = {
         audienceType: updatedAnnouncement.audience,
         targetBranches: updatedAnnouncement.targetBranches || [],
+        targetYears: updatedAnnouncement.targetYears || [],
         targetSections: updatedAnnouncement.targetSections || [],
         targetSpecificStudents: updatedAnnouncement.targetSpecificStudents || []
       };
