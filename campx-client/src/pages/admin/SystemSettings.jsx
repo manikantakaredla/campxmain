@@ -127,54 +127,101 @@ const SystemSettings = () => {
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-6">
         <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-          <h2 className="font-semibold text-gray-800 flex items-center gap-2"><Layers className="w-5 h-5" /> Branch & Section Settings</h2>
+          <h2 className="font-semibold text-gray-800 flex items-center gap-2"><Layers className="w-5 h-5" /> Academic Master Configuration</h2>
           <button onClick={() => {
-            const newBranch = prompt("Enter new branch name:")
+            const newBranch = prompt("Enter new branch name (e.g. B.Tech. - Computer Science and Engineering):")
             if (newBranch) {
               setSettings(prev => ({
                 ...prev,
                 branchConfigs: [
                   ...(prev.branchConfigs || []),
-                  { branch: newBranch, years: { "1": ["A", "B", "C"], "2": ["A", "B", "C"], "3": ["A", "B", "C"], "4": ["A", "B", "C"] } }
+                  { branch: newBranch, years: { "1": ["A", "B"], "2": ["A", "B"], "3": ["A", "B"], "4": ["A", "B"] } }
                 ]
               }))
             }
-          }} className="px-4 py-1.5 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">Add Branch</button>
+          }} className="px-4 py-1.5 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors font-medium">+ Add Branch</button>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-6">
           
           {(settings.branchConfigs || []).map((config, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4 relative group hover:border-blue-300 transition-colors">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-gray-800">{config.branch}</h3>
-                <button onClick={() => {
-                  if(window.confirm("Are you sure you want to remove this branch?")) {
-                    setSettings(prev => ({
-                      ...prev,
-                      branchConfigs: prev.branchConfigs.filter((_, i) => i !== index)
-                    }))
-                  }
-                }} className="text-red-500 text-sm hover:underline opacity-0 group-hover:opacity-100 transition-opacity">Remove Branch</button>
+            <div key={index} className="border border-gray-200 rounded-lg p-5">
+              <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                <h3 className="text-lg font-bold text-gray-800">{config.branch}</h3>
+                <div className="flex gap-3">
+                  <button onClick={() => {
+                    const newName = prompt("Enter new branch name:", config.branch);
+                    if (newName && newName.trim() !== "") {
+                      setSettings(prev => {
+                        const newConfigs = [...prev.branchConfigs];
+                        newConfigs[index] = { ...newConfigs[index], branch: newName.trim() };
+                        return { ...prev, branchConfigs: newConfigs };
+                      });
+                    }
+                  }} className="text-blue-600 text-sm hover:underline font-medium">Rename Branch</button>
+                  <button onClick={() => {
+                    if(window.confirm(`Are you sure you want to remove ${config.branch} entirely?`)) {
+                      setSettings(prev => ({
+                        ...prev,
+                        branchConfigs: prev.branchConfigs.filter((_, i) => i !== index)
+                      }));
+                    }
+                  }} className="text-red-600 text-sm hover:underline font-medium">Delete Branch</button>
+                </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {["1", "2", "3", "4"].map(year => (
-                  <div key={year}>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Year {year} Sections</label>
-                    <input 
-                      type="text" 
-                      value={(config.years && config.years[year]) ? config.years[year].join(', ') : ''} 
-                      onChange={(e) => {
-                        const val = e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                  <div key={year} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <h4 className="font-semibold text-gray-700 mb-3 border-b border-gray-200 pb-2">Year {year}</h4>
+                    <div className="space-y-2 mb-3">
+                      {(config.years && config.years[year] ? config.years[year] : []).map((section, secIndex) => (
+                        <div key={secIndex} className="flex items-center justify-between bg-white px-3 py-2 rounded border border-gray-200 shadow-sm">
+                          <span className="font-medium text-gray-800">Section {section}</span>
+                          <div className="flex gap-2">
+                            <button onClick={() => {
+                              const newSec = prompt("Rename section:", section);
+                              if (newSec && newSec.trim() !== "") {
+                                setSettings(prev => {
+                                  const newConfigs = [...prev.branchConfigs];
+                                  const yearData = [...(newConfigs[index].years[year] || [])];
+                                  yearData[secIndex] = newSec.trim();
+                                  newConfigs[index].years = { ...newConfigs[index].years, [year]: yearData };
+                                  return { ...prev, branchConfigs: newConfigs };
+                                });
+                              }
+                            }} className="text-xs text-blue-500 hover:text-blue-700">Edit</button>
+                            <button onClick={() => {
+                              if(window.confirm(`Delete Section ${section}?`)) {
+                                setSettings(prev => {
+                                  const newConfigs = [...prev.branchConfigs];
+                                  const yearData = [...(newConfigs[index].years[year] || [])];
+                                  yearData.splice(secIndex, 1);
+                                  newConfigs[index].years = { ...newConfigs[index].years, [year]: yearData };
+                                  return { ...prev, branchConfigs: newConfigs };
+                                });
+                              }
+                            }} className="text-xs text-red-500 hover:text-red-700">Del</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={() => {
+                      const newSec = prompt(`Enter new section for Year ${year}:`);
+                      if (newSec && newSec.trim() !== "") {
                         setSettings(prev => {
-                          const newConfigs = [...prev.branchConfigs]
-                          if (!newConfigs[index].years) newConfigs[index].years = {}
-                          newConfigs[index].years[year] = val
-                          return { ...prev, branchConfigs: newConfigs }
-                        })
-                      }}
-                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      placeholder="A, B, C..."
-                    />
+                          const newConfigs = [...prev.branchConfigs];
+                          if (!newConfigs[index].years) newConfigs[index].years = {};
+                          const yearData = [...(newConfigs[index].years[year] || [])];
+                          if (!yearData.includes(newSec.trim())) {
+                            yearData.push(newSec.trim());
+                            newConfigs[index].years = { ...newConfigs[index].years, [year]: yearData.sort() };
+                          }
+                          return { ...prev, branchConfigs: newConfigs };
+                        });
+                      }
+                    }} className="w-full py-1.5 text-xs text-blue-600 border border-blue-200 bg-blue-50 hover:bg-blue-100 rounded transition-colors font-medium border-dashed">
+                      + Add Section
+                    </button>
                   </div>
                 ))}
               </div>

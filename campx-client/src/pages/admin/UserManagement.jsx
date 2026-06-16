@@ -9,6 +9,8 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
+import { getBranches, getYears, getSections } from '../../utils/academicHierarchy'
+import { getBranchDisplayName } from '../../utils/branchUtils'
 
 const UserManagement = () => {
   const [viewState, setViewState] = useState('main') // 'main', 'sections', 'students', 'role_users'
@@ -21,7 +23,7 @@ const UserManagement = () => {
   const { settings } = useSettings()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [yearFilter, setYearFilter] = useState('')
+  const [yearFilter, setYearFilter] = useState('1')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalUsers, setTotalUsers] = useState(0)
@@ -34,43 +36,13 @@ const UserManagement = () => {
   
   const itemsPerPage = 10
 
-  const departments = settings?.branchConfigs 
-    ? settings.branchConfigs.map(c => c.branch) 
-    : (settings?.branches || []);
-
-  const formatDeptName = (name) => {
-    if (!name) return '';
-    const n = name.toUpperCase();
-    if (n.includes('COMPUTER SCIENCE')) return 'CSE';
-    if (n.includes('ELECTRONICS AND COMMUNICATION')) return 'ECE';
-    if (n.includes('ELECTRICAL AND ELECTRONICS')) return 'EEE';
-    if (n.includes('ARTIFICIAL INTELLIGENCE') || n.includes('AI ML')) return 'AI ML';
-    if (n.includes('DATA SCIENCE')) return 'DS';
-    if (n.includes('MECHANICAL')) return 'MECH';
-    if (n.includes('CIVIL')) return 'CIVIL';
-    if (n.includes('AGRICULTURAL')) return 'AGRI';
-    if (n.includes('INFORMATION TECHNOLOGY')) return 'IT';
-    return name;
-  };
+  const departments = getBranches(settings);
 
   let currentSections = [];
-  if (settings?.branchConfigs && selectedDept) {
-    const config = settings.branchConfigs.find(c => c.branch === selectedDept);
-    if (config && config.years) {
-       if (yearFilter && config.years[yearFilter]) {
-          currentSections = config.years[yearFilter];
-       } else {
-          const allSecs = new Set();
-          Object.values(config.years).forEach(secs => {
-            if (Array.isArray(secs)) secs.forEach(s => allSecs.add(s));
-          });
-          currentSections = Array.from(allSecs).sort();
-       }
-    }
-  } else {
-    currentSections = settings?.sections || [];
+  if (selectedDept && yearFilter) {
+    currentSections = getSections(settings, selectedDept, yearFilter);
   }
-  
+
   const roleCards = [
     { id: 'admin', label: 'Admins', icon: Shield, color: 'text-gray-700 bg-gray-100', border: 'border-gray-200' },
     { id: 'dean', label: 'Deans', icon: Star, color: 'text-red-700 bg-red-100', border: 'border-red-200' },
@@ -224,8 +196,8 @@ const UserManagement = () => {
           <div>
             <h1 className="text-2xl font-bold text-gray-800">
               {viewState === 'main' && "User Management"}
-              {viewState === 'sections' && `${formatDeptName(selectedDept)} Sections`}
-              {viewState === 'students' && (selectedSection ? `${formatDeptName(selectedDept)} - Section ${selectedSection} Students` : selectedDept ? `${formatDeptName(selectedDept)} - All Students` : "All Students")}
+              {viewState === 'sections' && `${getBranchDisplayName(selectedDept)} Sections`}
+              {viewState === 'students' && (selectedSection ? `${getBranchDisplayName(selectedDept)} - Section ${selectedSection} Students` : selectedDept ? `${getBranchDisplayName(selectedDept)} - All Students` : "All Students")}
               {viewState === 'role_users' && `${selectedRole?.toUpperCase()} Users`}
             </h1>
             <p className="text-gray-500 mt-1">
@@ -253,8 +225,8 @@ const UserManagement = () => {
             type="text"
             placeholder={
               viewState === 'role_users' ? `Search ${selectedRole}s by name, email...` :
-              selectedSection ? `Search student in ${formatDeptName(selectedDept)} - Sec ${selectedSection}...` :
-              selectedDept ? `Search student in ${formatDeptName(selectedDept)}...` :
+              selectedSection ? `Search student in ${getBranchDisplayName(selectedDept)} - Sec ${selectedSection}...` :
+              selectedDept ? `Search student in ${getBranchDisplayName(selectedDept)}...` :
               "Search all students..."
             }
             value={searchTerm}
@@ -285,14 +257,16 @@ const UserManagement = () => {
             onChange={(e) => {
               setYearFilter(e.target.value)
               setCurrentPage(1)
+              if (viewState === 'students' && selectedSection) {
+                 setViewState('sections')
+                 setSelectedSection(null)
+              }
             }}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">All Years</option>
-            <option value="1">1st Year</option>
-            <option value="2">2nd Year</option>
-            <option value="3">3rd Year</option>
-            <option value="4">4th Year</option>
+            {getYears().map(y => (
+              <option key={y} value={y}>{y}{y==='1'?'st':y==='2'?'nd':y==='3'?'rd':'th'} Year</option>
+            ))}
           </select>
         )}
         
@@ -357,7 +331,7 @@ const UserManagement = () => {
                 <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                   <BookOpen className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800">{formatDeptName(dept)}</h3>
+                <h3 className="text-xl font-bold text-gray-800">{getBranchDisplayName(dept)}</h3>
                 <p className="text-sm text-gray-500 mt-1">View Sections</p>
               </div>
             ))}
