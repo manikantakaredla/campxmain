@@ -34,7 +34,7 @@ const announcementSchema = new mongoose.Schema({
   allowReadTracking: { type: Boolean, default: false },
   
   // ========== AUDIENCE & TARGETING ==========
-  audience: { type: String, enum: ["all", "students", "faculty", "class", "proctor"], default: "all" },
+  audience: { type: String, enum: ["all", "students", "faculty", "class", "proctor", "individual"], default: "all" },
   targetMyClass: { type: Boolean, default: false },
   targetMyProctor: { type: Boolean, default: false },
   targetMySection: { type: Boolean, default: false },
