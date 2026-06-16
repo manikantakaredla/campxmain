@@ -11,9 +11,7 @@ const validateStudentRow = (row, index) => {
     errors.push({ row: index + 2, identifier: row.roll, message: "Invalid roll number format" });
   }
   
-  if (!row.branch || row.branch.trim() === "") {
-    errors.push({ row: index + 2, identifier: row.roll, message: "Branch is required" });
-  }
+
 
   if (!row.section || row.section.trim() === "") {
     errors.push({ row: index + 2, identifier: row.roll, message: "Section is required" });

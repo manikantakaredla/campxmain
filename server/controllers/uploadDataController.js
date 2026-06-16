@@ -5,6 +5,7 @@ const UploadLog = require("../models/UploadLog");
 const User = require("../models/User");
 const { parseFile } = require("../utils/csvParser");
 const { validateStudentRow, validateFacultyRow } = require("../utils/fileValidator");
+const calculateAcademicInfo = require("../utils/academicCalculator");
 
 // ==================== UPLOAD STUDENTS (ADMIN ONLY) ====================
 exports.uploadStudents = async (req, res) => {
@@ -38,10 +39,18 @@ exports.uploadStudents = async (req, res) => {
           continue;
         }
         
+        let calculatedBranch = row.branch;
+        if (row.roll) {
+          const academicInfo = calculateAcademicInfo(row.roll);
+          if (academicInfo.branch !== "Unknown") {
+            calculatedBranch = academicInfo.branch;
+          }
+        }
+        
         await StudentData.create({
           name: row.name,
           roll: row.roll.toUpperCase(),
-          branch: row.branch,
+          branch: calculatedBranch,
           section: row.section,
           email: row.email.toLowerCase(),
           course: row.course,

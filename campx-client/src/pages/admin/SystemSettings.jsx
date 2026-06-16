@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Settings, Globe, Mail, Bell, Shield, Save, RefreshCw, Layers } from 'lucide-react'
+import { Settings, Globe, Mail, Bell, Shield, Save, RefreshCw, Layers, X, Plus } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 
@@ -17,6 +17,22 @@ const SystemSettings = () => {
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [showAddBranch, setShowAddBranch] = useState(false)
+  const [newBranchName, setNewBranchName] = useState('')
+
+  const handleAddBranch = () => {
+    if (newBranchName.trim()) {
+      setSettings(prev => ({
+        ...prev,
+        branchConfigs: [
+          ...(prev.branchConfigs || []),
+          { branch: newBranchName.trim().toUpperCase(), years: { "1": ["A", "B", "C"], "2": ["A", "B", "C"], "3": ["A", "B", "C"], "4": ["A", "B", "C"] } }
+        ]
+      }))
+      setNewBranchName('')
+      setShowAddBranch(false)
+    }
+  }
 
   useEffect(() => {
     fetchSettings()
@@ -128,19 +144,26 @@ const SystemSettings = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-6">
         <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
           <h2 className="font-semibold text-gray-800 flex items-center gap-2"><Layers className="w-5 h-5" /> Branch & Section Settings</h2>
-          <button onClick={() => {
-            const newBranch = prompt("Enter new branch name:")
-            if (newBranch) {
-              setSettings(prev => ({
-                ...prev,
-                branchConfigs: [
-                  ...(prev.branchConfigs || []),
-                  { branch: newBranch, years: { "1": ["A", "B", "C"], "2": ["A", "B", "C"], "3": ["A", "B", "C"], "4": ["A", "B", "C"] } }
-                ]
-              }))
-            }
-          }} className="px-4 py-1.5 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">Add Branch</button>
+          <button onClick={() => setShowAddBranch(true)} className="flex items-center gap-1 px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <Plus className="w-4 h-4" /> Add Branch
+          </button>
         </div>
+        
+        {showAddBranch && (
+          <div className="p-4 bg-blue-50 border-b border-blue-100 flex items-center gap-3">
+            <input 
+              type="text" 
+              value={newBranchName}
+              onChange={(e) => setNewBranchName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAddBranch() }}
+              placeholder="e.g. CSE, ECE, MECH"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 uppercase"
+              autoFocus
+            />
+            <button onClick={handleAddBranch} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Add</button>
+            <button onClick={() => { setShowAddBranch(false); setNewBranchName(''); }} className="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+          </div>
+        )}
         <div className="p-6 space-y-4">
           {(settings.branchConfigs || []).map((config, index) => (
             <div key={index} className="border border-gray-200 rounded-lg p-4 relative group hover:border-blue-300 transition-colors">
@@ -157,22 +180,55 @@ const SystemSettings = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {["1", "2", "3", "4"].map(year => (
-                  <div key={year}>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Year {year} Sections</label>
+                  <div key={year} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">Year {year} Sections</label>
+                    <div className="flex flex-wrap gap-2 mb-3 min-h-[32px]">
+                      {(config.years && config.years[year] ? config.years[year] : []).map((sec, secIdx) => (
+                        <span key={secIdx} className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                          {sec}
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setSettings(prev => {
+                                const newConfigs = [...prev.branchConfigs]
+                                newConfigs[index].years[year] = newConfigs[index].years[year].filter((_, i) => i !== secIdx)
+                                return { ...prev, branchConfigs: newConfigs }
+                              })
+                            }}
+                            className="text-blue-600 hover:text-red-600 focus:outline-none transition-colors"
+                            title="Remove section"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                      {(!config.years || !config.years[year] || config.years[year].length === 0) && (
+                        <span className="text-xs text-gray-400 italic py-1">No sections</span>
+                      )}
+                    </div>
                     <input 
                       type="text" 
-                      value={(config.years && config.years[year]) ? config.years[year].join(', ') : ''} 
-                      onChange={(e) => {
-                        const val = e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                        setSettings(prev => {
-                          const newConfigs = [...prev.branchConfigs]
-                          if (!newConfigs[index].years) newConfigs[index].years = {}
-                          newConfigs[index].years[year] = val
-                          return { ...prev, branchConfigs: newConfigs }
-                        })
+                      placeholder="Type & press Enter..."
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const val = e.target.value.trim().toUpperCase();
+                          if (val) {
+                            setSettings(prev => {
+                              const newConfigs = [...prev.branchConfigs]
+                              if (!newConfigs[index].years) newConfigs[index].years = {}
+                              if (!newConfigs[index].years[year]) newConfigs[index].years[year] = []
+                              if (!newConfigs[index].years[year].includes(val)) {
+                                newConfigs[index].years[year].push(val)
+                                newConfigs[index].years[year].sort()
+                              }
+                              return { ...prev, branchConfigs: newConfigs }
+                            })
+                            e.target.value = '';
+                          }
+                        }
                       }}
-                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      placeholder="A, B, C..."
+                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white placeholder-gray-400"
                     />
                   </div>
                 ))}
