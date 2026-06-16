@@ -18,7 +18,7 @@ exports.getSettings = async (req, res) => {
       });
     }
     
-    const settingsObj = settings.toObject();
+    const settingsObj = settings.toObject({ flattenMaps: true });
     settingsObj.branches = settings.branchConfigs?.map(c => c.branch) || [];
     
     const allSections = new Set();
@@ -34,6 +34,8 @@ exports.getSettings = async (req, res) => {
       });
     }
     settingsObj.sections = Array.from(allSections).sort();
+    
+    console.log("Returning branchConfigs:", JSON.stringify(settingsObj.branchConfigs, null, 2));
 
     res.status(200).json({
       success: true,
@@ -63,6 +65,9 @@ exports.updateSettings = async (req, res) => {
       branchConfigs
     } = req.body;
     
+    console.log("Incoming settings", JSON.stringify(req.body, null, 2));
+    console.log("Incoming branchConfigs", JSON.stringify(branchConfigs, null, 2));
+    
     let settings = await Setting.findOne();
     
     if (!settings) {
@@ -77,11 +82,17 @@ exports.updateSettings = async (req, res) => {
     if (maintenanceMode !== undefined) settings.maintenanceMode = maintenanceMode;
     if (facultyRegistrationEnabled !== undefined) settings.facultyRegistrationEnabled = facultyRegistrationEnabled;
     if (emailDomain !== undefined) settings.emailDomain = emailDomain;
-    if (branchConfigs !== undefined) settings.branchConfigs = branchConfigs;
+    if (branchConfigs !== undefined) {
+      settings.branchConfigs = branchConfigs;
+      settings.markModified('branchConfigs');
+    }
     
     await settings.save();
     
-    const settingsObj = settings.toObject();
+    const updated = await Setting.findOne();
+    console.log("Saved settings", JSON.stringify(updated.branchConfigs, null, 2));
+    
+    const settingsObj = updated.toObject({ flattenMaps: true });
     settingsObj.branches = settings.branchConfigs?.map(c => c.branch) || [];
     const allSections = new Set();
     if (settingsObj.branchConfigs) {

@@ -44,6 +44,7 @@ const SystemSettings = () => {
 
   const handleSave = async () => {
     setSaving(true)
+    console.log("Saving settings", settings);
     try {
       await api.put('/settings', settings)
       toast.success('Settings saved successfully')

@@ -37,8 +37,7 @@ const settingSchema = new mongoose.Schema({
     type: [{
       branch: String,
       years: {
-        type: Map,
-        of: [String],
+        type: mongoose.Schema.Types.Mixed,
         default: {}
       }
     }],
