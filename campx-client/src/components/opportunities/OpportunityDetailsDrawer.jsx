@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Building2, MapPin, DollarSign, Calendar, Link as LinkIcon, Download, Users } from 'lucide-react';
 
 const OpportunityDetailsDrawer = ({ isOpen, onClose, opportunity, applicationStatus, onApply }) => {
+  const [hasVisitedLink, setHasVisitedLink] = useState(false);
+
+  useEffect(() => {
+    setHasVisitedLink(false);
+  }, [opportunity]);
   if (!isOpen || !opportunity) return null;
 
   return (
@@ -114,15 +119,26 @@ const OpportunityDetailsDrawer = ({ isOpen, onClose, opportunity, applicationSta
         
         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6">
           <button 
-            onClick={() => onApply(opportunity)}
+            onClick={() => {
+              if (opportunity.applicationLink && !hasVisitedLink) {
+                window.open(opportunity.applicationLink, '_blank');
+                setHasVisitedLink(true);
+              } else {
+                onApply(opportunity);
+              }
+            }}
             disabled={opportunity.status === 'Closed' || applicationStatus}
             className={`w-full py-3 px-4 font-bold rounded-xl shadow-sm transition-colors text-lg ${
               opportunity.status === 'Closed' || applicationStatus 
                 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-                : 'bg-blue-600 text-white hover:bg-blue-700'
+                : (hasVisitedLink ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-blue-600 text-white hover:bg-blue-700')
             }`}
           >
-            {applicationStatus ? `Status: ${applicationStatus}` : 'Apply Now'}
+            {applicationStatus 
+              ? `Status: ${applicationStatus}` 
+              : (opportunity.applicationLink && !hasVisitedLink 
+                  ? 'Apply Now' 
+                  : (opportunity.applicationLink && hasVisitedLink ? 'Mark as Registered' : 'Apply Now'))}
           </button>
         </div>
       </div>
