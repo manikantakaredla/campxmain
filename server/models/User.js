@@ -74,7 +74,7 @@ const userSchema = new mongoose.Schema({
     uppercase: true
   },
   admissionYear: { type: Number },
-  studentType: { type: String, enum: ["normal", "lateral"] },
+  studentType: { type: String, enum: ["normal", "lateral", "regular"] },
   currentYear: { type: Number, min: 1, max: 4 },
   currentSemester: { type: Number, min: 1, max: 8 },
   batch: { type: String },
