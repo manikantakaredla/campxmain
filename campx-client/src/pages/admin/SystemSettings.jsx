@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Settings, Globe, Mail, Bell, Shield, Save, RefreshCw, Layers, X, Plus } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
@@ -20,8 +20,25 @@ const SystemSettings = () => {
   const [showAddBranch, setShowAddBranch] = useState(false)
   const [newBranchName, setNewBranchName] = useState('')
 
-  const saveImmediate = async (newSettings) => {
-    setSettings(newSettings);
+  const settingsRef = useRef(settings)
+  useEffect(() => {
+    settingsRef.current = settings
+  }, [settings])
+
+  const updateBranchConfigs = async (updater) => {
+    const currentState = settingsRef.current;
+    const newConfigs = JSON.parse(JSON.stringify(currentState.branchConfigs || []));
+    
+    updater(newConfigs);
+    
+    const newSettings = { ...currentState, branchConfigs: newConfigs };
+    
+    console.log('Previous branchConfigs:', currentState.branchConfigs);
+    console.log('Updated branchConfigs:', newConfigs);
+    console.log('Request Payload:', newSettings);
+    
+    setSettings(prev => ({ ...prev, branchConfigs: newConfigs }));
+    
     try {
       await api.put('/settings', newSettings);
       toast.success('Saved automatically', { id: 'autosave', duration: 1500 });
@@ -32,14 +49,9 @@ const SystemSettings = () => {
 
   const handleAddBranch = () => {
     if (newBranchName.trim()) {
-      const newSettings = {
-        ...settings,
-        branchConfigs: [
-          ...(settings.branchConfigs || []),
-          { branch: newBranchName.trim().toUpperCase(), years: { "1": ["A", "B", "C"], "2": ["A", "B", "C"], "3": ["A", "B", "C"], "4": ["A", "B", "C"] } }
-        ]
-      };
-      saveImmediate(newSettings);
+      updateBranchConfigs(configs => {
+        configs.push({ branch: newBranchName.trim().toUpperCase(), years: { "1": ["A", "B", "C"], "2": ["A", "B", "C"], "3": ["A", "B", "C"], "4": ["A", "B", "C"] } })
+      });
       setNewBranchName('');
       setShowAddBranch(false);
     }
@@ -182,9 +194,8 @@ const SystemSettings = () => {
                 <h3 className="font-bold text-gray-800">{config.branch}</h3>
                 <button onClick={() => {
                   if(window.confirm("Are you sure you want to remove this branch?")) {
-                    saveImmediate({
-                      ...settings,
-                      branchConfigs: settings.branchConfigs.filter((_, i) => i !== index)
+                    updateBranchConfigs(configs => {
+                      configs.splice(index, 1);
                     });
                   }
                 }} className="text-red-500 text-sm hover:underline opacity-0 group-hover:opacity-100 transition-opacity">Remove Branch</button>
@@ -200,9 +211,9 @@ const SystemSettings = () => {
                           <button 
                             type="button"
                             onClick={() => {
-                              const newConfigs = [...settings.branchConfigs]
-                              newConfigs[index].years[year] = newConfigs[index].years[year].filter((_, i) => i !== secIdx)
-                              saveImmediate({ ...settings, branchConfigs: newConfigs })
+                              updateBranchConfigs(configs => {
+                                configs[index].years[year] = configs[index].years[year].filter((_, i) => i !== secIdx)
+                              })
                             }}
                             className="text-blue-600 hover:text-red-600 focus:outline-none transition-colors"
                             title="Remove section"
@@ -223,14 +234,14 @@ const SystemSettings = () => {
                           e.preventDefault();
                           const val = e.target.value.trim().toUpperCase();
                           if (val) {
-                            const newConfigs = [...settings.branchConfigs]
-                            if (!newConfigs[index].years) newConfigs[index].years = {}
-                            if (!newConfigs[index].years[year]) newConfigs[index].years[year] = []
-                            if (!newConfigs[index].years[year].includes(val)) {
-                              newConfigs[index].years[year].push(val)
-                              newConfigs[index].years[year].sort()
-                            }
-                            saveImmediate({ ...settings, branchConfigs: newConfigs })
+                            updateBranchConfigs(configs => {
+                              if (!configs[index].years) configs[index].years = {}
+                              if (!configs[index].years[year]) configs[index].years[year] = []
+                              if (!configs[index].years[year].includes(val)) {
+                                configs[index].years[year].push(val)
+                                configs[index].years[year].sort()
+                              }
+                            })
                             e.target.value = '';
                           }
                         }
