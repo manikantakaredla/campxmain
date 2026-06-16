@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { 
   FileText, Eye, Trash2, Search, Download, 
   ChevronLeft, ChevronRight, AlertCircle,
-  Image, File, FileSpreadsheet, FileArchive
+  Image, File, FileSpreadsheet, FileArchive, EyeOff, UploadCloud
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
@@ -52,6 +52,29 @@ const ResourceManagement = () => {
       fetchResources()
     } catch (error) {
       toast.error('Failed to delete resource')
+    }
+  }
+
+  const handleToggleStatus = async (resource) => {
+    const newStatus = resource.status === 'active' ? 'draft' : 'active'
+    if (newStatus === 'draft' && !window.confirm('Are you sure you want to unpublish this resource?')) return
+    if (newStatus === 'active' && !window.confirm('Are you sure you want to publish this resource? Students will be notified.')) return
+    
+    try {
+      await api.put(`/resources/${resource._id}`, {
+        title: resource.title,
+        description: resource.description,
+        category: resource.category,
+        visibility: resource.visibility,
+        targetBranch: resource.targetBranch,
+        targetYear: resource.targetYear,
+        targetSection: resource.targetSection,
+        status: newStatus
+      })
+      toast.success(newStatus === 'active' ? 'Resource published' : 'Resource unpublished')
+      fetchResources()
+    } catch (error) {
+      toast.error('Failed to update status')
     }
   }
 
@@ -144,6 +167,13 @@ const ResourceManagement = () => {
                     </span>
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => handleToggleStatus(resource)} 
+                      className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                      title={resource.status === 'active' ? 'Unpublish' : 'Publish'}
+                    >
+                      {resource.status === 'active' ? <EyeOff className="w-4 h-4" /> : <UploadCloud className="w-4 h-4" />}
+                    </button>
                     <Link to={`/resource/${resource._id}`} className="p-1.5 text-gray-400 hover:text-blue-600">
                       <Eye className="w-4 h-4" />
                     </Link>
@@ -152,7 +182,12 @@ const ResourceManagement = () => {
                     </button>
                   </div>
                 </div>
-                <h3 className="font-semibold text-gray-800 mb-1 line-clamp-1">{resource.title}</h3>
+                <h3 className="font-semibold text-gray-800 mb-1 line-clamp-1 flex items-center gap-2">
+                  {resource.title}
+                  {resource.status === 'draft' && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-medium">Draft</span>
+                  )}
+                </h3>
                 <p className="text-sm text-gray-500 line-clamp-2 mb-3">{resource.description || 'No description'}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1 text-xs text-gray-400">

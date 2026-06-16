@@ -486,30 +486,7 @@ const StudentCalendar = () => {
               </div>
             </div>
 
-            {/* Stats Summary Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-              <h4 className="text-sm font-semibold text-gray-800 mb-3">Event Summary</h4>
-              <div className="space-y-2">
-                {eventTypes.filter(t => t.value !== 'all').slice(0, 6).map(type => {
-                  const count = activities.filter(a => a.type === type.value).length
-                  return (
-                    <div key={type.value} className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <div className={`p-1 rounded ${type.color.split(' ')[0]}`}>
-                          {type.icon}
-                        </div>
-                        <span className="text-gray-600">{type.label}</span>
-                      </div>
-                      <span className="font-semibold text-gray-800">{count}</span>
-                    </div>
-                  )
-                })}
-              </div>
-              <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between text-sm">
-                <span className="text-gray-500">Total Events</span>
-                <span className="font-bold text-gray-800">{activities.length}</span>
-              </div>
-            </div>
+         
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@ import { SearchBar } from '../../components/common/SearchBar'
 import { Pagination } from '../../components/common/Pagination'
 import { Loader } from '../../components/common/Loader'
 import { EmptyState } from '../../components/common/EmptyState'
-import { FileText, Plus, Edit, Trash2, Eye, Download, X, Upload } from 'lucide-react'
+import { FileText, Plus, Edit, Trash2, Eye, Download, X, Upload, EyeOff, UploadCloud } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
@@ -20,6 +20,7 @@ const MyResources = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState('active')
   
   const [formData, setFormData] = useState({
     title: '',
@@ -70,6 +71,29 @@ const MyResources = () => {
     }
   }
 
+  const handleToggleStatus = async (resource) => {
+    const newStatus = resource.status === 'active' ? 'draft' : 'active'
+    if (newStatus === 'draft' && !window.confirm('Are you sure you want to unpublish this resource?')) return
+    if (newStatus === 'active' && !window.confirm('Are you sure you want to publish this resource? Students will be notified.')) return
+    
+    try {
+      await resourceService.update(resource._id, {
+        title: resource.title,
+        description: resource.description,
+        category: resource.category,
+        visibility: resource.visibility,
+        targetBranch: resource.targetBranch,
+        targetYear: resource.targetYear,
+        targetSection: resource.targetSection,
+        status: newStatus
+      })
+      toast.success(newStatus === 'active' ? 'Resource published' : 'Resource unpublished')
+      fetchResources()
+    } catch (error) {
+      toast.error('Failed to update status')
+    }
+  }
+
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
@@ -95,6 +119,7 @@ const MyResources = () => {
       submitData.append('targetBranch', formData.targetBranch)
       submitData.append('targetYear', formData.targetYear)
       submitData.append('targetSection', formData.targetSection)
+      submitData.append('status', submitStatus)
       submitData.append('file', formData.file)
       
       await api.post('/resources', submitData, {
@@ -175,6 +200,13 @@ const MyResources = () => {
                     {/* Only show Edit/Delete if user uploaded it */}
                     {(resource.uploadedBy === user?._id || resource.uploadedBy?._id === user?._id) && (
                       <>
+                        <button 
+                          onClick={() => handleToggleStatus(resource)} 
+                          className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                          title={resource.status === 'active' ? 'Unpublish' : 'Publish'}
+                        >
+                          {resource.status === 'active' ? <EyeOff className="w-4 h-4" /> : <UploadCloud className="w-4 h-4" />}
+                        </button>
                         <Link 
                           to={`/faculty/resources/edit/${resource._id}`} 
                           className="p-1.5 text-gray-400 hover:text-green-600 transition-colors"
@@ -188,7 +220,12 @@ const MyResources = () => {
                     )}
                   </div>
                 </div>
-                <h3 className="font-semibold text-gray-800 mb-1 line-clamp-1">{resource.title}</h3>
+                <h3 className="font-semibold text-gray-800 mb-1 line-clamp-1 flex items-center gap-2">
+                  {resource.title}
+                  {resource.status === 'draft' && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-medium">Draft</span>
+                  )}
+                </h3>
                 <p className="text-sm text-gray-500 line-clamp-2 mb-3">{resource.description}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
@@ -325,8 +362,21 @@ const MyResources = () => {
               
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <button type="button" onClick={() => setShowUploadModal(false)} className="btn-secondary">Cancel</button>
-                <button type="submit" disabled={submitting} className="btn-primary">
-                  {submitting ? 'Uploading...' : 'Upload Resource'}
+                <button 
+                  type="submit" 
+                  onClick={() => setSubmitStatus('draft')}
+                  disabled={submitting} 
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                >
+                  Save as Draft
+                </button>
+                <button 
+                  type="submit" 
+                  onClick={() => setSubmitStatus('active')}
+                  disabled={submitting} 
+                  className="btn-primary"
+                >
+                  {submitting ? 'Uploading...' : 'Publish'}
                 </button>
               </div>
             </form>

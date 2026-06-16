@@ -48,8 +48,12 @@ const resourceSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["active", "archived"],
+    enum: ["active", "archived", "draft"],
     default: "active"
+  },
+  notificationsSent: {
+    type: Boolean,
+    default: false
   },
   uploadedBy: {
     type: mongoose.Schema.Types.ObjectId,

@@ -145,16 +145,14 @@ async function createNotificationsForAnnouncement(announcement) {
         createdBy: announcement.createdBy._id || announcement.createdBy
       }));
 
-      await Notification.insertMany(notifications);
+      const insertedNotifications = await Notification.insertMany(notifications);
 
       const io = getIO();
       if (io) {
-        targetUsers.forEach(user => {
-          io.to(user._id.toString()).emit("new-notification", {
-            title: `New Announcement: ${announcement.title}`,
-            message: announcement.description.substring(0, 100),
-            type: announcement.type
-          });
+        insertedNotifications.forEach(notif => {
+          if (notif.targetUsers && notif.targetUsers[0]) {
+            io.to(notif.targetUsers[0].toString()).emit("new-notification", notif);
+          }
         });
       }
     }

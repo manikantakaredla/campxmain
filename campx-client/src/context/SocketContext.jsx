@@ -14,7 +14,7 @@ export const SocketProvider = ({ children }) => {
       
       socketInstance.on('connect', () => {
         console.log('Socket connected')
-        socketInstance.emit('join', user.id)
+        socketInstance.emit('join', user._id || user.id)
       })
       
       setSocket(socketInstance)

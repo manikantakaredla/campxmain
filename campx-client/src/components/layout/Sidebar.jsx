@@ -43,8 +43,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     // Student specific
     if (role === 'student') {
       return [
-        ...commonItems,
-        { path: '/opportunities', icon: <Briefcase size={20} />, label: 'Opportunities' }
+        { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
+        { path: '/announcements', icon: <UserCircle size={20} />, label: 'Announcements' },
+        { path: '/class-updates', icon: <BookOpen size={20} />, label: 'Class Updates' },
+        { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
+        { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
+        { path: '/opportunities', icon: <Briefcase size={20} />, label: 'Opportunities' },
+        { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
+        { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' }
       ]
     }
     

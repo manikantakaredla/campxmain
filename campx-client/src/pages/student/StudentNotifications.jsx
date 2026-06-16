@@ -282,6 +282,11 @@ const StudentNotifications = () => {
                             {notification.relatedId && (
                               <Link
                                 to={`/${notification.type === 'announcement' ? 'announcement' : notification.type === 'resource' ? 'resource' : 'activity'}/${notification.relatedId}`}
+                                onClick={() => {
+                                  if (!notification.isRead) {
+                                    handleMarkAsRead(notification._id);
+                                  }
+                                }}
                                 className="p-1.5 text-gray-400 hover:text-gray-700 transition-colors rounded-lg hover:bg-gray-100"
                               >
                                 <ChevronRight size={16} />

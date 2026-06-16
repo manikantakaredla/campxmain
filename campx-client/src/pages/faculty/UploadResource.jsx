@@ -10,6 +10,7 @@ const UploadResource = () => {
   const navigate = useNavigate()
   const { settings } = useSettings()
   const [loading, setLoading] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState('active')
   const user = authService.getStoredUser();
   const isAdminOrHigher = user && ['admin', 'management', 'principal', 'dean'].includes(user.role);
 
@@ -91,13 +92,14 @@ const UploadResource = () => {
       submitData.append('targetBranch', formData.targetBranch)
       submitData.append('targetYear', formData.targetYear)
       submitData.append('targetSection', formData.targetSection)
+      submitData.append('status', submitStatus)
       submitData.append('file', formData.file)
       
       const response = await resourceService.create(submitData)
       
       if (response.success) {
-        toast.success('Resource uploaded successfully!')
-        navigate('/faculty/resources')
+        toast.success(submitStatus === 'draft' ? 'Saved as draft!' : 'Resource published successfully!')
+        navigate(-1)
       } else {
         toast.error(response.message || 'Upload failed')
       }
@@ -303,13 +305,22 @@ const UploadResource = () => {
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
             <button
               type="button"
-              onClick={() => navigate('/faculty/resources')}
+              onClick={() => navigate(-1)}
               className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
+              onClick={() => setSubmitStatus('draft')}
+              disabled={loading}
+              className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              Save as Draft
+            </button>
+            <button
+              type="submit"
+              onClick={() => setSubmitStatus('active')}
               disabled={loading}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
@@ -321,7 +332,7 @@ const UploadResource = () => {
               ) : (
                 <>
                   <Upload className="w-4 h-4" />
-                  Upload Resource
+                  Publish
                 </>
               )}
             </button>

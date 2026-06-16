@@ -17,7 +17,8 @@ exports.createResource = async (req, res) => {
       visibility,
       targetBranch,
       targetYear,
-      targetSection
+      targetSection,
+      status
     } = req.body;
 
     if (!req.file) {
@@ -65,6 +66,7 @@ exports.createResource = async (req, res) => {
       }
     }
 
+    const resourceStatus = status || "active";
     const resource = await Resource.create({
       title,
       description,
@@ -77,17 +79,21 @@ exports.createResource = async (req, res) => {
       targetBranch: finalTargetBranch,
       targetYear,
       targetSection,
+      status: resourceStatus,
+      notificationsSent: resourceStatus === "active",
       uploadedBy: req.user.id
     });
 
     await resource.populate("uploadedBy", "name email");
 
-    // Create notifications for target users
-    await createNotificationsForResource(resource);
+    if (resource.status === "active") {
+      // Create notifications for target users
+      await createNotificationsForResource(resource);
 
-    // Emit realtime event
-    const io = getIO();
-    io.emit("new-resource", resource);
+      // Emit realtime event
+      const io = getIO();
+      io.emit("new-resource", resource);
+    }
 
     res.status(201).json({
       success: true,
@@ -149,14 +155,13 @@ async function createNotificationsForResource(resource) {
         createdBy: resource.uploadedBy._id
       }));
 
-      await Notification.insertMany(notifications);
+      const insertedNotifications = await Notification.insertMany(notifications);
 
       const io = getIO();
-      targetUsers.forEach(user => {
-        io.to(user._id.toString()).emit("new-notification", {
-          title: `New Resource: ${resource.title}`,
-          message: `New ${resource.category} available`
-        });
+      insertedNotifications.forEach(notif => {
+        if (notif.targetUsers && notif.targetUsers[0]) {
+          io.to(notif.targetUsers[0].toString()).emit("new-notification", notif);
+        }
       });
     }
   } catch (error) {
@@ -169,7 +174,12 @@ exports.getResources = async (req, res) => {
   try {
     const { page = 1, limit = 10, category, search, branch, year, forClass } = req.query;
     
-    let query = { status: "active" };
+    let query = {};
+    if (req.user && req.user.role === "student") {
+      query.status = "active";
+    } else {
+      query.status = { $in: ["active", "draft"] };
+    }
     
     if (category && category !== "all") {
       query.category = category;
@@ -292,13 +302,26 @@ exports.updateResource = async (req, res) => {
       });
     }
     
-    const { title, description, category, visibility, targetBranch, targetYear, targetSection } = req.body;
+    const { title, description, category, visibility, targetBranch, targetYear, targetSection, status } = req.body;
     
+    let sendNotifications = false;
+    if (status === "active" && resource.status !== "active" && !resource.notificationsSent) {
+      sendNotifications = true;
+    }
+
     const updatedResource = await Resource.findByIdAndUpdate(
       req.params.id,
-      { title, description, category, visibility, targetBranch, targetYear, targetSection },
+      { title, description, category, visibility, targetBranch, targetYear, targetSection, status },
       { new: true, runValidators: true }
     ).populate("uploadedBy", "name email");
+    
+    if (sendNotifications) {
+      updatedResource.notificationsSent = true;
+      await updatedResource.save();
+      await createNotificationsForResource(updatedResource);
+      const io = getIO();
+      io.emit("new-resource", updatedResource);
+    }
     
     res.status(200).json({
       success: true,

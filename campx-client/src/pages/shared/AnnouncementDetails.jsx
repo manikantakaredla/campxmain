@@ -173,8 +173,14 @@ const AnnouncementDetails = () => {
               {announcement.audience && (
                 <div className="flex items-center gap-2">
                   <Users size={14} className="text-gray-400" />
-                  <span>Target: {announcement.audience === 'all' ? 'All Users' : 
-                    announcement.audience === 'students' ? 'Students Only' : 'Faculty Only'}</span>
+                  <span>Target: {
+                    announcement.audience === 'all' ? 'All Users' : 
+                    announcement.audience === 'students' ? 'Students' : 
+                    announcement.audience === 'faculty' ? 'Faculty Only' :
+                    announcement.audience === 'individual' ? 'Specific Individuals' :
+                    announcement.audience === 'class' ? 'My Class' :
+                    announcement.audience === 'proctor' ? 'My Proctor Students' : 'Targeted Audience'
+                  }</span>
                 </div>
               )}
             </div>

@@ -89,14 +89,13 @@ async function createNotificationsForActivity(activity) {
         createdBy: activity.createdBy._id
       }));
       
-      await Notification.insertMany(notifications);
+      const insertedNotifications = await Notification.insertMany(notifications);
       
       const io = getIO();
-      targetUsers.forEach(user => {
-        io.to(user._id.toString()).emit("new-notification", {
-          title: `New ${activity.type}`,
-          message: activity.title
-        });
+      insertedNotifications.forEach(notif => {
+        if (notif.targetUsers && notif.targetUsers[0]) {
+          io.to(notif.targetUsers[0].toString()).emit("new-notification", notif);
+        }
       });
     }
   } catch (error) {

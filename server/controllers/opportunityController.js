@@ -53,9 +53,9 @@ exports.getOpportunityById = async (req, res, next) => {
     let applicationStatus = null;
     
     if (req.user.role === 'student') {
-      const saved = await SavedOpportunity.findOne({ studentId: req.user._id, opportunityId: opportunity._id });
+      const saved = await SavedOpportunity.findOne({ studentId: req.user.id, opportunityId: opportunity._id });
       isSaved = !!saved;
-      const app = await Application.findOne({ studentId: req.user._id, opportunityId: opportunity._id });
+      const app = await Application.findOne({ studentId: req.user.id, opportunityId: opportunity._id });
       if (app) applicationStatus = app.status;
     }
     res.status(200).json({ success: true, data: { ...opportunity.toObject(), isSaved, applicationStatus } });
@@ -64,7 +64,7 @@ exports.getOpportunityById = async (req, res, next) => {
 
 exports.createOpportunity = async (req, res, next) => {
   try {
-    const newOp = { ...req.body, createdBy: req.user._id };
+    const newOp = { ...req.body, createdBy: req.user.id };
     const opportunity = await Opportunity.create(newOp);
     
     // 1. Create Calendar Event
@@ -77,7 +77,7 @@ exports.createOpportunity = async (req, res, next) => {
         endDate: opportunity.eventDate,
         venue: opportunity.location || "TBD",
         status: "upcoming",
-        createdBy: req.user._id,
+        createdBy: req.user.id,
         inheritedAudience: { audienceType: opportunity.visibility === 'Public' ? 'all' : 'students' }
       });
       opportunity.calendarEventId = calendarEvent._id;
@@ -91,7 +91,7 @@ exports.createOpportunity = async (req, res, next) => {
         type: "placement",
         priority: opportunity.priority === 'Critical' ? 'urgent' : 'medium',
         audience: "students",
-        createdBy: req.user._id,
+        createdBy: req.user.id,
         eventDate: opportunity.eventDate,
         registrationDeadline: opportunity.registrationDeadline
       });
@@ -129,12 +129,12 @@ exports.createOpportunity = async (req, res, next) => {
           type: 'announcement',
           relatedId: opportunity._id,
           targetUsers: targetUserIds,
-          createdBy: req.user._id
+          createdBy: req.user.id
         });
       }
     }
     
-    await ActivityLog.create({ userId: req.user._id, action: 'Created Opportunity', module: 'Opportunities', entityId: opportunity._id });
+    await ActivityLog.create({ userId: req.user.id, action: 'Created Opportunity', module: 'Opportunities', entityId: opportunity._id });
     res.status(201).json({ success: true, data: opportunity });
   } catch (error) { next(error); }
 };
@@ -167,7 +167,7 @@ exports.updateOpportunity = async (req, res, next) => {
       });
     }
     
-    await ActivityLog.create({ userId: req.user._id, action: 'Updated Opportunity', module: 'Opportunities', entityId: opportunity._id });
+    await ActivityLog.create({ userId: req.user.id, action: 'Updated Opportunity', module: 'Opportunities', entityId: opportunity._id });
     res.status(200).json({ success: true, data: opportunity });
   } catch (error) { next(error); }
 };
@@ -179,7 +179,7 @@ exports.deleteOpportunity = async (req, res, next) => {
     
     opportunity.isDeleted = true;
     opportunity.deletedAt = new Date();
-    opportunity.deletedBy = req.user._id;
+    opportunity.deletedBy = req.user.id;
     await opportunity.save();
     
     // Delete/Archive Calendar Event
@@ -192,7 +192,7 @@ exports.deleteOpportunity = async (req, res, next) => {
       await Announcement.findByIdAndUpdate(opportunity.announcementId, { status: 'expired' });
     }
     
-    await ActivityLog.create({ userId: req.user._id, action: 'Deleted Opportunity', module: 'Opportunities', entityId: opportunity._id });
+    await ActivityLog.create({ userId: req.user.id, action: 'Deleted Opportunity', module: 'Opportunities', entityId: opportunity._id });
     res.status(200).json({ success: true, data: {} });
   } catch (error) { next(error); }
 };
@@ -217,7 +217,7 @@ exports.restoreOpportunity = async (req, res, next) => {
         endDate: opportunity.eventDate,
         venue: opportunity.location || "TBD",
         status: "upcoming",
-        createdBy: req.user._id
+        createdBy: req.user.id
       });
       opportunity.calendarEventId = calendarEvent._id;
       await opportunity.save();
@@ -228,7 +228,7 @@ exports.restoreOpportunity = async (req, res, next) => {
       await Announcement.findByIdAndUpdate(opportunity.announcementId, { status: 'active' });
     }
     
-    await ActivityLog.create({ userId: req.user._id, action: 'Restored Opportunity', module: 'Opportunities', entityId: opportunity._id });
+    await ActivityLog.create({ userId: req.user.id, action: 'Restored Opportunity', module: 'Opportunities', entityId: opportunity._id });
     res.status(200).json({ success: true, data: opportunity });
   } catch (error) { next(error); }
 };
@@ -237,7 +237,7 @@ exports.restoreOpportunity = async (req, res, next) => {
 exports.applyForOpportunity = async (req, res, next) => {
   try {
     const opportunityId = req.params.id;
-    const studentId = req.user._id;
+    const studentId = req.user.id;
     const opportunity = await Opportunity.findById(opportunityId);
     if (!opportunity || opportunity.isDeleted || opportunity.status === 'Closed') return res.status(400).json({ success: false, message: 'Opportunity is not available' });
     
@@ -258,7 +258,7 @@ exports.updateApplicationStatus = async (req, res, next) => {
     const application = await Application.findByIdAndUpdate(req.params.appId, { status, updatedAt: new Date() }, { new: true });
     if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
     
-    await ActivityLog.create({ userId: req.user._id, action: `Application ${status}`, module: 'Applications', entityId: application._id });
+    await ActivityLog.create({ userId: req.user.id, action: `Application ${status}`, module: 'Applications', entityId: application._id });
     res.status(200).json({ success: true, data: application });
   } catch (error) { next(error); }
 };
@@ -266,17 +266,17 @@ exports.updateApplicationStatus = async (req, res, next) => {
 // Saved Opportunities
 exports.saveOpportunity = async (req, res, next) => {
   try {
-    const existing = await SavedOpportunity.findOne({ opportunityId: req.params.id, studentId: req.user._id });
+    const existing = await SavedOpportunity.findOne({ opportunityId: req.params.id, studentId: req.user.id });
     if (existing) return res.status(400).json({ success: false, message: 'Already saved' });
     
-    await SavedOpportunity.create({ opportunityId: req.params.id, studentId: req.user._id });
+    await SavedOpportunity.create({ opportunityId: req.params.id, studentId: req.user.id });
     res.status(201).json({ success: true, message: 'Opportunity saved' });
   } catch (error) { next(error); }
 };
 
 exports.removeSavedOpportunity = async (req, res, next) => {
   try {
-    await SavedOpportunity.findOneAndDelete({ opportunityId: req.params.id, studentId: req.user._id });
+    await SavedOpportunity.findOneAndDelete({ opportunityId: req.params.id, studentId: req.user.id });
     res.status(200).json({ success: true, message: 'Saved opportunity removed' });
   } catch (error) { next(error); }
 };
