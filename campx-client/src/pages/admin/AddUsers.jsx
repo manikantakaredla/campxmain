@@ -223,6 +223,7 @@ const AddUsers = () => {
                   <li><strong>For Students:</strong> rollNumber, branch, section</li>
                   <li><strong>For Staff:</strong> employeeId, department, designation</li>
                   <li><strong>Valid Roles:</strong> student, faculty, hod, admin, dean, principal</li>
+                  <li><strong>Valid Branches:</strong> Use exact short names like: {departments.join(', ') || 'CSE, ECE, MECH'}</li>
                 </ul>
               </div>
 

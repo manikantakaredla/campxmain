@@ -354,8 +354,19 @@ const UserManagement = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {currentSections.length === 0 ? (
             <div className="col-span-full p-8 text-center text-gray-500 bg-white rounded-xl shadow-sm border border-gray-100">
-              <Layers className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-              <p>No sections configured for this branch {yearFilter ? `and year ${yearFilter}` : ''}.</p>
+              <Layers className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="mb-4">No sections configured for this branch {yearFilter ? `and year ${yearFilter}` : ''}.</p>
+              <button 
+                onClick={() => {
+                  setSelectedSection(null)
+                  setViewState('students')
+                  setCurrentPage(1)
+                  setSearchTerm('')
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium inline-flex items-center gap-2"
+              >
+                <Users className="w-4 h-4" /> View All Students in {selectedDept}
+              </button>
             </div>
           ) : (
             currentSections.map(sec => (

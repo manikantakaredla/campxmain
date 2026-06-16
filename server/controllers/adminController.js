@@ -42,9 +42,9 @@ const normalizeBranchName = (input, validBranches) => {
 
   // 4. Reverse substring: If the input contains a known abbreviation
   for (const [abbr, expanded] of Object.entries(abbreviations)) {
-    // If user typed "B.Tech CSE"
+    // If user typed "B.Tech CSE" or "Computer Science"
     if (cleanInput.includes(abbr) || cleanInput.includes(expanded)) {
-      const match = validBranches.find(b => b.toUpperCase().includes(expanded));
+      const match = validBranches.find(b => b.toUpperCase().includes(expanded) || b.toUpperCase() === abbr);
       if (match) return match;
     }
   }
@@ -108,10 +108,10 @@ exports.getAllUsers = async (req, res) => {
       query.role = role;
     }
     if (req.query.branch) {
-      query.branch = req.query.branch;
+      query.branch = { $regex: new RegExp(`^${req.query.branch}$`, 'i') };
     }
     if (req.query.section) {
-      query.section = req.query.section;
+      query.section = { $regex: new RegExp(`^${req.query.section}$`, 'i') };
     }
     if (req.query.currentYear) {
       query.currentYear = parseInt(req.query.currentYear);
