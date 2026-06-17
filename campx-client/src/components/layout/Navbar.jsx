@@ -5,7 +5,7 @@ import { useNotifications } from '../../hooks/useNotifications'
 import { Bell, User, LogOut, ChevronDown } from 'lucide-react'
 
 const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const { notifications, unreadCount } = useNotifications()
   const [showDropdown, setShowDropdown] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
@@ -33,7 +33,7 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
             {showNotifications && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setShowNotifications(false)} />
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-100 z-20 overflow-hidden">
+                <div className="absolute right-[-40px] sm:right-0 mt-2 w-[90vw] sm:w-80 max-w-[360px] bg-white rounded-xl shadow-lg border border-gray-100 z-20 overflow-hidden">
                   <div className="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                     <h3 className="text-sm font-semibold text-gray-800">Notifications</h3>
                   </div>
@@ -97,13 +97,22 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
                     <Link
                       to={`/${user?.role === 'student' ? 'student' : user?.role === 'faculty' ? 'faculty' : user?.role === 'admin' ? 'admin' : 'management'}/profile`}
                       onClick={() => setShowDropdown(false)}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full transition-colors"
                     >
                       <User size={16} />
                       Profile
                     </Link>
-                    <hr className="my-1" />
-                    
+                    <button
+                      onClick={() => {
+                        setShowDropdown(false);
+                        logout();
+                        navigate('/');
+                      }}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left transition-colors"
+                    >
+                      <LogOut size={16} />
+                      Logout
+                    </button>
                   </div>
                 </div>
               </>

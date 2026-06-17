@@ -212,7 +212,7 @@ const StudentDashboard = () => {
                   <Link 
                     key={item._id} 
                     to={`/announcement/${item._id}`}
-                    className="block px-5 py-4 hover:bg-gray-50 transition-colors"
+                    className="block px-4 py-3 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-start gap-3">
                       <div className="w-1 h-10 bg-blue-400 rounded-full flex-shrink-0 mt-1" />
@@ -264,7 +264,7 @@ const StudentDashboard = () => {
                   <Link 
                     key={item._id} 
                     to={`/resource/${item._id}`}
-                    className="block px-5 py-4 hover:bg-gray-50 transition-colors"
+                    className="block px-4 py-3 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-start gap-3">
                       <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -304,13 +304,13 @@ const StudentDashboard = () => {
               </Link>
             </div>
             
-            <div className="p-5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 md:p-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                 {upcomingEvents.slice(0, 3).map((event) => (
                   <Link 
                     key={event._id} 
                     to={`/activity/${event._id}`}
-                    className="block p-4 rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all"
+                    className="block p-3 md:p-4 rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all"
                   >
                     <div className="flex items-start gap-3">
                       <div className="text-center min-w-[55px]">

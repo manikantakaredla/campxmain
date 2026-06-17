@@ -266,31 +266,49 @@ const StudentAnnouncements = () => {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="flex flex-col divide-y divide-gray-100 bg-white rounded-2xl md:rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             {announcements.map((item, idx) => (
               <Link
                 key={item._id}
                 to={`/announcement/${item._id}`}
-                className="block bg-white rounded-3xl md:rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 group"
+                className="block hover:bg-gray-50 transition-colors duration-200 group relative overflow-hidden"
               >
-                <div className="p-6 md:p-5">
-                  <div className="flex items-start gap-4">
-                    {/* Priority indicator bar */}
-                    <div className={`w-1 h-12 rounded-full flex-shrink-0 ${
-                      item.priority === 'urgent' ? 'bg-red-500' :
-                      item.priority === 'high' ? 'bg-orange-500' :
-                      item.priority === 'medium' ? 'bg-yellow-500' :
-                      'bg-gray-300'
-                    }`} />
+                {/* Mobile urgent indicator line on left edge */}
+                <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                  item.priority === 'urgent' ? 'bg-red-500' :
+                  item.priority === 'high' ? 'bg-orange-500' :
+                  'bg-transparent'
+                }`} />
+                
+                <div className="p-4 md:p-5 pl-5">
+                  <div className="flex items-center gap-3">
+                    {/* Icon container */}
+                    <div className={`hidden md:flex w-10 h-10 rounded-full items-center justify-center flex-shrink-0 ${
+                      item.priority === 'urgent' ? 'bg-red-50 text-red-600' :
+                      item.priority === 'high' ? 'bg-orange-50 text-orange-600' :
+                      item.priority === 'medium' ? 'bg-yellow-50 text-yellow-600' :
+                      'bg-blue-50 text-blue-600'
+                    }`}>
+                      <Bell size={18} />
+                    </div>
                     
                     <div className="flex-1 min-w-0">
-                      {/* Title and badges */}
-                      <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <h2 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <h2 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 truncate">
                           {item.title}
                         </h2>
+                        <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                          {new Date(item.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      
+                      <p className="text-gray-500 text-xs truncate mb-1.5">
+                        {item.description}
+                      </p>
+                      
+                      <div className="flex items-center gap-2">
                         {item.priority && item.priority !== 'low' && (
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded ${
                             item.priority === 'urgent' ? 'bg-red-50 text-red-600' :
                             item.priority === 'high' ? 'bg-orange-50 text-orange-600' :
                             item.priority === 'medium' ? 'bg-yellow-50 text-yellow-600' :
@@ -300,40 +318,15 @@ const StudentAnnouncements = () => {
                           </span>
                         )}
                         {item.type && item.type !== 'general' && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">
                             {getTypeLabel(item.type)}
                           </span>
                         )}
-                      </div>
-                      
-                      {/* Description */}
-                      <p className="text-gray-600 text-sm leading-relaxed line-clamp-2 mb-3">
-                        {item.description}
-                      </p>
-                      
-                      {/* Meta info */}
-                      <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div className="flex items-center gap-4 text-xs text-gray-400">
-                          <div className="flex items-center gap-1">
-                            <Calendar size={12} />
-                            {new Date(item.createdAt).toLocaleDateString()}
-                          </div>
-                          {item.location && (
-                            <div className="flex items-center gap-1">
-                              <MapPin size={12} />
-                              {item.location}
-                            </div>
-                          )}
-                          {item.expiryDate && new Date(item.expiryDate) > new Date() && (
-                            <div className="flex items-center gap-1 text-amber-600">
-                              <Bell size={12} />
-                              Expires {new Date(item.expiryDate).toLocaleDateString()}
-                            </div>
-                          )}
-                        </div>
-                        <span className="text-blue-600 text-sm font-medium hover:text-blue-700 flex items-center gap-1">
-                          Read More <ChevronRight size={14} />
-                        </span>
+                        {item.location && (
+                          <span className="text-[10px] text-gray-400 flex items-center gap-0.5 ml-auto">
+                            <MapPin size={10} /> {item.location}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

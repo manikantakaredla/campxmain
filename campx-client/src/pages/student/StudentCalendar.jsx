@@ -276,11 +276,11 @@ const StudentCalendar = () => {
                     return (
                       <div
                         key={idx}
-                        className={`min-h-[110px] p-1.5 border border-gray-100 transition-all ${
+                        className={`min-h-[70px] md:min-h-[100px] p-1 border border-gray-100 transition-all ${
                           day.isCurrentMonth ? 'bg-white' : 'bg-gray-50'
                         } ${hasEvents ? 'hover:bg-blue-50/20 cursor-pointer' : ''}`}
                       >
-                        <span className={`text-sm font-medium w-7 h-7 inline-flex items-center justify-center rounded-full ${
+                        <span className={`text-xs md:text-sm font-medium w-6 h-6 inline-flex items-center justify-center rounded-full ${
                           isToday ? 'bg-blue-600 text-white shadow-sm' : ''
                         } ${!day.isCurrentMonth ? 'text-gray-400' : 'text-gray-700'}`}>
                           {day.day}
@@ -427,7 +427,7 @@ const StudentCalendar = () => {
                 )}
               </div>
               
-              <div className="p-3 max-h-[500px] overflow-y-auto">
+              <div className="p-3 max-h-[250px] md:max-h-[500px] overflow-y-auto">
                 {upcomingEvents.length === 0 ? (
                   <div className="text-center py-12">
                     <Calendar size={40} className="text-gray-300 mx-auto mb-3" />
