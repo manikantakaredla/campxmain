@@ -125,62 +125,62 @@ const StudentDashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-2 md:pb-0 -mx-5 px-5 md:mx-0 md:px-0">
-          <div className="w-[85vw] max-w-[280px] shrink-0 md:w-auto snap-center bg-white rounded-3xl md:rounded-xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
-                <Megaphone size={20} className="text-blue-600" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+          <div className="bg-white rounded-2xl md:rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2 md:mb-4">
+              <div className="w-8 h-8 md:w-12 md:h-12 bg-blue-50 rounded-xl md:rounded-2xl flex items-center justify-center">
+                <Megaphone className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
               </div>
-              <TrendingUp size={16} className="text-green-500" />
+              <TrendingUp size={14} className="text-green-500 hidden md:block" />
             </div>
-            <p className="text-3xl font-bold text-gray-800">{stats.announcements}</p>
-            <p className="text-sm text-gray-500 mt-1">Announcements</p>
-            <Link to="/student/announcements" className="text-sm font-medium text-blue-600 mt-4 inline-flex items-center gap-1">
-              View all <ArrowRight size={14} />
+            <p className="text-2xl md:text-3xl font-bold text-gray-800">{stats.announcements}</p>
+            <p className="text-xs md:text-sm text-gray-500 mt-0.5 md:mt-1 truncate">Announcements</p>
+            <Link to="/student/announcements" className="text-xs md:text-sm font-medium text-blue-600 mt-2 md:mt-4 inline-flex items-center gap-1">
+              View all <ArrowRight size={12} className="md:w-3.5 md:h-3.5" />
             </Link>
           </div>
 
-          <div className="w-[85vw] max-w-[280px] shrink-0 md:w-auto snap-center bg-white rounded-3xl md:rounded-xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center">
-                <FileText size={20} className="text-green-600" />
+          <div className="bg-white rounded-2xl md:rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2 md:mb-4">
+              <div className="w-8 h-8 md:w-12 md:h-12 bg-green-50 rounded-xl md:rounded-2xl flex items-center justify-center">
+                <FileText className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-gray-800">{stats.resources}</p>
-            <p className="text-sm text-gray-500 mt-1">Resources</p>
-            <Link to="/student/resources" className="text-sm font-medium text-green-600 mt-4 inline-flex items-center gap-1">
-              Browse <ArrowRight size={14} />
+            <p className="text-2xl md:text-3xl font-bold text-gray-800">{stats.resources}</p>
+            <p className="text-xs md:text-sm text-gray-500 mt-0.5 md:mt-1 truncate">Resources</p>
+            <Link to="/student/resources" className="text-xs md:text-sm font-medium text-green-600 mt-2 md:mt-4 inline-flex items-center gap-1">
+              Browse <ArrowRight size={12} className="md:w-3.5 md:h-3.5" />
             </Link>
           </div>
 
-          <div className="w-[85vw] max-w-[280px] shrink-0 md:w-auto snap-center bg-white rounded-3xl md:rounded-xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center">
-                <Calendar size={20} className="text-purple-600" />
+          <div className="bg-white rounded-2xl md:rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2 md:mb-4">
+              <div className="w-8 h-8 md:w-12 md:h-12 bg-purple-50 rounded-xl md:rounded-2xl flex items-center justify-center">
+                <Calendar className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-gray-800">{stats.events}</p>
-            <p className="text-sm text-gray-500 mt-1">Events This Month</p>
-            <Link to="/student/calendar" className="text-sm font-medium text-purple-600 mt-4 inline-flex items-center gap-1">
-              View calendar <ArrowRight size={14} />
+            <p className="text-2xl md:text-3xl font-bold text-gray-800">{stats.events}</p>
+            <p className="text-xs md:text-sm text-gray-500 mt-0.5 md:mt-1 truncate">Events</p>
+            <Link to="/student/calendar" className="text-xs md:text-sm font-medium text-purple-600 mt-2 md:mt-4 inline-flex items-center gap-1">
+              Calendar <ArrowRight size={12} className="md:w-3.5 md:h-3.5" />
             </Link>
           </div>
 
-          <div className="w-[85vw] max-w-[280px] shrink-0 md:w-auto snap-center bg-white rounded-3xl md:rounded-xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center">
-                <Bell size={20} className="text-orange-600" />
+          <div className="bg-white rounded-2xl md:rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2 md:mb-4">
+              <div className="w-8 h-8 md:w-12 md:h-12 bg-orange-50 rounded-xl md:rounded-2xl flex items-center justify-center">
+                <Bell className="w-4 h-4 md:w-5 md:h-5 text-orange-600" />
               </div>
               {stats.unreadNotifications > 0 && (
-                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium shadow-sm">
+                <span className="bg-red-500 text-white text-[10px] md:text-xs px-1.5 py-0.5 md:px-2 md:py-1 rounded-full font-medium shadow-sm">
                   {stats.unreadNotifications}
                 </span>
               )}
             </div>
-            <p className="text-3xl font-bold text-gray-800">{stats.unreadNotifications}</p>
-            <p className="text-sm text-gray-500 mt-1">Unread Alerts</p>
-            <Link to="/student/notifications" className="text-sm font-medium text-orange-600 mt-4 inline-flex items-center gap-1">
-              Check now <ArrowRight size={14} />
+            <p className="text-2xl md:text-3xl font-bold text-gray-800">{stats.unreadNotifications}</p>
+            <p className="text-xs md:text-sm text-gray-500 mt-0.5 md:mt-1 truncate">Alerts</p>
+            <Link to="/student/notifications" className="text-xs md:text-sm font-medium text-orange-600 mt-2 md:mt-4 inline-flex items-center gap-1">
+              Check <ArrowRight size={12} className="md:w-3.5 md:h-3.5" />
             </Link>
           </div>
         </div>
