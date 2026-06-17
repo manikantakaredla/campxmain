@@ -378,7 +378,8 @@ const UserManagement = () => {
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="w-full">
+                {/* Desktop Table */}
+                <table className="w-full hidden md:table">
                   <thead className="bg-gray-50 border-b border-gray-100">
                     <tr>
                       <th className="text-left p-4 font-semibold text-gray-600">User</th>
@@ -447,15 +448,64 @@ const UserManagement = () => {
                                 <Shield className="w-4 h-4" />
                               </button>
                               <button onClick={() => setShowDeleteModal(user)} className="p-1.5 text-gray-400 hover:text-red-600 transition-colors" title="Delete User">
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden flex flex-col divide-y divide-gray-100">
+                  {users.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">
+                      <Users className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                      No users found
+                    </div>
+                  ) : (
+                    users.map((user) => (
+                      <div key={user._id} className="p-4 hover:bg-gray-50 transition-all flex flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-indigo-100 text-indigo-700 font-bold rounded-full flex items-center justify-center flex-shrink-0">
+                            {user.name?.charAt(0) || 'U'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-800 line-clamp-1">{user.name}</p>
+                            <p className="text-xs text-gray-400">
+                              {user.rollNumber || user.employeeId || 'N/A'} • {user.role}
+                            </p>
+                          </div>
+                          <div>
+                            {user.isActive ? (
+                              <span className="inline-flex text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
+                            ) : (
+                              <span className="inline-flex text-[10px] px-2 py-0.5 bg-red-100 text-red-700 rounded-full">Inactive</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between mt-1">
+                          <div className="flex gap-2">
+                            <Link to={`/admin/users/${user._id}`} className="p-2 bg-gray-100 text-gray-600 rounded-lg" title="View Details">
+                              <Eye className="w-4 h-4" />
+                            </Link>
+                            <button onClick={() => { setShowResetModal(user); }} className="p-2 bg-gray-100 text-orange-600 rounded-lg" title="Reset Password">
+                              <RefreshCw className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => { setNewRole(user.role); setShowRoleModal(user); }} className="p-2 bg-gray-100 text-purple-600 rounded-lg" title="Change Role">
+                              <Shield className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => setShowDeleteModal(user)} className="p-2 bg-red-50 text-red-600 rounded-lg" title="Delete User">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
               </div>
 
               {totalPages > 1 && (

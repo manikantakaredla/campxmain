@@ -12,7 +12,7 @@ const OpportunityCard = ({
   const isEligible = true; // In real app, calculate based on student profile
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col h-full">
+    <div className="bg-white rounded-3xl md:rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col h-full">
       <div className="p-5 flex-grow">
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">

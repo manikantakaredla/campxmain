@@ -124,7 +124,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
   return (
     <div
-      className={`bg-gray-900 text-white transition-all duration-300 flex flex-col ${
+      className={`hidden md:flex bg-gray-900 text-white transition-all duration-300 flex-col ${
         sidebarOpen ? 'w-64' : 'w-20'
       }`}
     >

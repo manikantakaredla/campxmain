@@ -1,74 +1,70 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import Layout from './components/layout/Layout'
 
-// Auth Pages
+// Loading Component (inline to avoid import issues)
+const LoadingSpinner = () => (
+  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-fitbit-primary border-t-transparent rounded-full animate-spin" />
+  </div>
+)
+
+// Auth Pages (Keep static for fast initial load)
 import LandingPage from './pages/auth/LandingPage'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import ResetPassword from './pages/auth/ResetPassword'
 
-// Student Pages
-import StudentDashboard from './pages/student/StudentDashboard'
-import StudentAnnouncements from './pages/student/StudentAnnouncements'
-import StudentResources from './pages/student/StudentResources'
-import StudentCalendar from './pages/student/StudentCalendar'
-import StudentProfile from './pages/student/StudentProfile'
-import StudentNotifications from './pages/student/StudentNotifications'
-import ClassUpdates from './pages/student/ClassUpdates'
-import OpportunitiesDashboard from './pages/student/Opportunities/OpportunitiesDashboard'
+// Lazy loaded pages
+const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'))
+const StudentAnnouncements = lazy(() => import('./pages/student/StudentAnnouncements'))
+const StudentResources = lazy(() => import('./pages/student/StudentResources'))
+const StudentCalendar = lazy(() => import('./pages/student/StudentCalendar'))
+const StudentProfile = lazy(() => import('./pages/student/StudentProfile'))
+const StudentNotifications = lazy(() => import('./pages/student/StudentNotifications'))
+const ClassUpdates = lazy(() => import('./pages/student/ClassUpdates'))
+const OpportunitiesDashboard = lazy(() => import('./pages/student/Opportunities/OpportunitiesDashboard'))
 
-// Shared Pages
-import AnnouncementDetails from './pages/shared/AnnouncementDetails'
-import ResourceDetails from './pages/shared/ResourceDetails'
-import ActivityDetails from './pages/shared/ActivityDetails'
+const AnnouncementDetails = lazy(() => import('./pages/shared/AnnouncementDetails'))
+const ResourceDetails = lazy(() => import('./pages/shared/ResourceDetails'))
+const ActivityDetails = lazy(() => import('./pages/shared/ActivityDetails'))
 
-// Faculty Pages
-import FacultyDashboard from './pages/faculty/FacultyDashboard'
-import MyStudents from './pages/faculty/MyStudents'
-import MyAnnouncements from './pages/faculty/MyAnnouncements'
-import FacultyCreateAnnouncement from './pages/faculty/CreateAnnouncement'
-import FacultyEditAnnouncement from './pages/faculty/EditAnnouncement'
-import MyResources from './pages/faculty/Myresources'
-import UploadResource from './pages/faculty/UploadResource'
-import EditResource from './pages/faculty/EditResource'
-import MyActivities from './pages/faculty/MyActivities'
-import CreateActivity from './pages/faculty/CreateActivity'
-import EditActivity from './pages/faculty/EditActivity'
-import FacultyProfile from './pages/faculty/FacultyProfile'
-import FacultyNotifications from './pages/faculty/FacultyNotifications'
-import FacultyStudentDetails from './pages/faculty/StudentDetails'
+const FacultyDashboard = lazy(() => import('./pages/faculty/FacultyDashboard'))
+const MyStudents = lazy(() => import('./pages/faculty/MyStudents'))
+const MyAnnouncements = lazy(() => import('./pages/faculty/MyAnnouncements'))
+const FacultyCreateAnnouncement = lazy(() => import('./pages/faculty/CreateAnnouncement'))
+const FacultyEditAnnouncement = lazy(() => import('./pages/faculty/EditAnnouncement'))
+const MyResources = lazy(() => import('./pages/faculty/Myresources'))
+const UploadResource = lazy(() => import('./pages/faculty/UploadResource'))
+const EditResource = lazy(() => import('./pages/faculty/EditResource'))
+const MyActivities = lazy(() => import('./pages/faculty/MyActivities'))
+const CreateActivity = lazy(() => import('./pages/faculty/CreateActivity'))
+const EditActivity = lazy(() => import('./pages/faculty/EditActivity'))
+const FacultyProfile = lazy(() => import('./pages/faculty/FacultyProfile'))
+const FacultyNotifications = lazy(() => import('./pages/faculty/FacultyNotifications'))
+const FacultyStudentDetails = lazy(() => import('./pages/faculty/StudentDetails'))
 
-// Management Pages
-import ManagementDashboard from './pages/management/ManagementDashboard'
-import FacultyManagement from './pages/management/FacultyManagement'
-import FacultyDetails from './pages/management/FacultyDetails'
-import AssignStudents from './pages/management/AssignStudents'
-import DepartmentStudents from './pages/management/DepartmentStudents'
-import ManagementStudentDetails from './pages/management/StudentDetails'
-import UploadAssignments from './pages/management/UploadAssignments'
+const ManagementDashboard = lazy(() => import('./pages/management/ManagementDashboard'))
+const FacultyManagement = lazy(() => import('./pages/management/FacultyManagement'))
+const FacultyDetails = lazy(() => import('./pages/management/FacultyDetails'))
+const AssignStudents = lazy(() => import('./pages/management/AssignStudents'))
+const DepartmentStudents = lazy(() => import('./pages/management/DepartmentStudents'))
+const ManagementStudentDetails = lazy(() => import('./pages/management/StudentDetails'))
+const UploadAssignments = lazy(() => import('./pages/management/UploadAssignments'))
 
-// Admin Pages
-import AdminDashboard from './pages/admin/AdminDashboard'
-import UserManagement from './pages/admin/UserManagement'
-import UserDetails from './pages/admin/UserDetails'
-import AnnouncementManagement from './pages/admin/AnnouncementManagement'
-import ResourceManagement from './pages/admin/ResourceManagement'
-import CalendarManagement from './pages/admin/CalendarManagement'
-import DataUpload from './pages/admin/DataUpload'
-import SystemSettings from './pages/admin/SystemSettings'
-import AdminCreateAnnouncement from './pages/admin/CreateAnnouncement'
-import AdminEditAnnouncement from './pages/admin/EditAnnouncement'
-import AdminOpportunities from './pages/admin/Opportunities/AdminOpportunities'
-import PlacementUpload from './pages/admin/Opportunities/PlacementUpload'
-import PlacementAnalytics from './pages/admin/Opportunities/PlacementAnalytics'
-
-// Loading Component (inline to avoid import issues)
-const LoadingSpinner = () => (
-  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-  </div>
-)
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const UserManagement = lazy(() => import('./pages/admin/UserManagement'))
+const UserDetails = lazy(() => import('./pages/admin/UserDetails'))
+const AnnouncementManagement = lazy(() => import('./pages/admin/AnnouncementManagement'))
+const ResourceManagement = lazy(() => import('./pages/admin/ResourceManagement'))
+const CalendarManagement = lazy(() => import('./pages/admin/CalendarManagement'))
+const DataUpload = lazy(() => import('./pages/admin/DataUpload'))
+const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'))
+const AdminCreateAnnouncement = lazy(() => import('./pages/admin/CreateAnnouncement'))
+const AdminEditAnnouncement = lazy(() => import('./pages/admin/EditAnnouncement'))
+const AdminOpportunities = lazy(() => import('./pages/admin/Opportunities/AdminOpportunities'))
+const PlacementUpload = lazy(() => import('./pages/admin/Opportunities/PlacementUpload'))
+const PlacementAnalytics = lazy(() => import('./pages/admin/Opportunities/PlacementAnalytics'))
 
 // Role-based route guard
 const RoleBasedRedirect = ({ role }) => {
@@ -89,7 +85,6 @@ function App() {
 
   if (loading) return <LoadingSpinner />
 
-  // Not authenticated - show auth routes
   if (!isAuthenticated) {
     return (
       <Routes>
@@ -102,25 +97,29 @@ function App() {
 
   const role = user?.role
 
-  // Student Routes
+  const wrapSuspense = (Component) => (
+    <Suspense fallback={<LoadingSpinner />}>
+      <Component />
+    </Suspense>
+  )
+
   if (role === 'student') {
     return (
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/student/dashboard" replace />} />
-          <Route path="/student/dashboard" element={<StudentDashboard />} />
-          <Route path="/student/announcements" element={<StudentAnnouncements />} />
-          <Route path="/student/resources" element={<StudentResources />} />
-          <Route path="/student/calendar" element={<StudentCalendar />} />
-          <Route path="/student/profile" element={<StudentProfile />} />
-          <Route path="/student/notifications" element={<StudentNotifications />} />
-          <Route path="/student/opportunities" element={<OpportunitiesDashboard />} />
-          <Route path="/student/class-updates" element={<ClassUpdates />} />
+          <Route path="/student/dashboard" element={wrapSuspense(StudentDashboard)} />
+          <Route path="/student/announcements" element={wrapSuspense(StudentAnnouncements)} />
+          <Route path="/student/resources" element={wrapSuspense(StudentResources)} />
+          <Route path="/student/calendar" element={wrapSuspense(StudentCalendar)} />
+          <Route path="/student/profile" element={wrapSuspense(StudentProfile)} />
+          <Route path="/student/notifications" element={wrapSuspense(StudentNotifications)} />
+          <Route path="/student/opportunities" element={wrapSuspense(OpportunitiesDashboard)} />
+          <Route path="/student/class-updates" element={wrapSuspense(ClassUpdates)} />
           
-          {/* Shared routes */}
-          <Route path="/announcement/:id" element={<AnnouncementDetails />} />
-          <Route path="/resource/:id" element={<ResourceDetails />} />
-          <Route path="/activity/:id" element={<ActivityDetails />} />
+          <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
+          <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
+          <Route path="/activity/:id" element={wrapSuspense(ActivityDetails)} />
           
           <Route path="*" element={<Navigate to="/student/dashboard" replace />} />
         </Route>
@@ -128,30 +127,29 @@ function App() {
     )
   }
 
-  // Faculty Routes
   if (role === 'faculty') {
     return (
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/faculty/dashboard" replace />} />
-          <Route path="/faculty/dashboard" element={<FacultyDashboard />} />
-          <Route path="/faculty/students" element={<MyStudents />} />
-          <Route path="/faculty/students/:id" element={<FacultyStudentDetails />} />
-          <Route path="/faculty/announcements" element={<MyAnnouncements />} />
-          <Route path="/faculty/announcements/create" element={<FacultyCreateAnnouncement />} />
-          <Route path="/faculty/announcements/edit/:id" element={<FacultyEditAnnouncement />} />
-          <Route path="/faculty/resources" element={<MyResources />} />
-          <Route path="/faculty/resources/upload" element={<UploadResource />} />
-          <Route path="/faculty/resources/edit/:id" element={<EditResource />} />
-          <Route path="/faculty/activities" element={<MyActivities />} />
-          <Route path="/faculty/activities/create" element={<CreateActivity />} />
-          <Route path="/faculty/activities/edit/:id" element={<EditActivity />} />
-          <Route path="/faculty/profile" element={<FacultyProfile />} />
-          <Route path="/faculty/notifications" element={<FacultyNotifications />} />
+          <Route path="/faculty/dashboard" element={wrapSuspense(FacultyDashboard)} />
+          <Route path="/faculty/students" element={wrapSuspense(MyStudents)} />
+          <Route path="/faculty/students/:id" element={wrapSuspense(FacultyStudentDetails)} />
+          <Route path="/faculty/announcements" element={wrapSuspense(MyAnnouncements)} />
+          <Route path="/faculty/announcements/create" element={wrapSuspense(FacultyCreateAnnouncement)} />
+          <Route path="/faculty/announcements/edit/:id" element={wrapSuspense(FacultyEditAnnouncement)} />
+          <Route path="/faculty/resources" element={wrapSuspense(MyResources)} />
+          <Route path="/faculty/resources/upload" element={wrapSuspense(UploadResource)} />
+          <Route path="/faculty/resources/edit/:id" element={wrapSuspense(EditResource)} />
+          <Route path="/faculty/activities" element={wrapSuspense(MyActivities)} />
+          <Route path="/faculty/activities/create" element={wrapSuspense(CreateActivity)} />
+          <Route path="/faculty/activities/edit/:id" element={wrapSuspense(EditActivity)} />
+          <Route path="/faculty/profile" element={wrapSuspense(FacultyProfile)} />
+          <Route path="/faculty/notifications" element={wrapSuspense(FacultyNotifications)} />
           
-          <Route path="/announcement/:id" element={<AnnouncementDetails />} />
-          <Route path="/resource/:id" element={<ResourceDetails />} />
-          <Route path="/activity/:id" element={<ActivityDetails />} />
+          <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
+          <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
+          <Route path="/activity/:id" element={wrapSuspense(ActivityDetails)} />
           
           <Route path="*" element={<Navigate to="/faculty/dashboard" replace />} />
         </Route>
@@ -159,35 +157,34 @@ function App() {
     )
   }
 
-  // Management Routes
   if (['hod', 'deputyhod', 'dean', 'principal'].includes(role)) {
     return (
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/management/dashboard" replace />} />
-          <Route path="/management/dashboard" element={<ManagementDashboard />} />
-          <Route path="/management/faculty" element={<FacultyManagement />} />
-          <Route path="/management/faculty/:id" element={<FacultyDetails />} />
-          <Route path="/management/assign-students" element={<AssignStudents />} />
-          <Route path="/management/students" element={<DepartmentStudents />} />
-          <Route path="/management/students/:id" element={<ManagementStudentDetails />} />
-          <Route path="/management/upload/class" element={<UploadAssignments />} />
-          <Route path="/management/upload/proctor" element={<UploadAssignments />} />
-          <Route path="/management/announcements" element={<MyAnnouncements />} />
-          <Route path="/management/announcements/create" element={<FacultyCreateAnnouncement />} />
-          <Route path="/management/announcements/edit/:id" element={<FacultyEditAnnouncement />} />
-          <Route path="/management/resources" element={<MyResources />} />
-          <Route path="/management/resources/upload" element={<UploadResource />} />
-          <Route path="/management/resources/edit/:id" element={<EditResource />} />
-          <Route path="/management/activities" element={<MyActivities />} />
-          <Route path="/management/activities/create" element={<CreateActivity />} />
-          <Route path="/management/activities/edit/:id" element={<EditActivity />} />
-          <Route path="/management/profile" element={<FacultyProfile />} />
-          <Route path="/management/notifications" element={<FacultyNotifications />} />
+          <Route path="/management/dashboard" element={wrapSuspense(ManagementDashboard)} />
+          <Route path="/management/faculty" element={wrapSuspense(FacultyManagement)} />
+          <Route path="/management/faculty/:id" element={wrapSuspense(FacultyDetails)} />
+          <Route path="/management/assign-students" element={wrapSuspense(AssignStudents)} />
+          <Route path="/management/students" element={wrapSuspense(DepartmentStudents)} />
+          <Route path="/management/students/:id" element={wrapSuspense(ManagementStudentDetails)} />
+          <Route path="/management/upload/class" element={wrapSuspense(UploadAssignments)} />
+          <Route path="/management/upload/proctor" element={wrapSuspense(UploadAssignments)} />
+          <Route path="/management/announcements" element={wrapSuspense(MyAnnouncements)} />
+          <Route path="/management/announcements/create" element={wrapSuspense(FacultyCreateAnnouncement)} />
+          <Route path="/management/announcements/edit/:id" element={wrapSuspense(FacultyEditAnnouncement)} />
+          <Route path="/management/resources" element={wrapSuspense(MyResources)} />
+          <Route path="/management/resources/upload" element={wrapSuspense(UploadResource)} />
+          <Route path="/management/resources/edit/:id" element={wrapSuspense(EditResource)} />
+          <Route path="/management/activities" element={wrapSuspense(MyActivities)} />
+          <Route path="/management/activities/create" element={wrapSuspense(CreateActivity)} />
+          <Route path="/management/activities/edit/:id" element={wrapSuspense(EditActivity)} />
+          <Route path="/management/profile" element={wrapSuspense(FacultyProfile)} />
+          <Route path="/management/notifications" element={wrapSuspense(FacultyNotifications)} />
           
-          <Route path="/announcement/:id" element={<AnnouncementDetails />} />
-          <Route path="/resource/:id" element={<ResourceDetails />} />
-          <Route path="/activity/:id" element={<ActivityDetails />} />
+          <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
+          <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
+          <Route path="/activity/:id" element={wrapSuspense(ActivityDetails)} />
           
           <Route path="*" element={<Navigate to="/management/dashboard" replace />} />
         </Route>
@@ -195,29 +192,28 @@ function App() {
     )
   }
 
-  // Admin Routes
   if (role === 'admin') {
     return (
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/users" element={<UserManagement />} />
-          <Route path="/admin/users/:id" element={<UserDetails />} />
-          <Route path="/admin/announcements" element={<AnnouncementManagement />} />
-          <Route path="/admin/announcements/create" element={<AdminCreateAnnouncement />} />
-          <Route path="/admin/announcements/edit/:id" element={<AdminEditAnnouncement />} />
-          <Route path="/admin/resources" element={<ResourceManagement />} />
-          <Route path="/admin/calendar" element={<CalendarManagement />} />
-          <Route path="/admin/upload-data" element={<DataUpload />} />
-          <Route path="/admin/settings" element={<SystemSettings />} />
-          <Route path="/admin/opportunities" element={<AdminOpportunities />} />
-          <Route path="/admin/placements/upload" element={<PlacementUpload />} />
-          <Route path="/admin/placements/analytics" element={<PlacementAnalytics />} />
+          <Route path="/admin/dashboard" element={wrapSuspense(AdminDashboard)} />
+          <Route path="/admin/users" element={wrapSuspense(UserManagement)} />
+          <Route path="/admin/users/:id" element={wrapSuspense(UserDetails)} />
+          <Route path="/admin/announcements" element={wrapSuspense(AnnouncementManagement)} />
+          <Route path="/admin/announcements/create" element={wrapSuspense(AdminCreateAnnouncement)} />
+          <Route path="/admin/announcements/edit/:id" element={wrapSuspense(AdminEditAnnouncement)} />
+          <Route path="/admin/resources" element={wrapSuspense(ResourceManagement)} />
+          <Route path="/admin/calendar" element={wrapSuspense(CalendarManagement)} />
+          <Route path="/admin/upload-data" element={wrapSuspense(DataUpload)} />
+          <Route path="/admin/settings" element={wrapSuspense(SystemSettings)} />
+          <Route path="/admin/opportunities" element={wrapSuspense(AdminOpportunities)} />
+          <Route path="/admin/placements/upload" element={wrapSuspense(PlacementUpload)} />
+          <Route path="/admin/placements/analytics" element={wrapSuspense(PlacementAnalytics)} />
           
-          <Route path="/announcement/:id" element={<AnnouncementDetails />} />
-          <Route path="/resource/:id" element={<ResourceDetails />} />
-          <Route path="/activity/:id" element={<ActivityDetails />} />
+          <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
+          <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
+          <Route path="/activity/:id" element={wrapSuspense(ActivityDetails)} />
           
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Route>
@@ -225,7 +221,6 @@ function App() {
     )
   }
 
-  // Fallback - should not reach here normally
   return <RoleBasedRedirect role={role} />
 }
 

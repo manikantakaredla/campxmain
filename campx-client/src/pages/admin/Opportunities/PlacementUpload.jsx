@@ -80,19 +80,19 @@ const PlacementUpload = () => {
         <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm animate-in fade-in duration-300">
           
           {/* Template Download Area */}
-          <div className="flex items-start justify-between bg-blue-50 border border-blue-100 p-4 rounded-xl mb-8">
+          <div className="flex flex-col md:flex-row items-start justify-between bg-blue-50 border border-blue-100 p-4 md:p-6 rounded-2xl md:rounded-xl mb-8 gap-4 md:gap-0">
             <div>
-              <h3 className="font-semibold text-blue-900 flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-blue-900 flex items-center gap-2 mb-2">
                 <FileSpreadsheet size={18} /> Format Guidelines
               </h3>
-              <p className="text-sm text-blue-800">
-                Please ensure your file matches the required template structure. Required columns include: <br/>
-                <span className="font-mono bg-white px-1 py-0.5 rounded text-blue-900 mt-1 inline-block">rollNumber, companyName, package, placementYear, offerType</span>
+              <p className="text-sm text-blue-800 leading-relaxed">
+                Please ensure your file matches the required template structure. Required columns include: <br className="hidden md:block"/>
+                <span className="font-mono bg-white px-2 py-1 rounded-lg text-blue-900 mt-2 inline-block shadow-sm">rollNumber, companyName, package, placementYear, offerType</span>
               </p>
             </div>
             <button 
               onClick={downloadTemplate}
-              className="flex items-center gap-2 bg-white text-blue-700 px-4 py-2 rounded-lg border border-blue-200 hover:bg-blue-100 font-medium whitespace-nowrap shadow-sm"
+              className="w-full md:w-auto flex justify-center items-center gap-2 bg-white text-blue-700 px-5 py-3 md:py-2 rounded-xl md:rounded-lg border border-blue-200 hover:bg-blue-100 font-medium shadow-sm transition-all"
             >
               <FileDown size={18} /> Download Template
             </button>
@@ -100,7 +100,7 @@ const PlacementUpload = () => {
 
           {/* Drag & Drop Area */}
           <div 
-            className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer ${
+            className={`border-2 border-dashed rounded-3xl md:rounded-xl p-8 md:p-12 text-center transition-colors cursor-pointer ${
               isDragging ? 'border-blue-500 bg-blue-50' : file ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:bg-gray-50'
             }`}
             onDragOver={handleDragOver}

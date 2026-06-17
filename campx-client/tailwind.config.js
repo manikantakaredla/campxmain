@@ -7,6 +7,17 @@ export default {
   theme: {
     extend: {
       colors: {
+        fitbit: {
+          primary: '#14B8A6',
+          secondary: '#0F766E',
+          bg: '#F8FAFC',
+          surface: '#FFFFFF',
+          text: '#0F172A',
+          muted: '#64748B',
+          success: '#22C55E',
+          warning: '#F59E0B',
+          danger: '#EF4444'
+        },
         primary: {
           50: '#eff6ff',
           100: '#dbeafe',
@@ -20,6 +31,10 @@ export default {
           900: '#1e3a8a',
         },
       },
+      borderRadius: {
+        '4xl': '2rem',
+        '5xl': '2.5rem',
+      }
     },
   },
   plugins: [],

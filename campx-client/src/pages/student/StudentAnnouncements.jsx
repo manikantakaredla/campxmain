@@ -271,9 +271,9 @@ const StudentAnnouncements = () => {
               <Link
                 key={item._id}
                 to={`/announcement/${item._id}`}
-                className="block bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 group"
+                className="block bg-white rounded-3xl md:rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 group"
               >
-                <div className="p-5">
+                <div className="p-6 md:p-5">
                   <div className="flex items-start gap-4">
                     {/* Priority indicator bar */}
                     <div className={`w-1 h-12 rounded-full flex-shrink-0 ${
