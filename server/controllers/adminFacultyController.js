@@ -146,8 +146,12 @@ exports.updateFacultySubjects = async (req, res) => {
     await ActivityLog.create({
       userId: req.user.id,
       action: "UPDATED_FACULTY_SUBJECTS",
-      details: `Updated subjects for faculty ${faculty.name} (${faculty.employeeId})`,
-      ipAddress: req.ip
+      module: "FacultyManagement",
+      entityId: faculty._id,
+      metadata: {
+        details: `Updated subjects for faculty ${faculty.name} (${faculty.employeeId})`,
+        ipAddress: req.ip
+      }
     });
 
     res.status(200).json({ success: true, message: "Faculty subjects updated successfully", facultySubjects: faculty.facultySubjects });
