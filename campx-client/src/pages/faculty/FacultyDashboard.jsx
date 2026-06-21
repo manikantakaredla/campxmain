@@ -16,7 +16,8 @@ import {
   UserPlus,
   Download,
   Eye,
-  TrendingUp
+  TrendingUp,
+  BookOpen
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -32,6 +33,7 @@ const FacultyDashboard = () => {
   const [recentAnnouncements, setRecentAnnouncements] = useState([])
   const [recentResources, setRecentResources] = useState([])
   const [classAssignmentsSummary, setClassAssignmentsSummary] = useState(null)
+  const [workloadSummary, setWorkloadSummary] = useState(null)
 
   useEffect(() => {
     fetchAnnouncements()
@@ -39,6 +41,7 @@ const FacultyDashboard = () => {
     fetchClassStudents()
     fetchProctorStudents()
     fetchClassAssignmentsSummary()
+    fetchWorkloadSummary()
   }, [])
 
   const fetchAnnouncements = async () => {
@@ -82,6 +85,17 @@ const FacultyDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching class assignments summary:', error);
+    }
+  }
+
+  const fetchWorkloadSummary = async () => {
+    try {
+      const res = await facultyService.getWorkloadSummary();
+      if (res.success) {
+        setWorkloadSummary(res.workload);
+      }
+    } catch (error) {
+      console.error('Error fetching workload summary:', error);
     }
   }
 
@@ -212,6 +226,82 @@ const FacultyDashboard = () => {
             )
           })}
         </div>
+
+        {/* Workload Summary */}
+        {workloadSummary && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+            <div className="p-5 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-purple-500" />
+                My Workload Summary
+              </h3>
+            </div>
+            <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100 text-center hover:shadow-md transition-all">
+                <p className="text-sm font-medium text-blue-600 mb-1">Primary Subjects</p>
+                <p className="text-3xl font-bold text-blue-700">{workloadSummary.subjects?.primary?.length || 0}</p>
+              </div>
+              <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100 text-center hover:shadow-md transition-all">
+                <p className="text-sm font-medium text-indigo-600 mb-1">Secondary Subjects</p>
+                <p className="text-3xl font-bold text-indigo-700">{workloadSummary.subjects?.secondary?.length || 0}</p>
+              </div>
+              <div className="bg-green-50 rounded-xl p-4 border border-green-100 text-center hover:shadow-md transition-all">
+                <p className="text-sm font-medium text-green-600 mb-1">Class Sections</p>
+                <p className="text-3xl font-bold text-green-700">{workloadSummary.classAssignments?.length || 0}</p>
+              </div>
+              <div className="bg-orange-50 rounded-xl p-4 border border-orange-100 text-center hover:shadow-md transition-all">
+                <p className="text-sm font-medium text-orange-600 mb-1">Proctor Students</p>
+                <p className="text-3xl font-bold text-orange-700">
+                  {workloadSummary.proctorAssignments?.reduce((acc, curr) => acc + curr.studentCount, 0) || 0}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* My Subjects */}
+        {workloadSummary && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+            <div className="p-5 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-500" />
+                My Subjects
+              </h3>
+            </div>
+            <div className="p-5 space-y-5">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-600 mb-3 border-b border-gray-100 pb-2">Primary Subjects</h4>
+                {workloadSummary.subjects?.primary?.length > 0 ? (
+                  <div className="flex flex-wrap gap-3">
+                    {workloadSummary.subjects.primary.map(sub => (
+                      <span key={sub._id} className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium border border-blue-100 shadow-sm flex items-center gap-2">
+                        <BookOpen size={16} />
+                        {sub.name} <span className="opacity-70">({sub.code})</span>
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400 italic">No primary subjects assigned.</p>
+                )}
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-gray-600 mb-3 border-b border-gray-100 pb-2">Secondary Subjects</h4>
+                {workloadSummary.subjects?.secondary?.length > 0 ? (
+                  <div className="flex flex-wrap gap-3">
+                    {workloadSummary.subjects.secondary.map(sub => (
+                      <span key={sub._id} className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg text-sm font-medium border border-indigo-100 shadow-sm flex items-center gap-2">
+                        <BookOpen size={16} />
+                        {sub.name} <span className="opacity-70">({sub.code})</span>
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400 italic">No secondary subjects assigned.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Class Assignments Summary Widget */}
         {classAssignmentsSummary && classAssignmentsSummary.totalSections > 0 && (

@@ -95,6 +95,10 @@ const userSchema = new mongoose.Schema({
   managedBranches: {
     type: [String],
     default: []
+  },
+  facultySubjects: {
+    primary: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }],
+    secondary: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }]
   }
 
 }, { 

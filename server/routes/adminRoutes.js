@@ -23,6 +23,13 @@ const authorizeRoles = require("../middleware/roleMiddleware");
 const upload = require("../middleware/uploadMiddleware");
 const csvUpload = require("../middleware/csvUploadMiddleware"); // ADD THIS
 
+const {
+  getFacultyList,
+  getFacultyDetails,
+  updateFacultySubjects,
+  getFacultyAnalytics
+} = require("../controllers/adminFacultyController");
+
 // ==================== ALL ROUTES REQUIRE AUTH ====================
 router.use(protect);
 
@@ -38,6 +45,12 @@ router.put("/users/:id", authorizeRoles("admin"), updateUser);
 router.delete("/users/:id", authorizeRoles("admin"), deleteUser);
 router.put("/users/:id/reset-password", authorizeRoles("admin"), resetUserPassword);
 router.put("/users/:id/role", authorizeRoles("admin"), updateUserRole);
+
+// ==================== FACULTY MANAGEMENT (Admin) ====================
+router.get("/faculty/analytics", authorizeRoles("admin", "management"), getFacultyAnalytics);
+router.get("/faculty", authorizeRoles("admin", "management"), getFacultyList);
+router.get("/faculty/:id", authorizeRoles("admin", "management"), getFacultyDetails);
+router.put("/faculty/:id/subjects", authorizeRoles("admin"), updateFacultySubjects);
 
 // Student and Faculty data upload (Admin only) - USE csvUpload
 router.post("/upload/students", authorizeRoles("admin"), csvUpload.single("file"), uploadStudents);

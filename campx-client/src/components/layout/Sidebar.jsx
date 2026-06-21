@@ -89,6 +89,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       return [
         { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
         { path: '/users', icon: <Users size={20} />, label: 'User Management' },
+        { path: '/faculty-management', icon: <Briefcase size={20} />, label: 'Faculty Management' },
         { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
         { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
         { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },

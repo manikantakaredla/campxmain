@@ -3,6 +3,50 @@ const ClassStudentAssignment = require("../models/ClassStudentAssignment");
 const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
 const ClassSectionAssignment = require("../models/ClassSectionAssignment");
 
+// ==================== GET WORKLOAD SUMMARY ====================
+exports.getWorkloadSummary = async (req, res) => {
+  try {
+    const facultyId = req.user.id;
+    
+    const faculty = await User.findById(facultyId)
+      .populate('facultySubjects.primary')
+      .populate('facultySubjects.secondary')
+      .lean();
+
+    const classAssignments = await ClassSectionAssignment.find({ facultyId, isActive: true }).lean();
+    
+    // Group proctor assignments by department, year, section
+    const proctorAssignments = await ProctorStudentAssignment.aggregate([
+      { $match: { facultyId: faculty._id } },
+      { $lookup: { from: 'users', localField: 'studentId', foreignField: '_id', as: 'student' } },
+      { $unwind: '$student' },
+      {
+        $group: {
+          _id: { department: '$student.branch', year: '$student.currentYear', section: '$student.section' },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      workload: {
+        subjects: faculty.facultySubjects || { primary: [], secondary: [] },
+        classAssignments,
+        proctorAssignments: proctorAssignments.map(pa => ({
+          department: pa._id.department,
+          year: pa._id.year,
+          section: pa._id.section,
+          studentCount: pa.count
+        }))
+      }
+    });
+  } catch (error) {
+    console.error("Get workload summary error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // ==================== GET CLASS ASSIGNMENTS SUMMARY ====================
 exports.getClassAssignmentsSummary = async (req, res) => {
   try {

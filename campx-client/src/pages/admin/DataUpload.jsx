@@ -26,19 +26,7 @@ const DataUpload = () => {
       columns: ['empid', 'name', 'dept', 'designation', 'staff_role'],
       endpoint: '/admin/upload/faculty',
       template: 'faculty_template.csv',
-      sample: 'empid,name,dept,designation,staff_role\nFAC001,Dr. Rajesh Kumar,Computer Science,Professor,faculty' },
-    { id: 'class', label: 'Class Assignments', 
-      description: 'Assign class students to faculty members',
-      columns: ['FacultyEmployeeID', 'RollNumber'],
-      endpoint: '/admin/upload/class-assignments',
-      template: 'class_assignments_template.csv',
-      sample: 'FacultyEmployeeID,RollNumber\nFAC001,24B11CS052\nFAC001,24B11CS053' },
-    { id: 'proctor', label: 'Proctor Assignments', 
-      description: 'Assign proctor students to faculty members',
-      columns: ['FacultyEmployeeID', 'RollNumber'],
-      endpoint: '/admin/upload/proctor-assignments',
-      template: 'proctor_assignments_template.csv',
-      sample: 'FacultyEmployeeID,RollNumber\nFAC001,24B11CS052\nFAC002,24B11CS053' },
+      sample: 'empid,name,dept,designation,staff_role\nFAC001,Dr. Rajesh Kumar,Computer Science,Professor,faculty' }
   ]
 
   const currentTab = tabs.find(t => t.id === activeTab)
@@ -145,30 +133,7 @@ const DataUpload = () => {
         ))}
       </div>
 
-      {activeTab === 'class' && (
-        <div className="flex gap-6 border-b mb-6">
-          <button
-            onClick={() => { setClassSubTab('section'); setUploadResult(null); setSelectedFile(null) }}
-            className={`pb-3 font-medium transition-all ${
-              classSubTab === 'section' ? 'border-b-2 border-blue-600 text-blue-600' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Assign by Section
-          </button>
-          <button
-            onClick={() => { setClassSubTab('bulk'); setUploadResult(null); setSelectedFile(null) }}
-            className={`pb-3 font-medium transition-all ${
-              classSubTab === 'bulk' ? 'border-b-2 border-blue-600 text-blue-600' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Bulk Upload
-          </button>
-        </div>
-      )}
-
-      {activeTab === 'class' && classSubTab === 'section' ? (
-        <ClassSectionAssignmentsTab />
-      ) : (
+      {activeTab === 'students' || activeTab === 'faculty' ? (
         <>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Upload Card */}
@@ -284,7 +249,8 @@ const DataUpload = () => {
         </div>
       )}
         </>
-      )}
+      ) : null}
+
     </div>
   )
 }

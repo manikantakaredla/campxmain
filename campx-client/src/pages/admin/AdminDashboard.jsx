@@ -20,10 +20,12 @@ const AdminDashboard = () => {
     activeUsers: 0
   });
   const [recentUsers, setRecentUsers] = useState([]);
+  const [facultyStats, setFacultyStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchDashboardData();
+    fetchFacultyAnalytics();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -45,6 +47,17 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchFacultyAnalytics = async () => {
+    try {
+      const response = await api.get('/admin/faculty/analytics');
+      if (response.data.success) {
+        setFacultyStats(response.data.analytics);
+      }
+    } catch (error) {
+      console.error('Error fetching faculty analytics:', error);
+    }
+  };
+
   const statCards = [
     { label: 'Total Students', value: stats.totalStudents, icon: GraduationCap, change: '+12%', color: 'blue', link: '/admin/users' },
     { label: 'Total Faculty', value: stats.totalFaculty, icon: Briefcase, change: '+5%', color: 'purple', link: '/admin/users' },
@@ -57,7 +70,7 @@ const AdminDashboard = () => {
   const quickActions = [
     { icon: Upload, label: 'Upload Students', desc: 'Import student data', color: 'blue', link: '/admin/upload-data' },
     { icon: Upload, label: 'Upload Faculty', desc: 'Import faculty data', color: 'green', link: '/admin/upload-data' },
-    { icon: Megaphone, label: 'Announcements', desc: 'Create new announcement', color: 'purple', link: '/admin/announcements' },
+    { icon: Briefcase, label: 'Faculty Workload', desc: 'Manage subjects and classes', color: 'purple', link: '/admin/faculty-management' },
     { icon: Settings, label: 'Settings', desc: 'Configure platform', color: 'gray', link: '/admin/settings' },
   ];
 
@@ -249,6 +262,36 @@ const AdminDashboard = () => {
               })}
             </div>
           </div>
+
+          {/* Faculty Analytics */}
+          {facultyStats && (
+            <div className="bg-white rounded-xl border border-gray-100/80 shadow-sm overflow-hidden">
+              <div className="px-4 sm:px-5 py-3 border-b border-gray-100">
+                <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                  <Briefcase size={16} className="text-purple-400" />
+                  Faculty Workload Overview
+                </h3>
+              </div>
+              <div className="p-4 space-y-3">
+                <div className="flex justify-between items-center bg-gray-50 p-2 rounded text-sm">
+                  <span className="text-gray-600">Total Faculty</span>
+                  <span className="font-semibold text-gray-800">{facultyStats.totalFaculty}</span>
+                </div>
+                <div className="flex justify-between items-center bg-gray-50 p-2 rounded text-sm">
+                  <span className="text-gray-600">Subjects Assigned</span>
+                  <span className="font-semibold text-gray-800">{facultyStats.totalSubjectsAssigned}</span>
+                </div>
+                <div className="flex justify-between items-center bg-gray-50 p-2 rounded text-sm">
+                  <span className="text-gray-600">Class Sections</span>
+                  <span className="font-semibold text-gray-800">{facultyStats.totalClassSectionsAssigned}</span>
+                </div>
+                <div className="flex justify-between items-center bg-gray-50 p-2 rounded text-sm">
+                  <span className="text-gray-600">Proctor Students</span>
+                  <span className="font-semibold text-gray-800">{facultyStats.totalProctorStudentsAssigned}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

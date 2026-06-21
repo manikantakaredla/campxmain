@@ -8,6 +8,12 @@ export const facultyService = {
     return response.data
   },
 
+  // Get workload summary
+  getWorkloadSummary: async () => {
+    const response = await api.get('/faculty/me/workload');
+    return response.data;
+  },
+
   // Get class assignments summary
   getClassAssignmentsSummary: async () => {
     const response = await api.get('/faculty/class-assignments-summary')

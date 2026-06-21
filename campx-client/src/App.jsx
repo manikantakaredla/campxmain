@@ -65,6 +65,7 @@ const AdminEditAnnouncement = lazy(() => import('./pages/admin/EditAnnouncement'
 const AdminOpportunities = lazy(() => import('./pages/admin/Opportunities/AdminOpportunities'))
 const PlacementUpload = lazy(() => import('./pages/admin/Opportunities/PlacementUpload'))
 const PlacementAnalytics = lazy(() => import('./pages/admin/Opportunities/PlacementAnalytics'))
+const AdminFacultyManagement = lazy(() => import('./pages/admin/FacultyManagement'))
 
 // Role-based route guard
 const RoleBasedRedirect = ({ role }) => {
@@ -210,6 +211,7 @@ function App() {
           <Route path="/admin/opportunities" element={wrapSuspense(AdminOpportunities)} />
           <Route path="/admin/placements/upload" element={wrapSuspense(PlacementUpload)} />
           <Route path="/admin/placements/analytics" element={wrapSuspense(PlacementAnalytics)} />
+          <Route path="/admin/faculty-management" element={wrapSuspense(AdminFacultyManagement)} />
           
           <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
           <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
