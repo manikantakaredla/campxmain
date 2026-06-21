@@ -8,6 +8,12 @@ export const facultyService = {
     return response.data
   },
 
+  // Get class assignments summary
+  getClassAssignmentsSummary: async () => {
+    const response = await api.get('/faculty/class-assignments-summary')
+    return response.data
+  },
+
   // Get class students
   getClassStudents: async (params = {}) => {
     const query = new URLSearchParams(params).toString()

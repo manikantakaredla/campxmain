@@ -107,7 +107,7 @@ userSchema.index({ role: 1, isActive: 1 });
 userSchema.index({ branch: 1, role: 1 });
 userSchema.index({ department: 1, role: 1 });
 userSchema.index({ currentYear: 1, role: 1 });
-userSchema.index({ role: 1, isActive: 1, branch: 1, currentYear: 1, section: 1 });
+userSchema.index({ branch: 1, currentYear: 1, section: 1, role: 1, isActive: 1 });
 userSchema.index({ role: 1, isActive: 1, department: 1 });
 userSchema.index({ createdAt: -1 });
 

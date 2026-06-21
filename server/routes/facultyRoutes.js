@@ -5,13 +5,15 @@ const {
   getProctorStudents,
   getAllAssignedStudents, getAllDepartmentStudents,
   searchStudents,
-  getStudentDetail
+  getStudentDetail,
+  getClassAssignmentsSummary
 } = require("../controllers/facultyController");
 const protect = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
 
 router.use(protect, authorizeRoles("faculty", "hod", "deputyhod", "dean", "principal"));
 
+router.get("/class-assignments-summary", getClassAssignmentsSummary);
 router.get("/students/class", getClassStudents);
 router.get("/students/proctor", getProctorStudents);
 router.get("/students/all", getAllDepartmentStudents);

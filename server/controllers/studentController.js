@@ -22,18 +22,16 @@ exports.getProfile = async (req, res) => {
       });
     }
     
-    const classFaculty = await ClassStudentAssignment.findOne({ studentId: user._id })
-      .populate("facultyId", "name employeeId department designation profilePicture");
-    
-    const proctorFaculty = await ProctorStudentAssignment.findOne({ studentId: user._id })
-      .populate("facultyId", "name employeeId department designation profilePicture");
+    const { resolveClassFaculty, resolveProctorFaculty } = require("../utils/assignmentResolver");
+    const classResult = await resolveClassFaculty(user);
+    const proctorResult = await resolveProctorFaculty(user);
     
     res.status(200).json({
       success: true,
       user,
       assignments: {
-        classFaculty: classFaculty?.facultyId || null,
-        proctorFaculty: proctorFaculty?.facultyId || null
+        classFaculty: classResult?.faculty || null,
+        proctorFaculty: proctorResult?.faculty || null
       }
     });
   } catch (error) {
@@ -309,23 +307,21 @@ if (
 // ==================== GET ASSIGNED FACULTY ====================
 exports.getAssignedFaculty = async (req, res) => {
   try {
-    const studentId = req.user.id;
-    const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
-    const ClassStudentAssignment = require("../models/ClassStudentAssignment");
+    const student = await User.findById(req.user.id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: "Student not found" });
+    }
 
-    const proctorAssignment = await ProctorStudentAssignment.findOne({ studentId })
-      .populate("facultyId", "name email phoneNumber department staffRole")
-      .lean();
-      
-    const classAssignment = await ClassStudentAssignment.findOne({ studentId })
-      .populate("facultyId", "name email phoneNumber department staffRole")
-      .lean();
+    const { resolveClassFaculty, resolveProctorFaculty } = require("../utils/assignmentResolver");
+
+    const classResult = await resolveClassFaculty(student);
+    const proctorResult = await resolveProctorFaculty(student);
 
     res.status(200).json({
       success: true,
       data: {
-        proctor: proctorAssignment ? proctorAssignment.facultyId : null,
-        classTeacher: classAssignment ? classAssignment.facultyId : null
+        proctor: proctorResult ? proctorResult.faculty : null,
+        classTeacher: classResult ? classResult.faculty : null
       }
     });
   } catch (error) {

@@ -31,12 +31,14 @@ const FacultyDashboard = () => {
   })
   const [recentAnnouncements, setRecentAnnouncements] = useState([])
   const [recentResources, setRecentResources] = useState([])
+  const [classAssignmentsSummary, setClassAssignmentsSummary] = useState(null)
 
   useEffect(() => {
     fetchAnnouncements()
     fetchResources()
     fetchClassStudents()
     fetchProctorStudents()
+    fetchClassAssignmentsSummary()
   }, [])
 
   const fetchAnnouncements = async () => {
@@ -62,9 +64,24 @@ const FacultyDashboard = () => {
   const fetchClassStudents = async () => {
     try {
       const res = await facultyService.getClassStudents();
-      setStats(prev => ({ ...prev, classStudents: res.students?.length || 0 }));
+      // Only set if not already set by summary
+      if (stats.classStudents === 0) {
+        setStats(prev => ({ ...prev, classStudents: res.students?.length || 0 }));
+      }
     } catch (error) {
       console.error('Error fetching class students:', error);
+    }
+  }
+
+  const fetchClassAssignmentsSummary = async () => {
+    try {
+      const res = await facultyService.getClassAssignmentsSummary();
+      setClassAssignmentsSummary(res.summary);
+      if (res.summary?.totalStudents !== undefined) {
+        setStats(prev => ({ ...prev, classStudents: res.summary.totalStudents }));
+      }
+    } catch (error) {
+      console.error('Error fetching class assignments summary:', error);
     }
   }
 
@@ -195,6 +212,37 @@ const FacultyDashboard = () => {
             )
           })}
         </div>
+
+        {/* Class Assignments Summary Widget */}
+        {classAssignmentsSummary && classAssignmentsSummary.totalSections > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">My Class Sections</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {classAssignmentsSummary.sections.map((sec, idx) => (
+                <div key={idx} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-blue-200">
+                      Section {sec.section}
+                    </span>
+                    <span className="text-xs text-gray-500 font-medium">{sec.batch}</span>
+                  </div>
+                  <h3 className="text-gray-900 font-semibold mb-1">{sec.department} - Year {sec.year}</h3>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                    <Users size={14} className="text-gray-400" />
+                    <span>{sec.studentCount} Students</span>
+                  </div>
+                  <Link 
+                    to={`/faculty/students?branch=${sec.department}&year=${sec.year}&section=${sec.section}`}
+                    className="w-full inline-flex justify-center items-center gap-2 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Eye size={14} />
+                    View Students
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -1,7 +1,9 @@
 const User = require("../models/User");
 const ClassStudentAssignment = require("../models/ClassStudentAssignment");
+const ClassSectionAssignment = require("../models/ClassSectionAssignment");
 const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
 const Notification = require("../models/Notification");
+const ActivityLog = require("../models/ActivityLog");
 const { getIO } = require("../config/socket");
 
 // ==================== GET DEPARTMENT FACULTY ====================
@@ -474,6 +476,374 @@ exports.removeProctorAssignment = async (req, res) => {
     });
   } catch (error) {
     console.error("Remove proctor assignment error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// ==================== GET SECTION ASSIGNMENTS ====================
+exports.getSectionAssignments = async (req, res) => {
+  try {
+    const { facultyId } = req.query;
+    const hod = await User.findById(req.user.id);
+    
+    let branches = [];
+    if (["dean", "principal", "management", "admin"].includes(hod.role)) {
+        branches = hod.managedBranches && hod.managedBranches.length > 0 ? hod.managedBranches : [hod.department].filter(Boolean);
+    } else {
+        branches = [hod.department].filter(Boolean);
+    }
+
+    if (branches.length === 0 && hod.role !== "admin") {
+      return res.status(400).json({
+        success: false,
+        message: "Department/Branches not assigned to your profile"
+      });
+    }
+
+    let query = { isActive: true };
+    if (hod.role !== "admin") {
+        query.department = { $in: branches };
+    }
+    
+    if (facultyId) query.facultyId = facultyId;
+
+    const assignments = await ClassSectionAssignment.find(query)
+      .populate("facultyId", "name employeeId profilePicture department email")
+      .populate("assignedBy", "name")
+      .sort({ createdAt: -1 });
+
+    // Calculate students count dynamically
+    const sectionsWithCounts = await Promise.all(assignments.map(async (assignment) => {
+      const studentCount = await User.countDocuments({
+        branch: assignment.department,
+        currentYear: assignment.year,
+        section: assignment.section,
+        role: "student",
+        isActive: true
+      });
+      return {
+        ...assignment.toObject(),
+        studentCount
+      };
+    }));
+
+    res.status(200).json({
+      success: true,
+      assignments: sectionsWithCounts,
+      total: sectionsWithCounts.length
+    });
+  } catch (error) {
+    console.error("Get section assignments error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// ==================== GET ASSIGNMENT PREVIEW ====================
+exports.getAssignmentPreview = async (req, res) => {
+  try {
+    const { department, facultyId, year, sections } = req.body;
+    
+    if (!department || !facultyId || !year || !sections || !sections.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Department, facultyId, year, and sections are required"
+      });
+    }
+
+    // Workload of target faculty
+    const currentAssignments = await ClassSectionAssignment.find({
+      facultyId,
+      isActive: true
+    });
+
+    const targetFaculty = await User.findById(facultyId).select("name employeeId department");
+
+    // Check ownership of selected sections
+    const sectionPreviews = await Promise.all(sections.map(async (section) => {
+      const existingAssignment = await ClassSectionAssignment.findOne({
+        department,
+        year,
+        section: section.toUpperCase(),
+        isActive: true
+      }).populate("facultyId", "name employeeId");
+
+      const studentCount = await User.countDocuments({
+        branch: department,
+        currentYear: year,
+        section: section.toUpperCase(),
+        role: "student",
+        isActive: true
+      });
+
+      return {
+        section: section.toUpperCase(),
+        studentCount,
+        currentlyAssignedTo: existingAssignment ? existingAssignment.facultyId : null,
+        isReassignment: !!existingAssignment && existingAssignment.facultyId._id.toString() !== facultyId
+      };
+    }));
+
+    res.status(200).json({
+      success: true,
+      targetFaculty,
+      currentWorkload: currentAssignments.length,
+      sectionPreviews
+    });
+  } catch (error) {
+    console.error("Get assignment preview error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// ==================== ASSIGN SECTION ====================
+exports.assignSection = async (req, res) => {
+  try {
+    const { department, facultyId, year, sections } = req.body;
+    
+    if (!department || !facultyId || !year || !sections || !sections.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Department, facultyId, year, and sections are required"
+      });
+    }
+
+    const hod = await User.findById(req.user.id);
+    const faculty = await User.findById(facultyId);
+
+    if (!faculty) {
+      return res.status(404).json({ success: false, message: "Faculty not found" });
+    }
+
+    // Resolve batch string
+    let batchString = "Unknown";
+    const sampleStudent = await User.findOne({
+      branch: department,
+      currentYear: year,
+      role: "student"
+    });
+    if (sampleStudent && sampleStudent.batch) {
+      batchString = sampleStudent.batch;
+    } else {
+      const currentCalendarYear = new Date().getFullYear();
+      batchString = `${currentCalendarYear - year + 1}-${currentCalendarYear - year + 5}`; // Rough guess
+    }
+
+    const results = [];
+    const io = getIO();
+
+    for (const section of sections) {
+      const upperSection = section.toUpperCase();
+      const existingAssignment = await ClassSectionAssignment.findOne({
+        department,
+        year,
+        section: upperSection,
+        isActive: true
+      }).populate("facultyId", "name");
+
+      if (existingAssignment) {
+        if (existingAssignment.facultyId._id.toString() === facultyId) {
+          results.push({ section: upperSection, success: true, message: "Already assigned to this faculty" });
+          continue;
+        }
+
+        // Soft delete existing
+        existingAssignment.isActive = false;
+        await existingAssignment.save();
+
+        await ActivityLog.create({
+          user: req.user.id,
+          action: "REASSIGN_SECTION",
+          details: `Reassigned ${department} Year ${year} Section ${upperSection} from ${existingAssignment.facultyId.name} to ${faculty.name}`
+        });
+
+        await Notification.create({
+          title: "Class Reassigned",
+          message: `Section ${upperSection} (Year ${year}, ${department}) has been reassigned to another faculty.`,
+          type: "assignment",
+          targetUsers: [existingAssignment.facultyId._id],
+          createdBy: req.user.id
+        });
+      }
+
+      const newAssignment = await ClassSectionAssignment.create({
+        facultyId,
+        department,
+        year,
+        section: upperSection,
+        batch: batchString,
+        assignedBy: req.user.id,
+        isActive: true
+      });
+
+      // Notify students of new assignment
+      const sectionStudents = await User.find({
+        branch: department,
+        currentYear: year,
+        section: upperSection,
+        role: "student",
+        isActive: true
+      }).select("_id");
+
+      const studentIds = sectionStudents.map(s => s._id);
+
+      if (studentIds.length > 0) {
+        await Notification.create({
+          title: "Class Faculty Assigned",
+          message: `You have been assigned to ${faculty.name} as your class faculty for Section ${upperSection}`,
+          type: "assignment",
+          targetUsers: studentIds,
+          createdBy: req.user.id
+        });
+
+        if (io) {
+          studentIds.forEach(id => {
+            io.to(id.toString()).emit("new-notification", {
+              title: "Class Faculty Assigned",
+              message: `You have been assigned to ${faculty.name} as your class faculty for Section ${upperSection}`
+            });
+          });
+        }
+      }
+
+      // Notify new faculty
+      await Notification.create({
+        title: "New Class Section Assigned",
+        message: `You have been assigned as class faculty for ${department} Year ${year} Section ${upperSection}.`,
+        type: "assignment",
+        targetUsers: [facultyId],
+        createdBy: req.user.id
+      });
+
+      results.push({ section: upperSection, success: true, message: "Assigned successfully" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Section assignments completed",
+      results
+    });
+  } catch (error) {
+    console.error("Assign section error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// ==================== BULK REASSIGN SECTION ====================
+exports.bulkReassignSection = async (req, res) => {
+  try {
+    const { sourceFacultyId, targetFacultyId, sections } = req.body;
+    
+    if (!sourceFacultyId || !targetFacultyId || !sections || !sections.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Source faculty, target faculty, and sections are required"
+      });
+    }
+
+    const targetFaculty = await User.findById(targetFacultyId);
+    if (!targetFaculty) {
+      return res.status(404).json({ success: false, message: "Target faculty not found" });
+    }
+
+    const io = getIO();
+    const results = [];
+
+    for (const item of sections) {
+      const { department, year, section } = item;
+      
+      const existingAssignment = await ClassSectionAssignment.findOne({
+        facultyId: sourceFacultyId,
+        department,
+        year,
+        section: section.toUpperCase(),
+        isActive: true
+      });
+
+      if (!existingAssignment) {
+        results.push({ department, year, section, success: false, message: "Not assigned to source faculty" });
+        continue;
+      }
+
+      existingAssignment.isActive = false;
+      await existingAssignment.save();
+
+      await ClassSectionAssignment.create({
+        facultyId: targetFacultyId,
+        department,
+        year,
+        section: section.toUpperCase(),
+        batch: existingAssignment.batch,
+        assignedBy: req.user.id,
+        isActive: true
+      });
+
+      results.push({ department, year, section, success: true, message: "Reassigned successfully" });
+    }
+
+    // Single notification to target faculty
+    await Notification.create({
+      title: "Multiple Sections Reassigned to You",
+      message: `You have been reassigned ${results.filter(r => r.success).length} sections.`,
+      type: "assignment",
+      targetUsers: [targetFacultyId],
+      createdBy: req.user.id
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Bulk reassignment completed",
+      results
+    });
+  } catch (error) {
+    console.error("Bulk reassign section error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// ==================== DELETE SECTION ASSIGNMENT ====================
+exports.deleteSectionAssignment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const assignment = await ClassSectionAssignment.findById(id).populate("facultyId", "name");
+    
+    if (!assignment) {
+      return res.status(404).json({
+        success: false,
+        message: "Assignment not found"
+      });
+    }
+    
+    assignment.isActive = false;
+    await assignment.save();
+    
+    await ActivityLog.create({
+      user: req.user.id,
+      action: "DELETE_SECTION_ASSIGNMENT",
+      details: `Removed assignment for ${assignment.department} Year ${assignment.year} Section ${assignment.section} from ${assignment.facultyId?.name}`
+    });
+    
+    res.status(200).json({
+      success: true,
+      message: "Section assignment removed successfully"
+    });
+  } catch (error) {
+    console.error("Delete section assignment error:", error);
     res.status(500).json({
       success: false,
       message: error.message

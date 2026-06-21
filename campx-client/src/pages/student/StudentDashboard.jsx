@@ -33,6 +33,7 @@ const StudentDashboard = () => {
   const [recentAnnouncements, setRecentAnnouncements] = useState([])
   const [recentResources, setRecentResources] = useState([])
   const [upcomingEvents, setUpcomingEvents] = useState([])
+  const [assignedFaculty, setAssignedFaculty] = useState(null)
   
   // Loading states for individual widgets could be added if needed,
   // but for now we just render with empty/zero data until they load.
@@ -42,6 +43,7 @@ const StudentDashboard = () => {
     fetchResources()
     fetchEvents()
     fetchNotifications()
+    fetchAssignedFaculty()
   }, [])
 
   const fetchAnnouncements = async () => {
@@ -88,6 +90,15 @@ const StudentDashboard = () => {
       setStats(prev => ({ ...prev, unreadNotifications: res.unreadCount || 0 }));
     } catch (error) {
       console.error('Error fetching notifications:', error);
+    }
+  }
+
+  const fetchAssignedFaculty = async () => {
+    try {
+      const res = await api.get('/student/assigned-faculty');
+      setAssignedFaculty(res.data.data);
+    } catch (error) {
+      console.error('Error fetching assigned faculty:', error);
     }
   }
 
@@ -185,6 +196,41 @@ const StudentDashboard = () => {
             </Link>
           </div>
         </div>
+
+        {/* Assigned Faculty Section */}
+        {assignedFaculty && (assignedFaculty.classTeacher || assignedFaculty.proctor) && (
+          <div className="mb-8">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">My Assigned Faculty</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {assignedFaculty.classTeacher && (
+                <div className="bg-white rounded-xl border border-blue-100 p-4 shadow-sm flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xl flex-shrink-0">
+                    {assignedFaculty.classTeacher.name?.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-0.5">Class Faculty</p>
+                    <h3 className="font-semibold text-gray-900 truncate">{assignedFaculty.classTeacher.name}</h3>
+                    <p className="text-sm text-gray-500 truncate">{assignedFaculty.classTeacher.department}</p>
+                  </div>
+                  <Briefcase size={20} className="text-blue-200" />
+                </div>
+              )}
+              {assignedFaculty.proctor && (
+                <div className="bg-white rounded-xl border border-purple-100 p-4 shadow-sm flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xl flex-shrink-0">
+                    {assignedFaculty.proctor.name?.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-0.5">Proctor</p>
+                    <h3 className="font-semibold text-gray-900 truncate">{assignedFaculty.proctor.name}</h3>
+                    <p className="text-sm text-gray-500 truncate">{assignedFaculty.proctor.department}</p>
+                  </div>
+                  <Award size={20} className="text-purple-200" />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
