@@ -222,7 +222,7 @@ const SubjectManagement = ({ settings }) => {
                 ) : subjects.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="px-6 py-8">
-                      <EmptyState icon={BookOpen} title="No subjects found" description="Adjust filters or add a new subject." />
+                      <EmptyState icon={<BookOpen className="w-12 h-12 mx-auto" />} title="No subjects found" description="Adjust filters or add a new subject." />
                     </td>
                   </tr>
                 ) : (
