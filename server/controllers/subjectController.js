@@ -1,5 +1,6 @@
 const Subject = require("../models/Subject");
 const User = require("../models/User");
+const { parseFile } = require("../utils/csvParser");
 
 // ==================== CREATE SUBJECT ====================
 exports.createSubject = async (req, res) => {
@@ -74,6 +75,38 @@ exports.updateSubject = async (req, res) => {
   }
 };
 
+// ==================== DELETE SUBJECT ====================
+exports.deleteSubject = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Check if subject is assigned to any faculty
+    const usersWithSubject = await User.findOne({
+      $or: [
+        { 'facultySubjects.primary': id },
+        { 'facultySubjects.secondary': id }
+      ]
+    });
+
+    if (usersWithSubject) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Cannot delete subject because it is currently assigned to one or more faculty members" 
+      });
+    }
+
+    const subject = await Subject.findByIdAndDelete(id);
+
+    if (!subject) {
+      return res.status(404).json({ success: false, message: "Subject not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Subject deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // ==================== BULK ASSIGN SUBJECT TO FACULTY ====================
 exports.bulkAssignSubject = async (req, res) => {
   try {
@@ -112,6 +145,79 @@ exports.bulkAssignSubject = async (req, res) => {
 
     res.status(200).json({ success: true, message: "Subject assigned to selected faculty" });
   } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ==================== BULK UPLOAD SUBJECTS ====================
+exports.bulkUploadSubjects = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
+    const { department } = req.body;
+    if (!department) {
+      return res.status(400).json({ success: false, message: "Department mapping is required" });
+    }
+
+    const data = await parseFile(req.file.buffer, req.file.mimetype, req.file.originalname);
+    const errors = [];
+    let successCount = 0;
+    let skipCount = 0;
+
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      try {
+        const code = row['Subject Code'] || row.code || row.Code;
+        const name = row['Subject Name'] || row.name || row.Name;
+        const semester = row['Semester'] || row.semester;
+        const credits = row['Credits'] || row.credits;
+        const regulation = row['Regulation'] || row.regulation;
+
+        if (!code || !name) {
+          throw new Error("Subject Code and Subject Name are required");
+        }
+
+        const existingSubject = await Subject.findOne({ 
+          code: code.toString().trim().toUpperCase(), 
+          department: department 
+        });
+
+        if (existingSubject) {
+          skipCount++;
+          continue; // Skip duplicate
+        }
+
+        await Subject.create({
+          code: code.toString().trim().toUpperCase(),
+          name: name.toString().trim(),
+          department: department,
+          semester: semester ? parseInt(semester) : undefined,
+          credits: credits ? parseFloat(credits) : undefined,
+          regulation: regulation ? regulation.toString().trim() : undefined,
+        });
+
+        successCount++;
+      } catch (error) {
+        errors.push({
+          row: i + 2,
+          message: error.message
+        });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Bulk subject upload completed",
+      total: data.length,
+      uploaded: successCount,
+      skipped: skipCount,
+      failed: errors.length,
+      errors: errors.slice(0, 10)
+    });
+  } catch (error) {
+    console.error("Bulk upload error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

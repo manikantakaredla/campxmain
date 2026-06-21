@@ -4,10 +4,15 @@ const {
   createSubject,
   getSubjects,
   updateSubject,
-  bulkAssignSubject
+  bulkAssignSubject,
+  bulkUploadSubjects,
+  deleteSubject
 } = require("../controllers/subjectController");
 const protect = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
+const multer = require("multer");
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(protect);
 
@@ -18,6 +23,8 @@ router.use(authorizeRoles("admin", "management"));
 
 router.post("/", createSubject);
 router.put("/:id", updateSubject);
+router.delete("/:id", deleteSubject);
 router.post("/bulk-assign", bulkAssignSubject);
+router.post("/bulk-upload", upload.single("file"), bulkUploadSubjects);
 
 module.exports = router;

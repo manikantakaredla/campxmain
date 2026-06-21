@@ -100,18 +100,12 @@ const FacultyDetailsModal = ({ facultyId, onClose }) => {
     }
   }
 
-  // Filter subjects for the dropdown (exclude already assigned, prioritize same department)
+  // Filter subjects for the dropdown (exclude already assigned, only same department)
   const availableSubjects = allSubjects.filter(sub => {
+    if (sub.department !== faculty?.department) return false;
     const isPrimary = faculty?.facultySubjects?.primary?.some(s => s._id === sub._id)
     const isSecondary = faculty?.facultySubjects?.secondary?.some(s => s._id === sub._id)
     return !isPrimary && !isSecondary
-  })
-
-  // Optionally sort so same department subjects appear first
-  availableSubjects.sort((a, b) => {
-    if (a.department === faculty?.department && b.department !== faculty?.department) return -1;
-    if (b.department === faculty?.department && a.department !== faculty?.department) return 1;
-    return 0;
   })
 
   if (loading) {
@@ -255,7 +249,7 @@ const FacultyDetailsModal = ({ facultyId, onClose }) => {
                         <option value="">-- Select Subject --</option>
                         {availableSubjects.map(sub => (
                           <option key={sub._id} value={sub._id}>
-                            {sub.name} ({sub.code}) {sub.department !== faculty?.department ? ` - ${sub.department}` : ''}
+                            {sub.name} ({sub.code})
                           </option>
                         ))}
                       </select>

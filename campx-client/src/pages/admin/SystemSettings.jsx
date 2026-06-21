@@ -3,10 +3,11 @@ import {
   Settings, Globe, Mail, Bell, Shield, Save, RefreshCw, Layers,
   Building, Phone, AtSign, ToggleLeft, ToggleRight, AlertCircle,
   Edit, Trash2, Plus, ChevronDown, ChevronRight, Database, Server,
-  Users, UserCog, Link, Image, CheckCircle, XCircle
+  Users, UserCog, Link, Image, CheckCircle, XCircle, BookOpen
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import SubjectManagement from '../../components/admin/SubjectManagement';
 
 const SystemSettings = () => {
   const [settings, setSettings] = useState({
@@ -131,6 +132,7 @@ const SystemSettings = () => {
   const tabs = [
     { id: 'general', label: 'General', icon: Settings },
     { id: 'academic', label: 'Academic Master', icon: Layers },
+    { id: 'subjects', label: 'Subjects Master', icon: BookOpen },
   ];
 
   return (
@@ -580,6 +582,11 @@ const SystemSettings = () => {
             </p>
           </div>
         </div>
+
+        {/* Subjects Master Tab */}
+        {activeTab === 'subjects' && (
+          <SubjectManagement settings={settings} />
+        )}
       </div>
     </div>
   );
