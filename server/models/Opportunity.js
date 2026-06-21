@@ -57,5 +57,9 @@ const opportunitySchema = new mongoose.Schema({
 // Indexes for performance
 opportunitySchema.index({ type: 1, status: 1, priority: 1, registrationDeadline: 1 });
 opportunitySchema.index({ isDeleted: 1 });
+opportunitySchema.index({ "eligibility.branches": 1 });
+opportunitySchema.index({ "eligibility.departments": 1 });
+opportunitySchema.index({ "eligibility.sections": 1 });
+opportunitySchema.index({ "eligibility.years": 1 });
 
 module.exports = mongoose.model("Opportunity", opportunitySchema);

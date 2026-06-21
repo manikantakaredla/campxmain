@@ -11,4 +11,6 @@ const successStorySchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 }, { timestamps: true });
 
+successStorySchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model("SuccessStory", successStorySchema);

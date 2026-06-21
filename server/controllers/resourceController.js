@@ -235,7 +235,8 @@ if (req.user.role === "student") {
       .populate("uploadedBy", "name email")
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .lean();
     
     const total = await Resource.countDocuments(query);
     
@@ -261,7 +262,8 @@ if (req.user.role === "student") {
 exports.getResourceById = async (req, res) => {
   try {
     const resource = await Resource.findById(req.params.id)
-      .populate("uploadedBy", "name email department");
+      .populate("uploadedBy", "name email department")
+      .lean();
     
     if (!resource) {
       return res.status(404).json({

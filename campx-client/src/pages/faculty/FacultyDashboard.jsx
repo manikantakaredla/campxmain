@@ -31,35 +31,49 @@ const FacultyDashboard = () => {
   })
   const [recentAnnouncements, setRecentAnnouncements] = useState([])
   const [recentResources, setRecentResources] = useState([])
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchDashboardData()
+    fetchAnnouncements()
+    fetchResources()
+    fetchClassStudents()
+    fetchProctorStudents()
   }, [])
 
-  const fetchDashboardData = async () => {
+  const fetchAnnouncements = async () => {
     try {
-      const [announcementsRes, resourcesRes, classStudentsRes, proctorStudentsRes] = await Promise.all([
-        announcementService.getMyAnnouncements().catch(() => ({ announcements: [] })),
-        resourceService.getAll({ limit: 5 }).catch(() => ({ resources: [] })),
-        facultyService.getClassStudents().catch(() => ({ students: [] })),
-        facultyService.getProctorStudents().catch(() => ({ students: [] }))
-      ])
-
-      setRecentAnnouncements(announcementsRes.announcements?.slice(0, 5) || [])
-      setRecentResources(resourcesRes.resources?.slice(0, 5) || [])
-      setStats({
-        announcements: announcementsRes.announcements?.length || 0,
-        resources: resourcesRes.resources?.length || 0,
-        classStudents: classStudentsRes.students?.length || 0,
-        proctorStudents: proctorStudentsRes.students?.length || 0,
-        activities: 0
-      })
+      const res = await announcementService.getMyAnnouncements();
+      setRecentAnnouncements(res.announcements?.slice(0, 5) || []);
+      setStats(prev => ({ ...prev, announcements: res.announcements?.length || 0 }));
     } catch (error) {
-      console.error('Error:', error)
-      toast.error('Failed to load dashboard')
-    } finally {
-      setLoading(false)
+      console.error('Error fetching announcements:', error);
+    }
+  }
+
+  const fetchResources = async () => {
+    try {
+      const res = await resourceService.getAll({ limit: 5 });
+      setRecentResources(res.resources?.slice(0, 5) || []);
+      setStats(prev => ({ ...prev, resources: res.resources?.length || 0 }));
+    } catch (error) {
+      console.error('Error fetching resources:', error);
+    }
+  }
+
+  const fetchClassStudents = async () => {
+    try {
+      const res = await facultyService.getClassStudents();
+      setStats(prev => ({ ...prev, classStudents: res.students?.length || 0 }));
+    } catch (error) {
+      console.error('Error fetching class students:', error);
+    }
+  }
+
+  const fetchProctorStudents = async () => {
+    try {
+      const res = await facultyService.getProctorStudents();
+      setStats(prev => ({ ...prev, proctorStudents: res.students?.length || 0 }));
+    } catch (error) {
+      console.error('Error fetching proctor students:', error);
     }
   }
 
@@ -68,7 +82,7 @@ const FacultyDashboard = () => {
       try {
         await announcementService.delete(id)
         toast.success('Deleted')
-        fetchDashboardData()
+        fetchAnnouncements()
       } catch (error) {
         toast.error('Failed to delete')
       }
@@ -82,14 +96,6 @@ const FacultyDashboard = () => {
       case 'medium': return 'bg-yellow-50 text-yellow-600'
       default: return 'bg-gray-100 text-gray-600'
     }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
   }
 
   const statCards = [

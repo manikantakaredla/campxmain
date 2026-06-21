@@ -5,14 +5,15 @@ exports.getStories = async (req, res, next) => {
   try {
     const stories = await SuccessStory.find()
       .sort({ createdAt: -1 })
-      .populate('createdBy', 'name email');
+      .populate('createdBy', 'name email')
+      .lean();
     res.status(200).json({ success: true, count: stories.length, data: stories });
   } catch (error) { next(error); }
 };
 
 exports.getStoryById = async (req, res, next) => {
   try {
-    const story = await SuccessStory.findById(req.params.id);
+    const story = await SuccessStory.findById(req.params.id).lean();
     if (!story) return res.status(404).json({ success: false, message: 'Not found' });
     res.status(200).json({ success: true, data: story });
   } catch (error) { next(error); }

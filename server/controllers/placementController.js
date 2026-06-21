@@ -39,7 +39,8 @@ exports.getPlacements = async (req, res, next) => {
       .sort(sortQuery)
       .skip(startIndex)
       .limit(Number(limit))
-      .populate('studentId', 'profilePicture email');
+      .populate('studentId', 'profilePicture email')
+      .lean();
       
     res.status(200).json({
       success: true,

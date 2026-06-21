@@ -63,5 +63,8 @@ academicActivitySchema.index({ startDate: 1 });
 academicActivitySchema.index({ status: 1, startDate: 1 });
 academicActivitySchema.index({ type: 1 });
 academicActivitySchema.index({ createdBy: 1 });
+academicActivitySchema.index({ "inheritedAudience.audienceType": 1, "inheritedAudience.targetBranches": 1 });
+academicActivitySchema.index({ "inheritedAudience.audienceType": 1, "inheritedAudience.targetYears": 1 });
+academicActivitySchema.index({ "inheritedAudience.audienceType": 1, "inheritedAudience.targetSections": 1 });
 
 module.exports = mongoose.model("AcademicActivity", academicActivitySchema);

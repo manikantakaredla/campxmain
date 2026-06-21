@@ -54,30 +54,44 @@ const normalizeBranchName = (input, validBranches) => {
 
 
 // ==================== DASHBOARD STATISTICS ====================
+let adminStatsCache = {
+  data: null,
+  timestamp: null
+};
+
 exports.getDashboardStats = async (req, res) => {
   try {
-    const totalStudents = await User.countDocuments({ role: "student" });
+    const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+    
+    // Return cached data if valid
+    if (adminStatsCache.data && adminStatsCache.timestamp && (Date.now() - adminStatsCache.timestamp < CACHE_TTL)) {
+      return res.status(200).json(adminStatsCache.data);
+    }
+
+    const totalStudents = await User.countDocuments({ role: "student" }).lean();
     const totalFaculty = await User.countDocuments({ 
       role: { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] }
-    });
-    const totalAnnouncements = await Announcement.countDocuments();
-    const totalResources = await Resource.countDocuments();
-    const activeUsers = await User.countDocuments({ isActive: true });
-    const pendingRegistrations = await StudentData.countDocuments({ isRegistered: false }) +
-                                  await FacultyData.countDocuments({ isRegistered: false });
+    }).lean();
+    const totalAnnouncements = await Announcement.countDocuments().lean();
+    const totalResources = await Resource.countDocuments().lean();
+    const activeUsers = await User.countDocuments({ isActive: true }).lean();
+    const pendingRegistrations = await StudentData.countDocuments({ isRegistered: false }).lean() +
+                                  await FacultyData.countDocuments({ isRegistered: false }).lean();
 
     // Recent activities
     const recentAnnouncements = await Announcement.find()
       .sort({ createdAt: -1 })
       .limit(5)
-      .populate("createdBy", "name");
+      .populate("createdBy", "name")
+      .lean();
 
     const recentUsers = await User.find()
       .sort({ createdAt: -1 })
       .limit(5)
-      .select("-password");
+      .select("-password")
+      .lean();
 
-    res.status(200).json({
+    const responseData = {
       success: true,
       stats: {
         totalStudents,
@@ -91,7 +105,13 @@ exports.getDashboardStats = async (req, res) => {
         announcements: recentAnnouncements,
         users: recentUsers
       }
-    });
+    };
+
+    // Update cache
+    adminStatsCache.data = responseData;
+    adminStatsCache.timestamp = Date.now();
+
+    res.status(200).json(responseData);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -35,7 +35,8 @@ exports.getOpportunities = async (req, res, next) => {
       .sort({ priority: 1, createdAt: -1 })
       .skip(startIndex)
       .limit(Number(limit))
-      .populate('createdBy', 'name email');
+      .populate('createdBy', 'name email')
+      .lean();
       
     res.status(200).json({ success: true, count: opportunities.length, pagination: { page: Number(page), limit: Number(limit), total }, data: opportunities });
   } catch (error) { next(error); }

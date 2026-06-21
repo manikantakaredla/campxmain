@@ -42,8 +42,6 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error:', error);
       toast.error('Failed to load dashboard');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -82,14 +80,6 @@ const AdminDashboard = () => {
     };
     return map[color] || map.blue;
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="w-10 h-10 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="p-4 sm:p-6 bg-gray-50/80 min-h-screen">

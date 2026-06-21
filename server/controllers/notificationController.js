@@ -16,7 +16,8 @@ exports.getMyNotifications = async (req, res) => {
     const notifications = await Notification.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .lean();
     
     const total = await Notification.countDocuments(query);
     

@@ -184,7 +184,8 @@ exports.getClassTeacherAnnouncements = async (req, res) => {
     })
     .populate("createdBy", "name email role profilePicture")
     .sort({ priority: -1, createdAt: -1 })
-    .limit(parseInt(req.query.limit) || 50);
+    .limit(parseInt(req.query.limit) || 50)
+    .lean();
     
     res.status(200).json({
       success: true,
@@ -219,7 +220,8 @@ exports.getProctorAnnouncements = async (req, res) => {
     })
     .populate("createdBy", "name email role profilePicture")
     .sort({ priority: -1, createdAt: -1 })
-    .limit(parseInt(req.query.limit) || 50);
+    .limit(parseInt(req.query.limit) || 50)
+    .lean();
     
     res.status(200).json({
       success: true,
@@ -611,7 +613,8 @@ if (forClass === "true" && req.user.role === "student") {
       .populate("createdBy", "name email role profilePicture")
       .sort({ priority: -1, createdAt: -1 })
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .lean();
     
     const total = await Announcement.countDocuments(query);
     
@@ -639,7 +642,8 @@ exports.getMyAnnouncements = async (req, res) => {
   try {
     const announcements = await Announcement.find({ createdBy: req.user.id })
       .populate("createdBy", "name email")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     
     res.status(200).json({
       success: true,
@@ -658,7 +662,8 @@ exports.getMyAnnouncements = async (req, res) => {
 exports.getAnnouncementById = async (req, res) => {
   try {
     const announcement = await Announcement.findById(req.params.id)
-      .populate("createdBy", "name email role profilePicture");
+      .populate("createdBy", "name email role profilePicture")
+      .lean();
     
     if (!announcement) {
       return res.status(404).json({
@@ -683,7 +688,7 @@ exports.getAnnouncementById = async (req, res) => {
 // ==================== UPDATE ANNOUNCEMENT ====================
 exports.updateAnnouncement = async (req, res) => {
   try {
-    const announcement = await Announcement.findById(req.params.id);
+    const announcement = await Announcement.findById(req.params.id).lean();
     
     if (!announcement) {
       return res.status(404).json({

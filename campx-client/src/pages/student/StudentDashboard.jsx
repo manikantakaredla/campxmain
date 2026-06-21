@@ -33,52 +33,61 @@ const StudentDashboard = () => {
   const [recentAnnouncements, setRecentAnnouncements] = useState([])
   const [recentResources, setRecentResources] = useState([])
   const [upcomingEvents, setUpcomingEvents] = useState([])
-  const [recentApplications, setRecentApplications] = useState([])
-  const [upcomingOpportunities, setUpcomingOpportunities] = useState([])
-  const [placementStats, setPlacementStats] = useState(null)
-  const [successStories, setSuccessStories] = useState([])
-  const [loading, setLoading] = useState(true)
+  
+  // Loading states for individual widgets could be added if needed,
+  // but for now we just render with empty/zero data until they load.
   
   useEffect(() => {
-    fetchDashboardData()
+    fetchAnnouncements()
+    fetchResources()
+    fetchEvents()
+    fetchNotifications()
   }, [])
 
-  const fetchDashboardData = async () => {
+  const fetchAnnouncements = async () => {
+    try {
+      const res = await announcementService.getAll({ page: 1, limit: 5 });
+      setRecentAnnouncements(res.announcements || []);
+      setStats(prev => ({ ...prev, announcements: res.pagination?.total || 0 }));
+    } catch (error) {
+      console.error('Error fetching announcements:', error);
+    }
+  }
+
+  const fetchResources = async () => {
+    try {
+      const res = await resourceService.getAll({ page: 1, limit: 5 });
+      setRecentResources(res.resources || []);
+      setStats(prev => ({ ...prev, resources: res.pagination?.total || 0 }));
+    } catch (error) {
+      console.error('Error fetching resources:', error);
+    }
+  }
+
+  const fetchEvents = async () => {
     try {
       const today = new Date();
       const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
       const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999).toISOString();
 
-      const res = await Promise.all([
-        announcementService.getAll({ page: 1, limit: 5 }),
-        resourceService.getAll({ page: 1, limit: 5 }),
-        calendarService.getUpcoming(),
-        notificationService.getUnreadCount(),
-        api.get('/opportunities?applied=true'), // Fetch recent applications
-        api.get('/opportunities?status=Upcoming&limit=3'), // Upcoming opportunities
-        api.get('/placements/statistics'), // Placement Stats
-        api.get('/success-stories?limit=2'), // Recent Success Stories
-        calendarService.getAll({ startDate: firstDayOfMonth, endDate: lastDayOfMonth, limit: 1 })
-      ])
+      const [upcomingRes, monthRes] = await Promise.all([
+        calendarService.getUpcoming().catch(() => ({ activities: [] })),
+        calendarService.getAll({ startDate: firstDayOfMonth, endDate: lastDayOfMonth, limit: 1 }).catch(() => ({ pagination: { total: 0 } }))
+      ]);
 
-      setRecentAnnouncements(res[0].announcements || [])
-      setRecentResources(res[1].resources || [])
-      setUpcomingEvents(res[2].activities || [])
-      setRecentApplications(res[4]?.data?.data?.slice(0, 3) || []) // Mock extracting apps
-      setUpcomingOpportunities(res[5]?.data?.data?.slice(0, 3) || [])
-      setPlacementStats(res[6]?.data?.overall || null)
-      setSuccessStories(res[7]?.data?.data || [])
-      setStats({
-        announcements: res[0].pagination?.total || 0,
-        resources: res[1].pagination?.total || 0,
-        events: res[8].pagination?.total || 0,
-        unreadNotifications: res[3].unreadCount || 0
-      })
+      setUpcomingEvents(upcomingRes.activities || []);
+      setStats(prev => ({ ...prev, events: monthRes.pagination?.total || 0 }));
     } catch (error) {
-      console.error('Error:', error)
-      toast.error('Failed to load dashboard')
-    } finally {
-      setLoading(false)
+      console.error('Error fetching events:', error);
+    }
+  }
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await notificationService.getUnreadCount();
+      setStats(prev => ({ ...prev, unreadNotifications: res.unreadCount || 0 }));
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
     }
   }
 
@@ -89,14 +98,6 @@ const StudentDashboard = () => {
       case 'medium': return 'bg-yellow-50 text-yellow-600 border-yellow-100';
       default: return 'bg-gray-50 text-gray-500 border-gray-100';
     }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
   }
 
   const statCards = [

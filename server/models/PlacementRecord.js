@@ -31,4 +31,9 @@ placementRecordSchema.index(
   { unique: true }
 );
 
+placementRecordSchema.index({ placementYear: 1 });
+placementRecordSchema.index({ department: 1, placementYear: 1 });
+placementRecordSchema.index({ companyName: 1 });
+placementRecordSchema.index({ studentName: 1 });
+
 module.exports = mongoose.model("PlacementRecord", placementRecordSchema);

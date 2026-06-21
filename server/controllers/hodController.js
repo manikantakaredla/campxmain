@@ -157,40 +157,46 @@ exports.assignClassStudents = async (req, res) => {
       });
     }
     
-    const results = [];
+    const validStudents = await User.find({
+      _id: { $in: studentIds },
+      branch: hod.department
+    });
+    const validStudentIds = validStudents.map(s => s._id);
+    const validIdsStr = validStudentIds.map(id => id.toString());
     
-    for (const studentId of studentIds) {
-      // Verify student belongs to same department
-      const student = await User.findById(studentId);
-      if (!student || student.branch !== hod.department) {
-        results.push({ studentId, success: false, message: "Student not found or not in your department" });
-        continue;
-      }
-      
-      // Create or update assignment
-      await ClassStudentAssignment.findOneAndUpdate(
-        { facultyId, studentId },
-        { facultyId, studentId, assignedBy: req.user.id },
-        { upsert: true }
-      );
-      
-      // Create notification for student
+    const results = studentIds.map(id => ({
+      studentId: id,
+      success: validIdsStr.includes(id.toString()),
+      message: validIdsStr.includes(id.toString()) ? "Assigned successfully" : "Student not found or not in your department"
+    }));
+
+    if (validStudentIds.length > 0) {
+      const bulkOps = validStudentIds.map(studentId => ({
+        updateOne: {
+          filter: { facultyId, studentId },
+          update: { facultyId, studentId, assignedBy: req.user.id },
+          upsert: true
+        }
+      }));
+      await ClassStudentAssignment.bulkWrite(bulkOps);
+
       await Notification.create({
         title: "Class Faculty Assigned",
         message: `You have been assigned to ${faculty.name} as your class faculty`,
         type: "assignment",
-        targetUsers: [studentId],
+        targetUsers: validStudentIds,
         createdBy: req.user.id
       });
-      
-      // Emit realtime notification
+
       const io = getIO();
-      io.to(studentId.toString()).emit("new-notification", {
-        title: "Class Faculty Assigned",
-        message: `You have been assigned to ${faculty.name} as your class faculty`
-      });
-      
-      results.push({ studentId, success: true, message: "Assigned successfully" });
+      if (io) {
+        validStudentIds.forEach(studentId => {
+          io.to(studentId.toString()).emit("new-notification", {
+            title: "Class Faculty Assigned",
+            message: `You have been assigned to ${faculty.name} as your class faculty`
+          });
+        });
+      }
     }
     
     res.status(200).json({
@@ -229,36 +235,46 @@ exports.assignProctorStudents = async (req, res) => {
       });
     }
     
-    const results = [];
+    const validStudents = await User.find({
+      _id: { $in: studentIds },
+      branch: hod.department
+    });
+    const validStudentIds = validStudents.map(s => s._id);
+    const validIdsStr = validStudentIds.map(id => id.toString());
     
-    for (const studentId of studentIds) {
-      const student = await User.findById(studentId);
-      if (!student || student.branch !== hod.department) {
-        results.push({ studentId, success: false, message: "Student not found or not in your department" });
-        continue;
-      }
-      
-      await ProctorStudentAssignment.findOneAndUpdate(
-        { facultyId, studentId },
-        { facultyId, studentId, assignedBy: req.user.id },
-        { upsert: true }
-      );
-      
+    const results = studentIds.map(id => ({
+      studentId: id,
+      success: validIdsStr.includes(id.toString()),
+      message: validIdsStr.includes(id.toString()) ? "Assigned successfully" : "Student not found or not in your department"
+    }));
+
+    if (validStudentIds.length > 0) {
+      const bulkOps = validStudentIds.map(studentId => ({
+        updateOne: {
+          filter: { facultyId, studentId },
+          update: { facultyId, studentId, assignedBy: req.user.id },
+          upsert: true
+        }
+      }));
+      await ProctorStudentAssignment.bulkWrite(bulkOps);
+
       await Notification.create({
         title: "Proctor Faculty Assigned",
         message: `You have been assigned to ${faculty.name} as your proctor faculty`,
         type: "assignment",
-        targetUsers: [studentId],
+        targetUsers: validStudentIds,
         createdBy: req.user.id
       });
-      
+
       const io = getIO();
-      io.to(studentId.toString()).emit("new-notification", {
-        title: "Proctor Faculty Assigned",
-        message: `You have been assigned to ${faculty.name} as your proctor faculty`
-      });
-      
-      results.push({ studentId, success: true, message: "Assigned successfully" });
+      if (io) {
+        validStudentIds.forEach(studentId => {
+          io.to(studentId.toString()).emit("new-notification", {
+            title: "Proctor Faculty Assigned",
+            message: `You have been assigned to ${faculty.name} as your proctor faculty`
+          });
+        });
+      }
     }
     
     res.status(200).json({

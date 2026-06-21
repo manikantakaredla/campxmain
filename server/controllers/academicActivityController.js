@@ -221,7 +221,8 @@ exports.getActivities = async (req, res) => {
       .populate("createdBy", "name email")
       .sort({ startDate: 1 })
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .lean();
     
     const total = await AcademicActivity.countDocuments(query);
     
@@ -345,7 +346,8 @@ exports.getUpcomingActivities = async (req, res) => {
     const activities = await AcademicActivity.find(query)
       .populate("createdBy", "name")
       .sort({ startDate: 1 })
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .lean();
     
     res.status(200).json({
       success: true,
@@ -363,7 +365,8 @@ exports.getUpcomingActivities = async (req, res) => {
 exports.getActivityById = async (req, res) => {
   try {
     const activity = await AcademicActivity.findById(req.params.id)
-      .populate("createdBy", "name email");
+      .populate("createdBy", "name email")
+      .lean();
     
     if (!activity) {
       return res.status(404).json({

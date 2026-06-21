@@ -22,11 +22,12 @@ exports.getExperiences = async (req, res, next) => {
     const experiences = await InterviewExperience.find(query)
       .sort({ createdAt: -1 })
       .skip(startIndex)
-      .limit(Number(limit));
+      .limit(Number(limit))
+      .lean();
       
     // Handle anonymity
     const sanitizedData = experiences.map(exp => {
-      let data = exp.toObject();
+      let data = exp;
       if (data.isAnonymous) {
         data.studentName = 'Anonymous Student';
         data.rollNumber = 'Hidden';
@@ -51,10 +52,10 @@ exports.getExperiences = async (req, res, next) => {
 
 exports.getExperienceById = async (req, res, next) => {
   try {
-    const experience = await InterviewExperience.findById(req.params.id);
+    const experience = await InterviewExperience.findById(req.params.id).lean();
     if (!experience) return res.status(404).json({ success: false, message: 'Not found' });
     
-    let data = experience.toObject();
+    let data = experience;
     if (data.isAnonymous) {
       data.studentName = 'Anonymous Student';
       data.rollNumber = 'Hidden';

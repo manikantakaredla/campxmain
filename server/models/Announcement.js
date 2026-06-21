@@ -89,5 +89,9 @@ announcementSchema.index({ createdBy: 1, createdAt: -1 });
 announcementSchema.index({ status: 1, priority: -1 });
 announcementSchema.index({ createdAt: -1 });
 announcementSchema.index({ type: 1 });
+announcementSchema.index({ audience: 1, status: 1 });
+announcementSchema.index({ targetBranches: 1 });
+announcementSchema.index({ targetYears: 1 });
+announcementSchema.index({ targetSections: 1 });
 
 module.exports = mongoose.model("Announcement", announcementSchema);
