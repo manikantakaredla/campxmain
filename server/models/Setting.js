@@ -21,6 +21,10 @@ const settingSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  enableEmailNotifications: {
+    type: Boolean,
+    default: true
+  },
   emailDomain: {
     type: String,
     default: "@adityauniversity.in"

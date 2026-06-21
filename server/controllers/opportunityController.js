@@ -3,7 +3,7 @@ const Application = require('../models/Application');
 const SavedOpportunity = require('../models/SavedOpportunity');
 const AcademicActivity = require('../models/AcademicActivity');
 const Announcement = require('../models/Announcement');
-const Notification = require('../models/Notification');
+const notificationService = require('../services/notificationService');
 const User = require('../models/User');
 const ActivityLog = require('../models/ActivityLog');
 
@@ -124,10 +124,11 @@ exports.createOpportunity = async (req, res, next) => {
       const targetUserIds = eligibleUsers.map(u => u._id);
       
       if (targetUserIds.length > 0) {
-        await Notification.create({
+        await notificationService.createNotification({
           title: `New Opportunity: ${opportunity.title}`,
           message: `A new ${opportunity.type} by ${opportunity.companyName} matches your profile.`,
           type: 'announcement',
+          category: 'opportunity',
           relatedId: opportunity._id,
           targetUsers: targetUserIds,
           createdBy: req.user.id

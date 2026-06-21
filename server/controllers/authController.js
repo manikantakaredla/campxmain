@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const OTP = require("../models/OTP");
 const { StudentData, FacultyData } = require("../models/InstitutionalData");
-const sendEmail = require("../utils/sendEmail");
+const { sendEmail } = require("../utils/sendEmail");
 const calculateAcademicInfo = require("../utils/academicCalculator");
 const supabase = require("../config/supabase");
 // Helper Functions

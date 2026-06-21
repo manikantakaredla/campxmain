@@ -5,6 +5,7 @@ const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
 const Notification = require("../models/Notification");
 const ActivityLog = require("../models/ActivityLog");
 const { getIO } = require("../config/socket");
+const notificationService = require("../services/notificationService");
 
 // ==================== GET DEPARTMENT FACULTY ====================
 exports.getDepartmentFaculty = async (req, res) => {
@@ -188,23 +189,14 @@ exports.assignClassStudents = async (req, res) => {
       }));
       await ClassStudentAssignment.bulkWrite(bulkOps);
 
-      await Notification.create({
+      await notificationService.createNotification({
         title: "Class Faculty Assigned",
         message: `You have been assigned to ${faculty.name} as your class faculty`,
         type: "assignment",
+        category: "class_assignment",
         targetUsers: validStudentIds,
         createdBy: req.user.id
       });
-
-      const io = getIO();
-      if (io) {
-        validStudentIds.forEach(studentId => {
-          io.to(studentId.toString()).emit("new-notification", {
-            title: "Class Faculty Assigned",
-            message: `You have been assigned to ${faculty.name} as your class faculty`
-          });
-        });
-      }
     }
     
     res.status(200).json({
@@ -266,23 +258,14 @@ exports.assignProctorStudents = async (req, res) => {
       }));
       await ProctorStudentAssignment.bulkWrite(bulkOps);
 
-      await Notification.create({
+      await notificationService.createNotification({
         title: "Proctor Faculty Assigned",
         message: `You have been assigned to ${faculty.name} as your proctor faculty`,
         type: "assignment",
+        category: "class_assignment",
         targetUsers: validStudentIds,
         createdBy: req.user.id
       });
-
-      const io = getIO();
-      if (io) {
-        validStudentIds.forEach(studentId => {
-          io.to(studentId.toString()).emit("new-notification", {
-            title: "Proctor Faculty Assigned",
-            message: `You have been assigned to ${faculty.name} as your proctor faculty`
-          });
-        });
-      }
     }
     
     res.status(200).json({
@@ -671,10 +654,11 @@ exports.assignSection = async (req, res) => {
           details: `Reassigned ${department} Year ${year} Section ${upperSection} from ${existingAssignment.facultyId.name} to ${faculty.name}`
         });
 
-        await Notification.create({
+        await notificationService.createNotification({
           title: "Class Reassigned",
           message: `Section ${upperSection} (Year ${year}, ${department}) has been reassigned to another faculty.`,
           type: "assignment",
+          category: "class_assignment",
           targetUsers: [existingAssignment.facultyId._id],
           createdBy: req.user.id
         });
@@ -702,29 +686,22 @@ exports.assignSection = async (req, res) => {
       const studentIds = sectionStudents.map(s => s._id);
 
       if (studentIds.length > 0) {
-        await Notification.create({
+        await notificationService.createNotification({
           title: "Class Faculty Assigned",
           message: `You have been assigned to ${faculty.name} as your class faculty for Section ${upperSection}`,
           type: "assignment",
+          category: "class_assignment",
           targetUsers: studentIds,
           createdBy: req.user.id
         });
-
-        if (io) {
-          studentIds.forEach(id => {
-            io.to(id.toString()).emit("new-notification", {
-              title: "Class Faculty Assigned",
-              message: `You have been assigned to ${faculty.name} as your class faculty for Section ${upperSection}`
-            });
-          });
-        }
       }
 
       // Notify new faculty
-      await Notification.create({
+      await notificationService.createNotification({
         title: "New Class Section Assigned",
         message: `You have been assigned as class faculty for ${department} Year ${year} Section ${upperSection}.`,
         type: "assignment",
+        category: "class_assignment",
         targetUsers: [facultyId],
         createdBy: req.user.id
       });
@@ -799,10 +776,11 @@ exports.bulkReassignSection = async (req, res) => {
     }
 
     // Single notification to target faculty
-    await Notification.create({
+    await notificationService.createNotification({
       title: "Multiple Sections Reassigned to You",
       message: `You have been reassigned ${results.filter(r => r.success).length} sections.`,
       type: "assignment",
+      category: "class_assignment",
       targetUsers: [targetFacultyId],
       createdBy: req.user.id
     });

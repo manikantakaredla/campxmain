@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const Resource = require("../models/Resource");
-const Notification = require("../models/Notification");
+const notificationService = require("../services/notificationService");
 const User = require("../models/User");
 const ClassStudentAssignment = require("../models/ClassStudentAssignment");
 const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
@@ -155,14 +155,7 @@ async function createNotificationsForResource(resource) {
         createdBy: resource.uploadedBy._id
       }));
 
-      const insertedNotifications = await Notification.insertMany(notifications);
-
-      const io = getIO();
-      insertedNotifications.forEach(notif => {
-        if (notif.targetUsers && notif.targetUsers[0]) {
-          io.to(notif.targetUsers[0].toString()).emit("new-notification", notif);
-        }
-      });
+      await notificationService.createBulkNotifications(notifications);
     }
   } catch (error) {
     console.error("Error creating notifications:", error);

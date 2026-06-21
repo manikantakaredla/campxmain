@@ -14,6 +14,13 @@ const notificationSchema = new mongoose.Schema({
     enum: ["announcement", "resource", "activity", "assignment", "system"],
     default: "system"
   },
+  category: {
+    type: String
+  },
+  emailEnabled: {
+    type: Boolean,
+    default: true
+  },
   relatedId: {
     type: mongoose.Schema.Types.ObjectId
   },
