@@ -16,6 +16,8 @@ const ResourceManagement = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [showDeleteModal, setShowDeleteModal] = useState(null)
+  const [analytics, setAnalytics] = useState(null)
+  const [fetchingAnalytics, setFetchingAnalytics] = useState(true)
   const itemsPerPage = 12
 
   const categories = ['All', 'Notes', 'PPT', 'Assignment', 'Lab', 'Question Bank', 'Previous Papers', 'Other']
@@ -24,6 +26,23 @@ const ResourceManagement = () => {
     fetchResources()
   }, [currentPage, searchTerm, categoryFilter])
 
+  useEffect(() => {
+    fetchAnalytics()
+  }, [])
+
+  const fetchAnalytics = async () => {
+    try {
+      const response = await api.get('/resources/analytics')
+      if (response.data.success) {
+        setAnalytics(response.data.analytics)
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error)
+    } finally {
+      setFetchingAnalytics(false)
+    }
+  }
+
   const fetchResources = async () => {
     setLoading(true)
     try {
@@ -31,7 +50,7 @@ const ResourceManagement = () => {
         page: currentPage,
         limit: itemsPerPage,
         search: searchTerm,
-        category: categoryFilter === 'All' ? '' : categoryFilter
+        resourceType: categoryFilter === 'All' ? '' : categoryFilter
       }
       const response = await api.get('/resources', { params })
       setResources(response.data.resources || [])
@@ -114,6 +133,38 @@ const ResourceManagement = () => {
         </Link>
       </div>
 
+      {/* Analytics Summary */}
+      {analytics && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+          <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Resources</p>
+            <p className="text-3xl font-extrabold text-blue-600 mt-2">{analytics.totalResources || 0}</p>
+            <p className="text-xs text-gray-400 mt-2">Across all departments</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Most Active Subject</p>
+            <p className="text-md font-bold text-gray-800 mt-2 truncate">
+              {analytics.mostActiveSubjects?.[0]?.subjectName || 'N/A'}
+            </p>
+            <p className="text-xs text-gray-400 mt-2">{analytics.mostActiveSubjects?.[0]?.downloads || 0} total downloads</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Top Contributor</p>
+            <p className="text-md font-bold text-gray-800 mt-2 truncate">
+              {analytics.topFaculty?.[0]?.name || 'N/A'}
+            </p>
+            <p className="text-xs text-gray-400 mt-2">{analytics.topFaculty?.[0]?.count || 0} resources uploaded</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Most Downloaded</p>
+            <p className="text-md font-bold text-gray-800 mt-2 truncate">
+              {analytics.mostDownloaded?.[0]?.title || 'N/A'}
+            </p>
+            <p className="text-xs text-gray-400 mt-2">Downloaded {analytics.mostDownloaded?.[0]?.downloads || 0} times</p>
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
@@ -188,11 +239,17 @@ const ResourceManagement = () => {
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-medium">Draft</span>
                   )}
                 </h3>
+                {resource.subjectName && (
+                  <p className="text-xs font-semibold text-blue-600 mb-1 truncate">{resource.subjectName}</p>
+                )}
+                {resource.department && (
+                  <p className="text-[10px] text-gray-500 mb-2 font-medium uppercase">{resource.department} • Semester {resource.semester}</p>
+                )}
                 <p className="text-sm text-gray-500 line-clamp-2 mb-3">{resource.description || 'No description'}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1 text-xs text-gray-400">
                     <Download className="w-3 h-3" />
-
+                    <span>{resource.downloads || 0}</span>
                   </div>
                   <span className="text-xs text-gray-400">
                     {new Date(resource.createdAt).toLocaleDateString()}

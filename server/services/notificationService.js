@@ -68,9 +68,21 @@ const dispatchEmailJob = async (notification, targetUsers) => {
       case "opportunity":
         htmlContent = emailTemplates.getPlacementTemplate(notification.title, notification.message);
         break;
-      case "resource":
-        htmlContent = emailTemplates.getResourceTemplate(notification.title, notification.message);
+      case "resource": {
+        const Resource = require("../models/Resource");
+        const resDoc = await Resource.findById(notification.relatedId).populate("uploadedBy", "name").lean();
+        if (resDoc) {
+          htmlContent = emailTemplates.getResourceTemplate(
+            notification.title,
+            notification.message,
+            resDoc.subjectName,
+            resDoc.uploadedBy?.name
+          );
+        } else {
+          htmlContent = emailTemplates.getResourceTemplate(notification.title, notification.message);
+        }
         break;
+      }
     }
 
     const result = await sendBatchEmails(validEmails, notification.title, htmlContent);

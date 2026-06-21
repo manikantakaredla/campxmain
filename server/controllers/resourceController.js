@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const Resource = require("../models/Resource");
+const Subject = require("../models/Subject");
 const notificationService = require("../services/notificationService");
 const User = require("../models/User");
 const ClassStudentAssignment = require("../models/ClassStudentAssignment");
@@ -14,6 +15,10 @@ exports.createResource = async (req, res) => {
       title,
       description,
       category,
+      resourceType,
+      subjectId,
+      unitNumber,
+      approvalStatus,
       visibility,
       targetBranch,
       targetYear,
@@ -26,6 +31,50 @@ exports.createResource = async (req, res) => {
         success: false,
         message: "File is required"
       });
+    }
+
+    if (!subjectId) {
+      return res.status(400).json({
+        success: false,
+        message: "Subject is required"
+      });
+    }
+
+    if (!resourceType) {
+      return res.status(400).json({
+        success: false,
+        message: "Resource Type is required"
+      });
+    }
+
+    const subject = await Subject.findById(subjectId);
+    if (!subject) {
+      return res.status(400).json({
+        success: false,
+        message: "Selected subject not found"
+      });
+    }
+
+    const currentUser = await User.findById(req.user.id);
+    if (!currentUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Faculty verification: check if subject is assigned to them
+    if (["faculty", "hod", "deputyhod"].includes(currentUser.role)) {
+      const primaryIds = currentUser.facultySubjects?.primary?.map(id => id.toString()) || [];
+      const secondaryIds = currentUser.facultySubjects?.secondary?.map(id => id.toString()) || [];
+      
+      const isAssigned = primaryIds.includes(subjectId.toString()) || secondaryIds.includes(subjectId.toString());
+      if (!isAssigned) {
+        return res.status(403).json({
+          success: false,
+          message: "You can only upload resources for subjects assigned to you."
+        });
+      }
     }
 
     // Upload file to Supabase
@@ -47,38 +96,30 @@ exports.createResource = async (req, res) => {
       .from("campx-files")
       .getPublicUrl(fileName);
 
-    
-    const currentUser = await User.findById(req.user.id);
-    let finalTargetBranch = targetBranch || null;
-    
-    if (["faculty", "hod", "deputyhod"].includes(currentUser.role)) {
-      finalTargetBranch = currentUser.department;
-    } else if (["dean", "principal", "management"].includes(currentUser.role)) {
-      const allowedBranches = currentUser.managedBranches && currentUser.managedBranches.length > 0 
-        ? currentUser.managedBranches 
-        : [currentUser.department];
-      
-      if (targetBranch && !allowedBranches.includes(targetBranch)) {
-        return res.status(403).json({
-          success: false,
-          message: "You can only target your managed branches."
-        });
-      }
-    }
+    // Target audience is derived directly from the subject
+    const finalTargetBranch = subject.department;
+    const finalTargetYear = Math.ceil(subject.semester / 2);
 
     const resourceStatus = status || "active";
     const resource = await Resource.create({
       title,
       description,
-      category,
+      category: resourceType || category || "Notes",
+      resourceType: resourceType || "Notes",
+      subjectId,
+      subjectName: subject.name,
+      department: subject.department,
+      semester: subject.semester,
+      unitNumber: unitNumber ? parseInt(unitNumber) : undefined,
+      approvalStatus: approvalStatus || "approved",
       fileUrl: publicUrl.publicUrl,
       fileName: req.file.originalname,
       fileType: req.file.mimetype,
       fileSize: req.file.size,
-      visibility: visibility || "all",
+      visibility: visibility || "branch",
       targetBranch: finalTargetBranch,
-      targetYear,
-      targetSection,
+      targetYear: finalTargetYear,
+      targetSection: targetSection || undefined,
       status: resourceStatus,
       notificationsSent: resourceStatus === "active",
       uploadedBy: req.user.id
@@ -86,7 +127,7 @@ exports.createResource = async (req, res) => {
 
     await resource.populate("uploadedBy", "name email");
 
-    if (resource.status === "active") {
+    if (resource.status === "active" && resource.approvalStatus === "approved") {
       // Create notifications for target users
       await createNotificationsForResource(resource);
 
@@ -165,67 +206,121 @@ async function createNotificationsForResource(resource) {
 // ==================== GET ALL RESOURCES ====================
 exports.getResources = async (req, res) => {
   try {
-    const { page = 1, limit = 10, category, search, branch, year, forClass } = req.query;
+    const { 
+      page = 1, 
+      limit = 10, 
+      category, 
+      resourceType,
+      subjectId,
+      semester,
+      uploadedBy,
+      department,
+      approvalStatus,
+      search, 
+      branch, 
+      year, 
+      forClass 
+    } = req.query;
     
     let query = {};
     if (req.user && req.user.role === "student") {
       query.status = "active";
+      query.approvalStatus = "approved";
     } else {
       query.status = { $in: ["active", "draft"] };
+      if (approvalStatus) {
+        query.approvalStatus = approvalStatus;
+      }
     }
     
     if (category && category !== "all") {
-      query.category = category;
+      query.$or = [
+        { resourceType: category },
+        { category: category }
+      ];
+    }
+    if (resourceType && resourceType !== "all") {
+      query.resourceType = resourceType;
+    }
+    if (subjectId) {
+      query.subjectId = subjectId;
+    }
+    if (semester) {
+      query.semester = parseInt(semester);
+    }
+    if (uploadedBy) {
+      query.uploadedBy = uploadedBy;
+    }
+    if (department) {
+      query.department = department;
     }
     
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } }
+        { description: { $regex: search, $options: "i" } },
+        { subjectName: { $regex: search, $options: "i" } }
       ];
     }
     
     // Filter by user's branch and year for students
-  // Find this section (around line 130-160) and replace it:
+    if (req.user.role === "student") {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
 
-if (req.user.role === "student") {
-  const user = await User.findById(req.user.id);
-  const classAssignment = await ClassStudentAssignment.findOne({ studentId: req.user.id }).select("facultyId");
-  const proctorAssignment = await ProctorStudentAssignment.findOne({ studentId: req.user.id }).select("facultyId");
+      const classAssignment = await ClassStudentAssignment.findOne({ studentId: req.user.id }).select("facultyId");
+      const proctorAssignment = await ProctorStudentAssignment.findOne({ studentId: req.user.id }).select("facultyId");
 
-  if (forClass === "true") {
-    // MODIFIED: Only show resources from class teacher and proctor
-    const facultyIds = [];
-    if (classAssignment?.facultyId) facultyIds.push(classAssignment.facultyId);
-    if (proctorAssignment?.facultyId) facultyIds.push(proctorAssignment.facultyId);
-    
-    query.$or = [
-      { uploadedBy: { $in: facultyIds } }  // Only class teacher & proctor
-      // Remove section filter:
-      // { visibility: "section", targetSection: user.section }
-    ];
-  } else {
-    // Keep existing logic for regular resources
-    query.$or = [
-      { visibility: "all" },
-      { visibility: "branch", targetBranch: user.branch },
-      { visibility: "year", targetBranch: user.branch, targetYear: user.currentYear },
-      { visibility: "section", targetBranch: user.branch, targetYear: user.currentYear, targetSection: user.section }
-    ];
+      // Find subjects for student's branch and semester
+      const studentSubjects = await Subject.find({
+        department: user.branch,
+        semester: user.currentSemester || { $exists: true }
+      }).select("_id");
+      const subjectIds = studentSubjects.map(s => s._id);
 
-    if (classAssignment) {
-      query.$or.push({ visibility: "class", uploadedBy: classAssignment.facultyId });
+      const accessibilityQuery = [
+        { subjectId: { $in: subjectIds } },
+        { subjectId: { $exists: false } },
+        { subjectId: null }
+      ];
+
+      if (forClass === "true") {
+        const facultyIds = [];
+        if (classAssignment?.facultyId) facultyIds.push(classAssignment.facultyId);
+        if (proctorAssignment?.facultyId) facultyIds.push(proctorAssignment.facultyId);
+        
+        query.$and = [
+          { $or: accessibilityQuery },
+          { uploadedBy: { $in: facultyIds } }
+        ];
+      } else {
+        query.$and = [
+          { $or: accessibilityQuery },
+          {
+            $or: [
+              { visibility: "all" },
+              { visibility: "branch", targetBranch: user.branch },
+              { visibility: "year", targetBranch: user.branch, targetYear: user.currentYear },
+              { visibility: "section", targetBranch: user.branch, targetYear: user.currentYear, targetSection: user.section }
+            ]
+          }
+        ];
+
+        if (classAssignment) {
+          query.$and[1].$or.push({ visibility: "class", uploadedBy: classAssignment.facultyId });
+        }
+        if (proctorAssignment) {
+          query.$and[1].$or.push({ visibility: "proctor", uploadedBy: proctorAssignment.facultyId });
+        }
+      }
     }
-    if (proctorAssignment) {
-      query.$or.push({ visibility: "proctor", uploadedBy: proctorAssignment.facultyId });
-    }
-  }
-}
     
     const skip = (parseInt(page) - 1) * parseInt(limit);
     
     const resources = await Resource.find(query)
-      .populate("uploadedBy", "name email")
+      .populate("uploadedBy", "name email department")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
@@ -297,7 +392,66 @@ exports.updateResource = async (req, res) => {
       });
     }
     
-    const { title, description, category, visibility, targetBranch, targetYear, targetSection, status } = req.body;
+    const { 
+      title, 
+      description, 
+      category, 
+      resourceType,
+      subjectId,
+      unitNumber,
+      approvalStatus,
+      visibility, 
+      targetBranch, 
+      targetYear, 
+      targetSection, 
+      status 
+    } = req.body;
+
+    let updateFields = { 
+      title, 
+      description, 
+      category: resourceType || category, 
+      resourceType,
+      unitNumber: unitNumber ? parseInt(unitNumber) : undefined,
+      approvalStatus,
+      visibility, 
+      targetBranch, 
+      targetYear, 
+      targetSection, 
+      status 
+    };
+
+    if (subjectId && subjectId !== (resource.subjectId ? resource.subjectId.toString() : '')) {
+      const subject = await Subject.findById(subjectId);
+      if (!subject) {
+        return res.status(400).json({
+          success: false,
+          message: "Selected subject not found"
+        });
+      }
+
+      // Check faculty permission
+      const currentUser = await User.findById(req.user.id);
+      if (["faculty", "hod", "deputyhod"].includes(currentUser.role)) {
+        const primaryIds = currentUser.facultySubjects?.primary?.map(id => id.toString()) || [];
+        const secondaryIds = currentUser.facultySubjects?.secondary?.map(id => id.toString()) || [];
+        
+        const isAssigned = primaryIds.includes(subjectId.toString()) || secondaryIds.includes(subjectId.toString());
+        if (!isAssigned) {
+          return res.status(403).json({
+            success: false,
+            message: "You can only assign subjects that are officially allocated to you."
+          });
+        }
+      }
+
+      updateFields.subjectId = subjectId;
+      updateFields.subjectName = subject.name;
+      updateFields.department = subject.department;
+      updateFields.semester = subject.semester;
+      updateFields.targetBranch = subject.department;
+      updateFields.targetYear = Math.ceil(subject.semester / 2);
+    }
     
     let sendNotifications = false;
     if (status === "active" && resource.status !== "active" && !resource.notificationsSent) {
@@ -306,11 +460,11 @@ exports.updateResource = async (req, res) => {
 
     const updatedResource = await Resource.findByIdAndUpdate(
       req.params.id,
-      { title, description, category, visibility, targetBranch, targetYear, targetSection, status },
+      updateFields,
       { new: true, runValidators: true }
     ).populate("uploadedBy", "name email");
     
-    if (sendNotifications) {
+    if (sendNotifications && updatedResource.approvalStatus === "approved") {
       updatedResource.notificationsSent = true;
       await updatedResource.save();
       await createNotificationsForResource(updatedResource);
@@ -392,5 +546,90 @@ exports.downloadResource = async (req, res) => {
       success: false,
       message: error.message
     });
+  }
+};
+
+// ==================== GET FACULTY ASSIGNED SUBJECTS ====================
+exports.getFacultySubjects = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .populate("facultySubjects.primary")
+      .populate("facultySubjects.secondary")
+      .lean();
+      
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const primary = user.facultySubjects?.primary || [];
+    const secondary = user.facultySubjects?.secondary || [];
+
+    res.status(200).json({
+      success: true,
+      primary,
+      secondary
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ==================== ADMIN RESOURCE ANALYTICS ====================
+exports.getResourceAnalytics = async (req, res) => {
+  try {
+    const totalResources = await Resource.countDocuments();
+    
+    // Resources by Department
+    const byDept = await Resource.aggregate([
+      { $match: { department: { $ne: null } } },
+      { $group: { _id: "$department", count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+
+    // Resources by Subject
+    const bySubject = await Resource.aggregate([
+      { $match: { subjectName: { $ne: null } } },
+      { $group: { _id: "$subjectName", count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+
+    // Top contributing faculty
+    const topFaculty = await Resource.aggregate([
+      { $group: { _id: "$uploadedBy", count: { $sum: 1 } } },
+      { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "faculty" } },
+      { $unwind: "$faculty" },
+      { $project: { name: "$faculty.name", employeeId: "$faculty.employeeId", count: 1 } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]);
+
+    // Most downloaded resources
+    const mostDownloaded = await Resource.find()
+      .populate("uploadedBy", "name")
+      .sort({ downloads: -1 })
+      .limit(5)
+      .lean();
+
+    // Most active subjects by downloads
+    const activeSubjects = await Resource.aggregate([
+      { $match: { subjectName: { $ne: null } } },
+      { $group: { _id: "$subjectName", totalDownloads: { $sum: "$downloads" } } },
+      { $sort: { totalDownloads: -1 } },
+      { $limit: 5 }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      analytics: {
+        totalResources,
+        byDepartment: byDept.map(d => ({ department: d._id, count: d.count })),
+        bySubject: bySubject.map(s => ({ subjectName: s._id, count: s.count })),
+        topFaculty,
+        mostDownloaded,
+        mostActiveSubjects: activeSubjects.map(s => ({ subjectName: s._id, downloads: s.totalDownloads }))
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -34,6 +34,7 @@ const FacultyDashboard = () => {
   const [recentResources, setRecentResources] = useState([])
   const [classAssignmentsSummary, setClassAssignmentsSummary] = useState(null)
   const [workloadSummary, setWorkloadSummary] = useState(null)
+  const [subjectResources, setSubjectResources] = useState([])
 
   useEffect(() => {
     fetchAnnouncements()
@@ -42,7 +43,31 @@ const FacultyDashboard = () => {
     fetchProctorStudents()
     fetchClassAssignmentsSummary()
     fetchWorkloadSummary()
+    fetchSubjectResourceCounts()
   }, [])
+
+  const fetchSubjectResourceCounts = async () => {
+    try {
+      const subRes = await resourceService.getFacultySubjects()
+      const resRes = await resourceService.getAll({ limit: 1000 })
+      if (subRes.success && resRes.success) {
+        const allAssigned = [
+          ...(subRes.primary || []).map(s => ({ ...s, isPrimary: true })),
+          ...(subRes.secondary || []).map(s => ({ ...s, isPrimary: false }))
+        ]
+        const counts = allAssigned.map(sub => {
+          const count = (resRes.resources || []).filter(r => r.subjectId === sub._id).length
+          return {
+            ...sub,
+            resourceCount: count
+          }
+        })
+        setSubjectResources(counts)
+      }
+    } catch (error) {
+      console.error('Error fetching subject resource counts:', error)
+    }
+  }
 
   const fetchAnnouncements = async () => {
     try {
@@ -259,46 +284,52 @@ const FacultyDashboard = () => {
           </div>
         )}
 
-        {/* My Subjects */}
-        {workloadSummary && (
+        {/* My Subjects Resources */}
+        {subjectResources.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
             <div className="p-5 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
               <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-blue-500" />
-                My Subjects
+                <BookOpen className="w-5 h-5 text-blue-500 animate-pulse" />
+                My Subjects Resources
               </h3>
             </div>
-            <div className="p-5 space-y-5">
-              <div>
-                <h4 className="text-sm font-semibold text-gray-600 mb-3 border-b border-gray-100 pb-2">Primary Subjects</h4>
-                {workloadSummary.subjects?.primary?.length > 0 ? (
-                  <div className="flex flex-wrap gap-3">
-                    {workloadSummary.subjects.primary.map(sub => (
-                      <span key={sub._id} className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium border border-blue-100 shadow-sm flex items-center gap-2">
-                        <BookOpen size={16} />
-                        {sub.name} <span className="opacity-70">({sub.code})</span>
+            <div className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {subjectResources.map(sub => (
+                <div key={sub._id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:border-blue-100 hover:shadow-md transition-all flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start mb-2">
+                      <span className={`text-[10px] px-2 py-0.5 rounded font-semibold border ${sub.isPrimary ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200'}`}>
+                        {sub.isPrimary ? 'Primary' : 'Secondary'}
                       </span>
-                    ))}
+                      <span className="text-xs text-gray-500 font-semibold uppercase">{sub.code}</span>
+                    </div>
+                    <h4 className="text-gray-900 font-bold text-sm mb-2">{sub.name}</h4>
+                    <p className="text-xs text-gray-500 mb-4">{sub.department} • Semester {sub.semester}</p>
                   </div>
-                ) : (
-                  <p className="text-sm text-gray-400 italic">No primary subjects assigned.</p>
-                )}
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-gray-600 mb-3 border-b border-gray-100 pb-2">Secondary Subjects</h4>
-                {workloadSummary.subjects?.secondary?.length > 0 ? (
-                  <div className="flex flex-wrap gap-3">
-                    {workloadSummary.subjects.secondary.map(sub => (
-                      <span key={sub._id} className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg text-sm font-medium border border-indigo-100 shadow-sm flex items-center gap-2">
-                        <BookOpen size={16} />
-                        {sub.name} <span className="opacity-70">({sub.code})</span>
-                      </span>
-                    ))}
+                  
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                    <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded">
+                      {sub.resourceCount} Resources
+                    </span>
+                    <div className="flex gap-2">
+                      <Link 
+                        to={`/faculty/resources?subjectId=${sub._id}`}
+                        className="p-1 px-2 border border-gray-200 text-xs font-semibold rounded text-gray-700 hover:bg-gray-50"
+                        title="View Resources"
+                      >
+                        View
+                      </Link>
+                      <Link 
+                        to={`/faculty/resources/upload?subjectId=${sub._id}`}
+                        className="p-1 px-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded"
+                        title="Quick Upload"
+                      >
+                        Upload
+                      </Link>
+                    </div>
                   </div>
-                ) : (
-                  <p className="text-sm text-gray-400 italic">No secondary subjects assigned.</p>
-                )}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

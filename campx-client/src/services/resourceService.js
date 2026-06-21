@@ -39,4 +39,14 @@ export const resourceService = {
     const response = await api.put(`/resources/download/${id}`)
     return response.data
   },
+  
+  getFacultySubjects: async () => {
+    const response = await api.get('/resources/faculty-subjects')
+    return response.data
+  },
+
+  getAnalytics: async () => {
+    const response = await api.get('/resources/analytics')
+    return response.data
+  }
 }

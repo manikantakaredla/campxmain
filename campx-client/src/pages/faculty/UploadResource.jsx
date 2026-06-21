@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { authService } from '../../services/authService'
 import { useSettings } from '../../hooks/useSettings'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -18,17 +18,51 @@ const UploadResource = () => {
     title: '',
     description: '',
     category: 'Notes',
-    visibility: 'all',
+    resourceType: 'Notes',
+    subjectId: '',
+    unitNumber: '',
+    visibility: 'branch',
     targetBranch: '',
     targetYear: '',
     targetSection: '',
     file: null
   })
   const [filePreview, setFilePreview] = useState(null)
+  const [assignedSubjects, setAssignedSubjects] = useState([])
+  const [fetchingSubjects, setFetchingSubjects] = useState(true)
 
-  const categories = [
-    'Notes', 'PPT', 'Assignment', 'Lab', 'Question Bank', 'Previous Papers', 'Other'
+  const resourceTypes = [
+    'Notes', 'PPT', 'Assignment', 'Question Bank', 'Previous Paper', 'Lab Manual', 'Syllabus', 'Video Link', 'Other'
   ]
+
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const res = await resourceService.getFacultySubjects()
+        if (res.success) {
+          const allAssigned = [
+            ...(res.primary || []).map(s => ({ ...s, isPrimary: true })),
+            ...(res.secondary || []).map(s => ({ ...s, isPrimary: false }))
+          ]
+          setAssignedSubjects(allAssigned)
+        }
+      } catch (error) {
+        console.error('Failed to fetch subjects', error)
+        toast.error('Failed to load assigned subjects')
+      } finally {
+        setFetchingSubjects(false)
+      }
+    }
+    fetchSubjects()
+  }, [])
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const subId = params.get('subjectId')
+    if (subId) {
+      setFormData(prev => ({ ...prev, subjectId: subId }))
+    }
+  }, [location.search])
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -76,6 +110,16 @@ const UploadResource = () => {
       toast.error('Please enter a title')
       return
     }
+
+    if (!formData.subjectId) {
+      toast.error('Please select a subject')
+      return
+    }
+
+    if (!formData.resourceType) {
+      toast.error('Please select a resource type')
+      return
+    }
     
     if (!formData.file) {
       toast.error('Please select a file to upload')
@@ -87,7 +131,12 @@ const UploadResource = () => {
       const submitData = new FormData()
       submitData.append('title', formData.title)
       submitData.append('description', formData.description)
-      submitData.append('category', formData.category)
+      submitData.append('category', formData.resourceType)
+      submitData.append('resourceType', formData.resourceType)
+      submitData.append('subjectId', formData.subjectId)
+      if (formData.unitNumber) {
+        submitData.append('unitNumber', formData.unitNumber)
+      }
       submitData.append('visibility', formData.visibility)
       submitData.append('targetBranch', formData.targetBranch)
       submitData.append('targetYear', formData.targetYear)
@@ -167,39 +216,82 @@ const UploadResource = () => {
             />
           </div>
 
-          {/* Category & Visibility */}
+          {/* Subject Selector */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Subject <span className="text-red-500">*</span>
+            </label>
+            {fetchingSubjects ? (
+              <div className="text-sm text-gray-500 animate-pulse">Loading assigned subjects...</div>
+            ) : (
+              <select
+                name="subjectId"
+                value={formData.subjectId}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              >
+                <option value="">-- Select Subject --</option>
+                {assignedSubjects.map(sub => (
+                  <option key={sub._id} value={sub._id}>
+                    {sub.name} ({sub.code}) - {sub.department} [Sem {sub.semester}] {sub.isPrimary ? '(Primary)' : '(Secondary)'}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          {/* Resource Type & Unit Number */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
+                Resource Type <span className="text-red-500">*</span>
               </label>
               <select
-                name="category"
-                value={formData.category}
+                name="resourceType"
+                value={formData.resourceType}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                {resourceTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
                 ))}
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Visibility
+                Unit Number (Optional)
               </label>
-              <select
-                name="visibility"
-                value={formData.visibility}
+              <input
+                type="number"
+                name="unitNumber"
+                value={formData.unitNumber}
                 onChange={handleInputChange}
+                min="1"
+                max="12"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Students</option>
-                <option value="branch">Specific Branch Only</option>
-                <option value="year">Specific Year Only</option>
-              </select>
+                placeholder="e.g., 1, 2"
+              />
             </div>
+          </div>
+
+          {/* Visibility */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Visibility
+            </label>
+            <select
+              name="visibility"
+              value={formData.visibility}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="branch">Branch Only</option>
+              <option value="all">All Students</option>
+              <option value="year">Specific Year Only</option>
+            </select>
           </div>
 
           {/* Conditional Fields */}

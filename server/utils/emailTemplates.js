@@ -82,10 +82,21 @@ exports.getPlacementTemplate = (title, message) => {
   );
 };
 
-exports.getResourceTemplate = (title, description) => {
+exports.getResourceTemplate = (title, description, subject, facultyName) => {
+  let content = '';
+  if (subject || facultyName) {
+    content = `
+      <p><strong>Subject:</strong> ${subject || 'N/A'}</p>
+      <p><strong>Resource:</strong> ${title}</p>
+      <p><strong>Faculty:</strong> ${facultyName || 'N/A'}</p>
+      ${description ? `<p><strong>Description:</strong> ${description}</p>` : ''}
+    `;
+  } else {
+    content = description || '';
+  }
   return getBaseTemplate(
     `📚 New Resource Uploaded: ${title}`,
-    description,
+    content,
     process.env.CLIENT_URL || "https://campxserver.onrender.com",
     "Access Resource"
   );

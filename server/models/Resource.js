@@ -14,6 +14,32 @@ const resourceSchema = new mongoose.Schema({
     enum: ["Notes", "PPT", "Assignment", "Lab", "Question Bank", "Previous Papers", "Other"],
     default: "Notes"
   },
+  subjectId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Subject"
+  },
+  subjectName: {
+    type: String
+  },
+  department: {
+    type: String
+  },
+  semester: {
+    type: Number
+  },
+  resourceType: {
+    type: String,
+    enum: ["Notes", "PPT", "Assignment", "Question Bank", "Previous Paper", "Lab Manual", "Syllabus", "Video Link", "Other"],
+    default: "Notes"
+  },
+  unitNumber: {
+    type: Number
+  },
+  approvalStatus: {
+    type: String,
+    enum: ["approved", "pending", "rejected"],
+    default: "approved"
+  },
   fileUrl: {
     type: String,
     required: true
@@ -65,6 +91,10 @@ const resourceSchema = new mongoose.Schema({
 // Indexes
 resourceSchema.index({ title: "text", description: "text" });
 resourceSchema.index({ category: 1 });
+resourceSchema.index({ subjectId: 1 });
+resourceSchema.index({ resourceType: 1 });
+resourceSchema.index({ approvalStatus: 1 });
+resourceSchema.index({ department: 1, semester: 1 });
 resourceSchema.index({ uploadedBy: 1 });
 resourceSchema.index({ status: 1, downloads: -1 });
 resourceSchema.index({ visibility: 1, targetBranch: 1, targetYear: 1, targetSection: 1 });

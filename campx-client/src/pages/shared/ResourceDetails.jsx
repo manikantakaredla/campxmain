@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { resourceService } from '../../services/resourceService'
-import { ArrowLeft, Download, Eye, User, Calendar, FileText, Tag } from 'lucide-react'
+import { ArrowLeft, Download, Eye, User, Calendar, FileText, Tag, BookOpen, Layers } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const ResourceDetails = () => {
@@ -94,10 +94,15 @@ const ResourceDetails = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6">
           {/* Category Badge */}
-          <div className="mb-4">
+          <div className="mb-4 flex flex-wrap gap-2">
             <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
-              {resource.category}
+              {resource.resourceType || resource.category}
             </span>
+            {resource.unitNumber && (
+              <span className="px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-700">
+                Unit {resource.unitNumber}
+              </span>
+            )}
           </div>
 
           {/* Title */}
@@ -120,9 +125,21 @@ const ResourceDetails = () => {
               <Tag className="w-4 h-4 text-gray-500" />
               <span className="text-sm text-gray-600">{formatFileSize(resource.fileSize)}</span>
             </div>
+            {resource.subjectName && (
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">Subject: {resource.subjectName}</span>
+              </div>
+            )}
+            {resource.department && (
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">Dept: {resource.department} (Sem {resource.semester})</span>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <Download className="w-4 h-4 text-gray-500" />
-
+              <span className="text-sm text-gray-600">{resource.downloads || 0} downloads</span>
             </div>
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-gray-500" />
