@@ -12,29 +12,33 @@ exports.getDepartmentFaculty = async (req, res) => {
     // Get HOD's department
     const hod = await User.findById(req.user.id);
     
-    let branches = [];
-    if (["dean", "principal", "management"].includes(hod.role)) {
-        branches = hod.managedBranches && hod.managedBranches.length > 0 ? hod.managedBranches : [hod.department].filter(Boolean);
-    } else {
-        branches = [hod.department].filter(Boolean);
-    }
-
-    if (branches.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Department/Branches not assigned to your profile"
-      });
-    }
-
-    const faculty = await User.find({
-      department: { $in: branches },
+    let query = {
       role: { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] },
       isActive: true
-    }).select("name email employeeId department designation staffRole profilePicture");
+    };
+
+    if (hod.role !== "admin") {
+      let branches = [];
+      if (["dean", "principal", "management"].includes(hod.role)) {
+          branches = hod.managedBranches && hod.managedBranches.length > 0 ? hod.managedBranches : [hod.department].filter(Boolean);
+      } else {
+          branches = [hod.department].filter(Boolean);
+      }
+
+      if (branches.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Department/Branches not assigned to your profile"
+        });
+      }
+      query.department = { $in: branches };
+    }
+
+    const faculty = await User.find(query).select("name email employeeId department designation staffRole profilePicture");
 
     res.status(200).json({
       success: true,
-      department,
+      department: hod.department || "All",
       faculty,
       total: faculty.length
     });
@@ -53,25 +57,27 @@ exports.getDepartmentStudents = async (req, res) => {
     const { page = 1, limit = 20, search, section, year } = req.query;
     
     const hod = await User.findById(req.user.id);
-    let branches = [];
-    if (["dean", "principal", "management"].includes(hod.role)) {
-        branches = hod.managedBranches && hod.managedBranches.length > 0 ? hod.managedBranches : [hod.department].filter(Boolean);
-    } else {
-        branches = [hod.department].filter(Boolean);
-    }
-
-    if (branches.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Department/Branches not assigned to your profile"
-      });
-    }
-
     let query = { 
-      branch: { $in: branches }, 
       role: "student",
       isActive: true 
     };
+
+    if (hod.role !== "admin") {
+      let branches = [];
+      if (["dean", "principal", "management"].includes(hod.role)) {
+          branches = hod.managedBranches && hod.managedBranches.length > 0 ? hod.managedBranches : [hod.department].filter(Boolean);
+      } else {
+          branches = [hod.department].filter(Boolean);
+      }
+
+      if (branches.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Department/Branches not assigned to your profile"
+        });
+      }
+      query.branch = { $in: branches };
+    }
     
     if (search) {
       query.$or = [
@@ -118,7 +124,7 @@ exports.getDepartmentStudents = async (req, res) => {
     
     res.status(200).json({
       success: true,
-      department,
+      department: hod.department || "All",
       students: studentsWithAssignments,
       pagination: {
         total,
@@ -152,17 +158,17 @@ exports.assignClassStudents = async (req, res) => {
     const faculty = await User.findById(facultyId);
     const hod = await User.findById(req.user.id);
     
-    if (faculty.department !== hod.department) {
+    if (hod.role !== "admin" && faculty.department !== hod.department) {
       return res.status(403).json({
         success: false,
         message: "You can only assign faculty from your department"
       });
     }
     
-    const validStudents = await User.find({
-      _id: { $in: studentIds },
-      branch: hod.department
-    });
+    let studentQuery = { _id: { $in: studentIds } };
+    if (hod.role !== "admin") studentQuery.branch = hod.department;
+    
+    const validStudents = await User.find(studentQuery);
     const validStudentIds = validStudents.map(s => s._id);
     const validIdsStr = validStudentIds.map(id => id.toString());
     
@@ -230,17 +236,17 @@ exports.assignProctorStudents = async (req, res) => {
     const faculty = await User.findById(facultyId);
     const hod = await User.findById(req.user.id);
     
-    if (faculty.department !== hod.department) {
+    if (hod.role !== "admin" && faculty.department !== hod.department) {
       return res.status(403).json({
         success: false,
         message: "You can only assign faculty from your department"
       });
     }
     
-    const validStudents = await User.find({
-      _id: { $in: studentIds },
-      branch: hod.department
-    });
+    let studentQuery = { _id: { $in: studentIds } };
+    if (hod.role !== "admin") studentQuery.branch = hod.department;
+    
+    const validStudents = await User.find(studentQuery);
     const validStudentIds = validStudents.map(s => s._id);
     const validIdsStr = validStudentIds.map(id => id.toString());
     
@@ -303,14 +309,14 @@ exports.getClassAssignments = async (req, res) => {
     
     if (facultyId) {
       const faculty = await User.findById(facultyId);
-      if (faculty.department !== hod.department) {
+      if (hod.role !== "admin" && faculty.department !== hod.department) {
         return res.status(403).json({
           success: false,
           message: "You can only view faculty from your department"
         });
       }
       query.facultyId = facultyId;
-    } else {
+    } else if (hod.role !== "admin") {
       // Get all faculty in department
       const facultyList = await User.find({ 
         department: hod.department,
@@ -361,14 +367,14 @@ exports.getProctorAssignments = async (req, res) => {
     
     if (facultyId) {
       const faculty = await User.findById(facultyId);
-      if (faculty.department !== hod.department) {
+      if (hod.role !== "admin" && faculty.department !== hod.department) {
         return res.status(403).json({
           success: false,
           message: "You can only view faculty from your department"
         });
       }
       query.facultyId = facultyId;
-    } else {
+    } else if (hod.role !== "admin") {
       const facultyList = await User.find({ 
         department: hod.department,
         role: { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] }
@@ -423,7 +429,7 @@ exports.removeClassAssignment = async (req, res) => {
       });
     }
     
-    if (assignment.studentId.branch !== hod.department) {
+    if (hod.role !== "admin" && assignment.studentId.branch !== hod.department) {
       return res.status(403).json({
         success: false,
         message: "You can only remove assignments for students in your department"
@@ -461,7 +467,7 @@ exports.removeProctorAssignment = async (req, res) => {
       });
     }
     
-    if (assignment.studentId.branch !== hod.department) {
+    if (hod.role !== "admin" && assignment.studentId.branch !== hod.department) {
       return res.status(403).json({
         success: false,
         message: "You can only remove assignments for students in your department"
