@@ -100,9 +100,35 @@ const FacultyDetailsModal = ({ facultyId, onClose }) => {
     }
   }
 
+  const isSameDepartment = (d1, d2) => {
+    if (!d1 || !d2) return false;
+    const s1 = d1.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const s2 = d2.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (s1 === s2) return true;
+    if (s1.includes(s2) || s2.includes(s1)) return true;
+    
+    const aliases = [
+      ['cse', 'computerscience'],
+      ['ece', 'electronicsandcommunication'],
+      ['eee', 'electricalandelectronics'],
+      ['it', 'informationtechnology'],
+      ['mech', 'mechanical'],
+      ['civil', 'civilengineering'],
+      ['aiml', 'artificialintelligence'],
+      ['ds', 'datascience']
+    ];
+
+    for (const group of aliases) {
+      const match1 = group.some(alias => s1.includes(alias));
+      const match2 = group.some(alias => s2.includes(alias));
+      if (match1 && match2) return true;
+    }
+    return false;
+  };
+
   // Filter subjects for the dropdown (exclude already assigned, only same department)
   const availableSubjects = allSubjects.filter(sub => {
-    if (sub.department !== faculty?.department) return false;
+    if (!isSameDepartment(sub.department, faculty?.department || faculty?.dept)) return false;
     const isPrimary = faculty?.facultySubjects?.primary?.some(s => s._id === sub._id)
     const isSecondary = faculty?.facultySubjects?.secondary?.some(s => s._id === sub._id)
     return !isPrimary && !isSecondary
