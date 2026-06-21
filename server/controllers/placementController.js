@@ -20,7 +20,8 @@ exports.getPlacements = async (req, res, next) => {
         { studentName: { $regex: search, $options: 'i' } },
         { rollNumber: { $regex: search, $options: 'i' } },
         { companyName: { $regex: search, $options: 'i' } },
-        { role: { $regex: search, $options: 'i' } }
+        { role: { $regex: search, $options: 'i' } },
+        { linkedinUrl: { $regex: search, $options: 'i' } }
       ];
     }
     
@@ -184,21 +185,13 @@ exports.downloadTemplate = (req, res, next) => {
   try {
     const templateData = [
       {
-        companyName: 'VISA',
-        package: 12.5,
-        rollNumber: '23A91A05J1',
-        studentName: 'SINGIDI DEVI DEEPIKA',
-        gender: 'Female',
-        college: 'AEC',
-        mobileNumber: '7893995480',
-        email: '23A91A05J1@aec.edu.in',
-        role: 'SDE',
-        placementYear: 2026,
-        department: 'CSE',
-        batch: '2022-2026',
-        offerType: 'Placement',
-        offerStatus: 'Selected',
-        offerDate: '2025-08-15'
+        'Student Name': 'SINGIDI DEVI DEEPIKA',
+        'Roll Number': '23A91A05J1',
+        'Company': 'VISA',
+        'Package': 12.5,
+        'Job Role': 'SDE',
+        'Placement Date': '2025-08-15',
+        'LinkedIn URL': 'https://www.linkedin.com/in/deepika'
       }
     ];
 
@@ -231,65 +224,128 @@ exports.uploadPlacements = async (req, res, next) => {
     let failedRecords = 0;
     let errors = [];
 
+    const getField = (row, camelName, spaceName) => {
+      if (row[camelName] !== undefined) return row[camelName];
+      if (row[spaceName] !== undefined) return row[spaceName];
+      for (let key in row) {
+        const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (cleanKey === camelName.toLowerCase() || cleanKey === spaceName.toLowerCase().replace(/[^a-z0-9]/g, '')) {
+          return row[key];
+        }
+      }
+      return undefined;
+    };
+
+    const validateLinkedInUrl = (url) => {
+      if (!url) return true;
+      const regex = /^https:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_\-\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(\/|\?|$)/i;
+      return regex.test(url);
+    };
+
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
       const rowNum = i + 2; // Accounting for header
 
       try {
+        const companyName = getField(row, 'companyName', 'Company');
+        let pkg = getField(row, 'package', 'Package');
+        const rollNumber = getField(row, 'rollNumber', 'Roll Number');
+        const studentName = getField(row, 'studentName', 'Student Name');
+        const role = getField(row, 'role', 'Job Role');
+        const gender = getField(row, 'gender', 'Gender');
+        const college = getField(row, 'college', 'College');
+        const mobileNumber = getField(row, 'mobileNumber', 'Mobile Number');
+        const email = getField(row, 'email', 'Email');
+        const department = getField(row, 'department', 'Department');
+        const batch = getField(row, 'batch', 'Batch');
+        const offerType = getField(row, 'offerType', 'Offer Type') || 'Placement';
+        const offerStatus = getField(row, 'offerStatus', 'Offer Status') || 'Selected';
+        const linkedinUrl = getField(row, 'linkedinUrl', 'LinkedIn URL');
+
         // Validate required fields
-        if (!row.companyName || !row.package || !row.rollNumber || !row.studentName || !row.placementYear || !row.offerType) {
-          throw new Error('Missing required fields (companyName, package, rollNumber, studentName, placementYear, offerType)');
+        if (!companyName || !pkg || !rollNumber || !studentName) {
+          throw new Error('Missing required fields (Company, Package, Roll Number, Student Name)');
         }
 
         // Validate package
-        row.package = Number(row.package);
-        if (isNaN(row.package)) {
+        pkg = Number(pkg);
+        if (isNaN(pkg)) {
           throw new Error('Package must be a valid number');
         }
         
         // Validate offerType
         const validOffers = ['Placement', 'Internship', 'PPO'];
-        if (!validOffers.includes(row.offerType)) {
+        if (!validOffers.includes(offerType)) {
           throw new Error(`Invalid offerType. Must be one of: ${validOffers.join(', ')}`);
+        }
+
+        // Validate LinkedIn URL
+        if (linkedinUrl && !validateLinkedInUrl(linkedinUrl)) {
+          throw new Error('Invalid LinkedIn URL format');
+        }
+
+        // Parse date and placementYear
+        let offerDate = null;
+        let placementYear = null;
+        const rawOfferDate = getField(row, 'offerDate', 'Placement Date');
+        if (rawOfferDate) {
+          if (typeof rawOfferDate === 'number') {
+            offerDate = new Date((rawOfferDate - (25567 + 2)) * 86400 * 1000);
+          } else {
+            offerDate = new Date(rawOfferDate);
+          }
+          if (!isNaN(offerDate.getTime())) {
+            placementYear = offerDate.getFullYear();
+          } else {
+            offerDate = null;
+          }
+        }
+
+        const explicitYear = getField(row, 'placementYear', 'Placement Year');
+        if (explicitYear) {
+          placementYear = Number(explicitYear);
+        } else if (!placementYear) {
+          placementYear = new Date().getFullYear();
         }
 
         // Auto-link studentId
         let studentId = null;
-        const student = await User.findOne({ rollNumber: new RegExp(`^${row.rollNumber}$`, 'i') });
+        const student = await User.findOne({ rollNumber: new RegExp(`^${rollNumber}$`, 'i') });
         if (student) {
           studentId = student._id;
         }
 
         // Detect duplicate
         const existing = await PlacementRecord.findOne({
-          rollNumber: new RegExp(`^${row.rollNumber}$`, 'i'),
-          companyName: new RegExp(`^${row.companyName}$`, 'i'),
-          role: new RegExp(`^${row.role}$`, 'i'),
-          package: row.package
+          rollNumber: new RegExp(`^${rollNumber}$`, 'i'),
+          companyName: new RegExp(`^${companyName}$`, 'i'),
+          role: new RegExp(`^${role || ''}$`, 'i'),
+          package: pkg
         });
 
         if (existing) {
-          throw new Error(`Duplicate record: ${row.rollNumber} for ${row.companyName} (${row.role}) at ${row.package} LPA`);
+          throw new Error(`Duplicate record: ${rollNumber} for ${companyName} (${role || 'N/A'}) at ${pkg} LPA`);
         }
 
         // Insert
         await PlacementRecord.create({
-          companyName: row.companyName,
-          package: row.package,
-          rollNumber: row.rollNumber,
-          studentName: row.studentName,
+          companyName,
+          package: pkg,
+          rollNumber,
+          studentName,
           studentId,
-          gender: row.gender,
-          college: row.college,
-          mobileNumber: row.mobileNumber,
-          email: row.email,
-          role: row.role,
-          placementYear: row.placementYear,
-          department: row.department,
-          batch: row.batch,
-          offerType: row.offerType,
-          offerStatus: row.offerStatus || 'Selected',
-          offerDate: row.offerDate,
+          gender,
+          college,
+          mobileNumber,
+          email,
+          role,
+          placementYear,
+          department,
+          batch,
+          offerType,
+          offerStatus,
+          offerDate,
+          linkedinUrl: linkedinUrl || null,
           uploadedBy: req.user.id || req.userId
         });
 
@@ -298,7 +354,7 @@ exports.uploadPlacements = async (req, res, next) => {
         failedRecords++;
         errors.push({
           row: rowNum,
-          rollNumber: row.rollNumber,
+          rollNumber: getField(row, 'rollNumber', 'Roll Number') || 'N/A',
           error: err.message
         });
       }
@@ -320,13 +376,216 @@ exports.uploadPlacements = async (req, res, next) => {
       totalRecords: data.length,
       successRecords,
       failedRecords,
-      errors
+      errors,
+      summary: {
+        totalRecords: data.length,
+        successRecords,
+        failedRecords,
+        errors
+      }
     });
 
   } catch (error) {
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
+    next(error);
+  }
+};
+
+const { validationResult } = require('express-validator');
+
+exports.createPlacement = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const {
+      companyName,
+      package: pkg,
+      rollNumber,
+      studentName,
+      gender,
+      college,
+      mobileNumber,
+      email,
+      role,
+      placementYear,
+      department,
+      batch,
+      offerType,
+      offerStatus,
+      offerDate,
+      linkedinUrl
+    } = req.body;
+
+    // Auto-link studentId
+    let studentId = null;
+    const student = await User.findOne({ rollNumber: new RegExp(`^${rollNumber}$`, 'i') });
+    if (student) {
+      studentId = student._id;
+    }
+
+    // Detect duplicate
+    const existing = await PlacementRecord.findOne({
+      rollNumber: new RegExp(`^${rollNumber}$`, 'i'),
+      companyName: new RegExp(`^${companyName}$`, 'i'),
+      role: new RegExp(`^${role || ''}$`, 'i'),
+      package: pkg
+    });
+
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'Duplicate placement record already exists.' });
+    }
+
+    const placement = await PlacementRecord.create({
+      companyName,
+      package: pkg,
+      rollNumber,
+      studentName,
+      studentId,
+      gender,
+      college,
+      mobileNumber,
+      email,
+      role,
+      placementYear,
+      department,
+      batch,
+      offerType,
+      offerStatus: offerStatus || 'Selected',
+      offerDate,
+      linkedinUrl: linkedinUrl || null,
+      uploadedBy: req.user.id || req.userId
+    });
+
+    // Log Activity
+    await ActivityLog.create({
+      userId: req.user.id || req.userId,
+      action: 'Created Placement Record',
+      module: 'Placements',
+      metadata: { studentName, companyName, rollNumber }
+    });
+
+    res.status(201).json({ success: true, data: placement });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updatePlacement = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    let placement = await PlacementRecord.findById(req.params.id);
+    if (!placement) {
+      return res.status(404).json({ success: false, message: 'Placement record not found.' });
+    }
+
+    const {
+      companyName,
+      package: pkg,
+      rollNumber,
+      studentName,
+      gender,
+      college,
+      mobileNumber,
+      email,
+      role,
+      placementYear,
+      department,
+      batch,
+      offerType,
+      offerStatus,
+      offerDate,
+      linkedinUrl
+    } = req.body;
+
+    // If key fields changed, check for duplicate
+    if (
+      rollNumber !== placement.rollNumber ||
+      companyName !== placement.companyName ||
+      role !== placement.role ||
+      pkg !== placement.package
+    ) {
+      const existing = await PlacementRecord.findOne({
+        _id: { $ne: req.params.id },
+        rollNumber: new RegExp(`^${rollNumber}$`, 'i'),
+        companyName: new RegExp(`^${companyName}$`, 'i'),
+        role: new RegExp(`^${role || ''}$`, 'i'),
+        package: pkg
+      });
+
+      if (existing) {
+        return res.status(400).json({ success: false, message: 'Another matching duplicate placement record already exists.' });
+      }
+    }
+
+    // Resolve studentId
+    let studentId = placement.studentId;
+    if (rollNumber !== placement.rollNumber) {
+      const student = await User.findOne({ rollNumber: new RegExp(`^${rollNumber}$`, 'i') });
+      studentId = student ? student._id : null;
+    }
+
+    placement.companyName = companyName;
+    placement.package = pkg;
+    placement.rollNumber = rollNumber;
+    placement.studentName = studentName;
+    placement.studentId = studentId;
+    placement.gender = gender;
+    placement.college = college;
+    placement.mobileNumber = mobileNumber;
+    placement.email = email;
+    placement.role = role;
+    placement.placementYear = placementYear;
+    placement.department = department;
+    placement.batch = batch;
+    placement.offerType = offerType;
+    placement.offerStatus = offerStatus;
+    placement.offerDate = offerDate;
+    placement.linkedinUrl = linkedinUrl || null;
+
+    await placement.save();
+
+    // Log Activity
+    await ActivityLog.create({
+      userId: req.user.id || req.userId,
+      action: 'Updated Placement Record',
+      module: 'Placements',
+      metadata: { studentName, companyName, rollNumber }
+    });
+
+    res.status(200).json({ success: true, data: placement });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.deletePlacement = async (req, res, next) => {
+  try {
+    const placement = await PlacementRecord.findById(req.params.id);
+    if (!placement) {
+      return res.status(404).json({ success: false, message: 'Placement record not found.' });
+    }
+
+    await PlacementRecord.findByIdAndDelete(req.params.id);
+
+    // Log Activity
+    await ActivityLog.create({
+      userId: req.user.id || req.userId,
+      action: 'Deleted Placement Record',
+      module: 'Placements',
+      metadata: { studentName: placement.studentName, companyName: placement.companyName, rollNumber: placement.rollNumber }
+    });
+
+    res.status(200).json({ success: true, message: 'Placement record deleted successfully.' });
+  } catch (error) {
     next(error);
   }
 };

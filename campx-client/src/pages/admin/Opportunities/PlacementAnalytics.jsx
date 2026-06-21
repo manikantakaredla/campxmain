@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getPlacementStatistics, getSalaryTrends } from '../../../services/placementService';
+import { getPlacementStatistics, getSalaryTrends, getPlacements } from '../../../services/placementService';
 import StatisticsCards from '../../../components/opportunities/StatisticsCards';
 import toast from 'react-hot-toast';
 import { 
@@ -8,12 +8,85 @@ import {
   Download, 
   PieChart,
   Users,
-  Award
+  Award,
+  Loader2
 } from 'lucide-react';
 
 const PlacementAnalytics = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const toastId = toast.loading('Preparing report export...');
+      const res = await getPlacements({ limit: 10000 });
+      const records = res.data || [];
+      
+      if (records.length === 0) {
+        toast.dismiss(toastId);
+        toast.error('No placement records to export');
+        setExporting(false);
+        return;
+      }
+      
+      // Headers matching user requirements
+      const headers = [
+        'Student Name',
+        'Roll Number',
+        'Company',
+        'Package',
+        'Job Role',
+        'Placement Date',
+        'LinkedIn URL',
+        'Offer Type',
+        'Offer Status',
+        'Email',
+        'Mobile Number',
+        'Gender',
+        'Department',
+        'Batch',
+        'College'
+      ];
+      
+      const rows = records.map(r => [
+        `"${(r.studentName || '').replace(/"/g, '""')}"`,
+        `"${(r.rollNumber || '').replace(/"/g, '""')}"`,
+        `"${(r.companyName || '').replace(/"/g, '""')}"`,
+        r.package,
+        `"${(r.role || '').replace(/"/g, '""')}"`,
+        r.offerDate ? new Date(r.offerDate).toISOString().split('T')[0] : 'N/A',
+        `"${(r.linkedinUrl || '').replace(/"/g, '""')}"`,
+        `"${(r.offerType || '').replace(/"/g, '""')}"`,
+        `"${(r.offerStatus || '').replace(/"/g, '""')}"`,
+        `"${(r.email || '').replace(/"/g, '""')}"`,
+        `"${(r.mobileNumber || '').replace(/"/g, '""')}"`,
+        `"${(r.gender || '').replace(/"/g, '""')}"`,
+        `"${(r.department || '').replace(/"/g, '""')}"`,
+        `"${(r.batch || '').replace(/"/g, '""')}"`,
+        `"${(r.college || '').replace(/"/g, '""')}"`
+      ]);
+      
+      const csvContent = "data:text/csv;charset=utf-8,\uFEFF"
+        + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `campx_placements_report_${new Date().getFullYear()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      toast.dismiss(toastId);
+      toast.success('Report exported successfully!');
+    } catch (err) {
+      toast.error('Failed to export report');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -71,8 +144,16 @@ const PlacementAnalytics = () => {
               <h1 className="text-xl font-bold text-gray-900 mb-1">Placement Analytics</h1>
               <p className="text-sm text-gray-500">Track and analyze campus placement performance</p>
             </div>
-            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-all duration-200 shadow-sm">
-              <Download size={15} />
+            <button 
+              onClick={handleExport}
+              disabled={exporting}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-all duration-200 shadow-sm disabled:opacity-55"
+            >
+              {exporting ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <Download size={15} />
+              )}
               <span>Export Report</span>
             </button>
           </div>

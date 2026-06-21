@@ -21,6 +21,7 @@ const placementRecordSchema = new mongoose.Schema({
   offerType: { type: String, enum: ['Placement', 'Internship', 'PPO'], required: true },
   offerStatus: { type: String, enum: ['Selected', 'Joined', 'Rejected', 'Pending'] },
   offerDate: { type: Date },
+  linkedinUrl: { type: String, trim: true, default: null },
   
   uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });

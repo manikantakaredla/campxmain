@@ -34,3 +34,18 @@ export const uploadPlacements = async (formData) => {
   });
   return data;
 };
+
+export const createPlacement = async (placementData) => {
+  const { data } = await API.post('/placements', placementData);
+  return data;
+};
+
+export const updatePlacement = async (id, placementData) => {
+  const { data } = await API.put(`/placements/${id}`, placementData);
+  return data;
+};
+
+export const deletePlacement = async (id) => {
+  const { data } = await API.delete(`/placements/${id}`);
+  return data;
+};

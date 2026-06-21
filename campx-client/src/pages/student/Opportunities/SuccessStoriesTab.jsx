@@ -53,8 +53,15 @@ const SuccessStoriesTab = () => {
                     <p className="text-blue-600 font-medium text-sm">{story.companyName} • {story.batch}</p>
                   </div>
                   {story.linkedin && (
-                    <a href={story.linkedin} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700">
-                      <FaLinkedin size={20} />
+                    <a 
+                      href={story.linkedin} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      title="Open LinkedIn Profile"
+                      className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs font-semibold bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors"
+                    >
+                      <FaLinkedin size={14} />
+                      <span>View Profile</span>
                     </a>
                   )}
                 </div>
