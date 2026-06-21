@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Users, BookOpen, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { useSettings } from '../../hooks/useSettings';
 
 const ClassSectionAssignmentsTab = () => {
   const [assignments, setAssignments] = useState([]);
   const [facultyList, setFacultyList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { settings } = useSettings();
   
   const [formData, setFormData] = useState({
     facultyId: '',
@@ -15,7 +17,30 @@ const ClassSectionAssignmentsTab = () => {
     sections: []
   });
   
-  const sectionsList = ['A', 'B', 'C', 'D'];
+  const branches = settings?.branchConfigs?.map(c => c.branch) || [];
+  const selectedBranchConfig = settings?.branchConfigs?.find(c => c.branch === formData.department);
+  const availableYears = selectedBranchConfig?.years ? Object.keys(selectedBranchConfig.years).sort() : [];
+  
+  const sectionsList = (selectedBranchConfig?.years && formData.year) 
+    ? (selectedBranchConfig.years[formData.year] || []) 
+    : (settings?.sections || ['A', 'B', 'C', 'D']);
+
+  const handleDepartmentChange = (e) => {
+    setFormData({
+      ...formData,
+      department: e.target.value,
+      year: '',
+      sections: []
+    });
+  };
+
+  const handleYearChange = (e) => {
+    setFormData({
+      ...formData,
+      year: e.target.value,
+      sections: []
+    });
+  };
   
   const fetchAssignments = async () => {
     try {
@@ -30,8 +55,8 @@ const ClassSectionAssignmentsTab = () => {
     try {
       const res = await api.get('/hod/faculty');
       setFacultyList(res.data.faculty);
-      if (res.data.faculty.length > 0) {
-        setFormData(prev => ({ ...prev, department: res.data.department || '' }));
+      if (res.data.faculty.length > 0 && res.data.department && res.data.department !== "All") {
+        setFormData(prev => ({ ...prev, department: res.data.department }));
       }
     } catch (err) {
       toast.error('Failed to load faculty');
@@ -113,23 +138,25 @@ const ClassSectionAssignmentsTab = () => {
         <form onSubmit={handleAssign} className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Department</label>
-            <input 
-              type="text" 
+            <select 
               value={formData.department} 
-              onChange={e => setFormData({...formData, department: e.target.value})}
-              className="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-              placeholder="e.g. CSE"
-            />
+              onChange={handleDepartmentChange}
+              className="w-full p-2.5 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            >
+              <option value="">Select Department</option>
+              {branches.map(b => <option key={b} value={b}>{b}</option>)}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Year</label>
             <select 
               value={formData.year} 
-              onChange={e => setFormData({...formData, year: e.target.value})}
+              onChange={handleYearChange}
               className="w-full p-2.5 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              disabled={!formData.department}
             >
               <option value="">Select Year</option>
-              {[1, 2, 3, 4].map(y => <option key={y} value={y}>Year {y}</option>)}
+              {availableYears.map(y => <option key={y} value={y}>Year {y}</option>)}
             </select>
           </div>
           <div className="md:col-span-2">
