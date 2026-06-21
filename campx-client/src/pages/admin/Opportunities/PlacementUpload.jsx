@@ -184,7 +184,7 @@ const PlacementUpload = () => {
   const validateAndSetFile = (file) => {
     if (!file) return;
     const validTypes = ['text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'];
-    if (!validTypes.includes(file.type) && !file.name.match(/\.(csv|xlsx|xls)$/)) {
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(csv|xlsx|xls)$/i)) {
       toast.error('Please upload a valid CSV or Excel file.');
       return;
     }
