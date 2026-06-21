@@ -3,11 +3,13 @@ import { useAuth } from '../../hooks/useAuth'
 import { Upload, Download, FileText, CheckCircle, XCircle, AlertCircle, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
+import ClassSectionAssignmentsTab from '../management/ClassSectionAssignmentsTab'
 
 const DataUpload = () => {
   const { user } = useAuth()
   const fileInputRef = useRef(null)
   const [activeTab, setActiveTab] = useState('students')
+  const [classSubTab, setClassSubTab] = useState('section')
   const [uploading, setUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState(null)
   const [selectedFile, setSelectedFile] = useState(null)
@@ -143,9 +145,34 @@ const DataUpload = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Upload Card */}
-        <div className="lg:col-span-2">
+      {activeTab === 'class' && (
+        <div className="flex gap-6 border-b mb-6">
+          <button
+            onClick={() => { setClassSubTab('section'); setUploadResult(null); setSelectedFile(null) }}
+            className={`pb-3 font-medium transition-all ${
+              classSubTab === 'section' ? 'border-b-2 border-blue-600 text-blue-600' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Assign by Section
+          </button>
+          <button
+            onClick={() => { setClassSubTab('bulk'); setUploadResult(null); setSelectedFile(null) }}
+            className={`pb-3 font-medium transition-all ${
+              classSubTab === 'bulk' ? 'border-b-2 border-blue-600 text-blue-600' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Bulk Upload
+          </button>
+        </div>
+      )}
+
+      {activeTab === 'class' && classSubTab === 'section' ? (
+        <ClassSectionAssignmentsTab />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Upload Card */}
+            <div className="lg:col-span-2">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-5 border-b border-gray-100 bg-gray-50">
               <h2 className="font-semibold text-gray-800">Upload {currentTab.label}</h2>
@@ -255,6 +282,8 @@ const DataUpload = () => {
             </div>
           )}
         </div>
+      )}
+        </>
       )}
     </div>
   )
