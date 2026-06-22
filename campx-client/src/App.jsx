@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import Layout from './components/layout/Layout'
+import ErrorBoundary from './components/common/ErrorBoundary'
 
 // Loading Component (inline to avoid import issues)
 const LoadingSpinner = () => (
@@ -107,6 +108,7 @@ function App() {
 
   if (role === 'student') {
     return (
+      <ErrorBoundary>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/student/dashboard" replace />} />
@@ -132,6 +134,7 @@ function App() {
 
   if (role === 'faculty') {
     return (
+      <ErrorBoundary>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/faculty/dashboard" replace />} />
@@ -163,6 +166,7 @@ function App() {
 
   if (['hod', 'deputyhod', 'dean', 'principal'].includes(role)) {
     return (
+      <ErrorBoundary>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/management/dashboard" replace />} />
@@ -199,6 +203,7 @@ function App() {
 
   if (role === 'admin') {
     return (
+      <ErrorBoundary>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
