@@ -6,6 +6,7 @@ const AcademicActivity = require("../models/AcademicActivity");
 const Notification = require("../models/Notification");
 const ClassStudentAssignment = require("../models/ClassStudentAssignment");
 const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
+const SubjectSectionAssignment = require("../models/SubjectSectionAssignment");
 const bcrypt = require("bcryptjs");
 const supabase = require("../config/supabase");
 const calculateAcademicInfo = require("../utils/academicCalculator");
@@ -317,11 +318,23 @@ exports.getAssignedFaculty = async (req, res) => {
     const classResult = await resolveClassFaculty(student);
     const proctorResult = await resolveProctorFaculty(student);
 
+    // Fetch teaching faculty from SubjectSectionAssignment
+    const teachingFaculty = await SubjectSectionAssignment.find({
+      department: student.branch,
+      year: student.currentYear,
+      section: student.section,
+      isActive: true
+    })
+    .populate("subjectId", "name code")
+    .populate("facultyId", "name employeeId department profilePicture")
+    .lean();
+
     res.status(200).json({
       success: true,
       data: {
         proctor: proctorResult ? proctorResult.faculty : null,
-        classTeacher: classResult ? classResult.faculty : null
+        classTeacher: classResult ? classResult.faculty : null,
+        teachingFaculty: teachingFaculty || []
       }
     });
   } catch (error) {

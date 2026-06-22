@@ -30,6 +30,13 @@ const {
   getFacultyAnalytics
 } = require("../controllers/adminFacultyController");
 
+const {
+  getSectionSubjects,
+  assignSubjectFaculty,
+  getFacultyBySubject,
+  getSubjectsByDepartmentAndYear
+} = require("../controllers/subjectAssignmentController");
+
 // ==================== ALL ROUTES REQUIRE AUTH ====================
 router.use(protect);
 
@@ -51,6 +58,13 @@ router.get("/faculty/analytics", authorizeRoles("admin", "management"), getFacul
 router.get("/faculty", authorizeRoles("admin", "management"), getFacultyList);
 router.get("/faculty/:id", authorizeRoles("admin", "management"), getFacultyDetails);
 router.put("/faculty/:id/subjects", authorizeRoles("admin"), updateFacultySubjects);
+
+// ==================== SUBJECT ASSIGNMENT (Admin) ====================
+router.get("/sections/:department/:year/:section/subjects", authorizeRoles("admin", "hod", "deputyhod", "dean", "principal"), getSectionSubjects);
+router.post("/sections/assign-subject", authorizeRoles("admin", "hod", "deputyhod", "dean", "principal"), assignSubjectFaculty);
+router.get("/subjects/:subjectId/faculty", authorizeRoles("admin", "hod", "deputyhod", "dean", "principal"), getFacultyBySubject);
+router.get("/subjects/department/:department/year/:year", authorizeRoles("admin", "hod", "deputyhod", "dean", "principal"), getSubjectsByDepartmentAndYear);
+
 
 // Student and Faculty data upload (Admin only) - USE csvUpload
 router.post("/upload/students", authorizeRoles("admin"), csvUpload.single("file"), uploadStudents);

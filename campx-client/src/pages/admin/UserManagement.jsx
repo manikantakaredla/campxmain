@@ -32,6 +32,13 @@ const UserManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(null)
   const [showResetModal, setShowResetModal] = useState(null)
   const [showRoleModal, setShowRoleModal] = useState(null)
+  const [showAssignModal, setShowAssignModal] = useState(false)
+  const [assignData, setAssignData] = useState({ section: '', subject: '', faculty: '' })
+  const [subjectOptions, setSubjectOptions] = useState([])
+  const [facultyOptions, setFacultyOptions] = useState([])
+  const [teachingFaculties, setTeachingFaculties] = useState([])
+  const [loadingFaculties, setLoadingFaculties] = useState(false)
+
   const [newRole, setNewRole] = useState('')
   
   const itemsPerPage = 10
@@ -117,6 +124,71 @@ const UserManagement = () => {
       toast.error('Failed to update role')
     }
   }
+
+  
+  const fetchSubjectOptions = async () => {
+    try {
+      const res = await api.get(`/admin/subjects/department/${selectedDept}/year/${yearFilter}`)
+      setSubjectOptions(res.data.subjects || [])
+    } catch (error) {
+      toast.error('Failed to load subjects')
+    }
+  }
+
+  const fetchFacultyOptions = async (subjectId) => {
+    if (!subjectId) {
+      setFacultyOptions([]);
+      return;
+    }
+    try {
+      const res = await api.get(`/admin/subjects/${subjectId}/faculty`)
+      setFacultyOptions(res.data.faculties || [])
+    } catch (error) {
+      toast.error('Failed to load faculty for subject')
+    }
+  }
+
+  const fetchTeachingFaculties = async () => {
+    if (!selectedDept || !yearFilter || !selectedSection) return;
+    setLoadingFaculties(true);
+    try {
+      const res = await api.get(`/admin/sections/${selectedDept}/${yearFilter}/${selectedSection}/subjects`);
+      setTeachingFaculties(res.data.assignments || []);
+    } catch (error) {
+      toast.error('Failed to load teaching faculties');
+    } finally {
+      setLoadingFaculties(false);
+    }
+  }
+
+  const handleAssignSubmit = async () => {
+    if (!assignData.section || !assignData.subject || !assignData.faculty) {
+      toast.error("Please fill all fields");
+      return;
+    }
+    try {
+      await api.post('/admin/sections/assign-subject', {
+        department: selectedDept,
+        year: yearFilter,
+        section: assignData.section,
+        subjectId: assignData.subject,
+        facultyId: assignData.faculty
+      });
+      toast.success("Faculty assigned successfully");
+      setShowAssignModal(false);
+      if (viewState === 'students' && selectedSection === assignData.section) {
+        fetchTeachingFaculties();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to assign faculty");
+    }
+  }
+
+  useEffect(() => {
+    if (viewState === 'students' && selectedSection) {
+      fetchTeachingFaculties();
+    }
+  }, [viewState, selectedSection, selectedDept, yearFilter])
 
   const toggleUserStatus = async (user) => {
     try {
@@ -208,7 +280,39 @@ const UserManagement = () => {
           </div>
         </div>
         
-        {(viewState === 'students' || viewState === 'role_users') && (
+        
+        {viewState === 'students' && selectedSection && (
+          <div className="mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-indigo-500" />
+              Assigned Teaching Faculty
+            </h3>
+            {loadingFaculties ? (
+              <div className="animate-pulse flex gap-4">
+                <div className="h-16 bg-gray-100 rounded-lg flex-1"></div>
+                <div className="h-16 bg-gray-100 rounded-lg flex-1"></div>
+              </div>
+            ) : teachingFaculties.length === 0 ? (
+              <p className="text-sm text-gray-500">No teaching faculty assigned for this section.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {teachingFaculties.map(tf => (
+                  <div key={tf._id} className="border border-indigo-100 bg-indigo-50/50 rounded-lg p-3 flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 font-bold flex items-center justify-center flex-shrink-0">
+                      {tf.facultyId?.name?.charAt(0) || 'U'}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{tf.facultyId?.name}</p>
+                      <p className="text-xs text-gray-500">{tf.subjectId?.name} ({tf.subjectId?.code})</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+      {(viewState === 'students' || viewState === 'role_users') && (
           <button
             onClick={fetchUsers}
             className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all"
@@ -339,6 +443,22 @@ const UserManagement = () => {
         </>
       )}
 
+      
+      {viewState === 'sections' && (
+        <div className="mb-4 flex justify-end">
+          <button 
+            onClick={() => {
+              setAssignData({ section: '', subject: '', faculty: '' })
+              fetchSubjectOptions()
+              setShowAssignModal(true)
+            }}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium flex items-center gap-2 transition-all"
+          >
+            <Briefcase className="w-4 h-4" /> Assign Faculty
+          </button>
+        </div>
+      )}
+
       {viewState === 'sections' && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {currentSections.length === 0 ? (
@@ -368,6 +488,38 @@ const UserManagement = () => {
           )}
         </div>
       )}
+
+      
+        {viewState === 'students' && selectedSection && (
+          <div className="mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-indigo-500" />
+              Assigned Teaching Faculty
+            </h3>
+            {loadingFaculties ? (
+              <div className="animate-pulse flex gap-4">
+                <div className="h-16 bg-gray-100 rounded-lg flex-1"></div>
+                <div className="h-16 bg-gray-100 rounded-lg flex-1"></div>
+              </div>
+            ) : teachingFaculties.length === 0 ? (
+              <p className="text-sm text-gray-500">No teaching faculty assigned for this section.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {teachingFaculties.map(tf => (
+                  <div key={tf._id} className="border border-indigo-100 bg-indigo-50/50 rounded-lg p-3 flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 font-bold flex items-center justify-center flex-shrink-0">
+                      {tf.facultyId?.name?.charAt(0) || 'U'}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{tf.facultyId?.name}</p>
+                      <p className="text-xs text-gray-500">{tf.subjectId?.name} ({tf.subjectId?.code})</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
       {(viewState === 'students' || viewState === 'role_users') && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
@@ -523,6 +675,84 @@ const UserManagement = () => {
             </>
           )}
         </div>
+      )}
+
+      
+      {/* Assign Faculty Modal */}
+      {showAssignModal && (
+        <>
+          <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setShowAssignModal(false)} />
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl z-50 w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-indigo-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">Assign Faculty</h2>
+              </div>
+              <button onClick={() => setShowAssignModal(false)} className="text-gray-400 hover:text-gray-600">
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                <select 
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  value={assignData.section}
+                  onChange={(e) => setAssignData({...assignData, section: e.target.value})}
+                >
+                  <option value="">Select Section</option>
+                  {currentSections.map(sec => (
+                    <option key={sec} value={sec}>Section {sec}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                <select 
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
+                  value={assignData.subject}
+                  disabled={!assignData.section || subjectOptions.length === 0}
+                  onChange={(e) => {
+                    setAssignData({...assignData, subject: e.target.value, faculty: ''})
+                    fetchFacultyOptions(e.target.value)
+                  }}
+                >
+                  <option value="">Select Subject</option>
+                  {subjectOptions.map(sub => (
+                    <option key={sub._id} value={sub._id}>{sub.name} ({sub.code})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Faculty</label>
+                <select 
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
+                  value={assignData.faculty}
+                  disabled={!assignData.subject}
+                  onChange={(e) => setAssignData({...assignData, faculty: e.target.value})}
+                >
+                  <option value="">Select Faculty</option>
+                  {facultyOptions.map(fac => (
+                    <option key={fac._id} value={fac._id}>{fac.name} - {fac.department}</option>
+                  ))}
+                </select>
+                {assignData.subject && facultyOptions.length === 0 && (
+                  <p className="text-xs text-red-500 mt-1">No faculty members are assigned to this subject in Subject Master.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-8">
+              <button onClick={() => setShowAssignModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
+              <button onClick={handleAssignSubmit} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Assign</button>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Delete Confirmation Modal */}

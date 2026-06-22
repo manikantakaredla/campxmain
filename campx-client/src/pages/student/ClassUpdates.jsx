@@ -5,7 +5,7 @@ import { resourceService } from '../../services/resourceService';
 import api from '../../api/axios';
 import { 
   Megaphone, FileText, Users, UserCheck, 
-  Clock, ArrowRight, AlertTriangle, MapPin, Calendar
+  Clock, ArrowRight, AlertTriangle, MapPin, Calendar, BookOpen
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -14,7 +14,7 @@ const ClassUpdates = () => {
   const { user } = useAuth();
   const [announcements, setAnnouncements] = useState([]);
   const [resources, setResources] = useState([]);
-  const [faculty, setFaculty] = useState({ classTeacher: null, proctor: null });
+  const [faculty, setFaculty] = useState({ classTeacher: null, proctor: null, teachingFaculty: [] });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('announcements');
 
@@ -122,6 +122,37 @@ const ClassUpdates = () => {
             </div>
           </div>
         </div>
+
+        
+        {/* Teaching Faculty List */}
+        {faculty?.teachingFaculty?.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <BookOpen size={16} className="text-blue-500" />
+              Teaching Faculty
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {faculty.teachingFaculty.map(tf => (
+                <div key={tf._id} className="bg-white border border-blue-100 rounded-lg p-3 flex items-start gap-3 shadow-sm hover:border-blue-200 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold flex-shrink-0">
+                    {tf.facultyId?.name?.charAt(0) || 'U'}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-0.5 truncate">
+                      {tf.subjectId?.name}
+                    </p>
+                    <p className="font-semibold text-gray-900 truncate text-sm">
+                      {tf.facultyId?.name}
+                    </p>
+                    <p className="text-[10px] text-gray-500 truncate mt-0.5">
+                      {tf.subjectId?.code}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* No Faculty Warning */}
         {!hasFaculty && (

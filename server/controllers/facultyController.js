@@ -2,6 +2,7 @@ const User = require("../models/User");
 const ClassStudentAssignment = require("../models/ClassStudentAssignment");
 const ProctorStudentAssignment = require("../models/ProctorStudentAssignment");
 const ClassSectionAssignment = require("../models/ClassSectionAssignment");
+const SubjectSectionAssignment = require("../models/SubjectSectionAssignment");
 
 // ==================== GET WORKLOAD SUMMARY ====================
 exports.getWorkloadSummary = async (req, res) => {
@@ -255,10 +256,14 @@ exports.getAllAssignedStudents = async (req, res) => {
     // section assignments
     const sectionAssignments = await ClassSectionAssignment.find({ facultyId: req.user.id, isActive: true });
     
+    // subject section assignments
+    const subjectSectionAssignments = await SubjectSectionAssignment.find({ facultyId: req.user.id, isActive: true });
+    
     const allIds = [...classAssignments.map(a => a.studentId.toString()), ...proctorAssignments.map(a => a.studentId.toString())];
     const studentIds = [...new Set(allIds)];
     
-    const sectionQueries = sectionAssignments.map(sa => ({
+    const combinedSectionAssignments = [...sectionAssignments, ...subjectSectionAssignments];
+    const sectionQueries = combinedSectionAssignments.map(sa => ({
       branch: sa.department,
       currentYear: sa.year,
       section: sa.section
@@ -392,6 +397,7 @@ exports.searchStudents = async (req, res) => {
     const classAssignments = await ClassStudentAssignment.find({ facultyId: req.user.id }).select("studentId");
     const proctorAssignments = await ProctorStudentAssignment.find({ facultyId: req.user.id }).select("studentId");
     const sectionAssignments = await ClassSectionAssignment.find({ facultyId: req.user.id, isActive: true });
+    const subjectSectionAssignments = await SubjectSectionAssignment.find({ facultyId: req.user.id, isActive: true });
     
     let indIds = [];
     if (type === "proctor") {
@@ -403,7 +409,8 @@ exports.searchStudents = async (req, res) => {
       indIds = [...new Set(allIds)];
     }
 
-    const sectionQueries = (type === "all" || type === "class") ? sectionAssignments.map(sa => ({
+    const combinedSectionAssignments = [...sectionAssignments, ...subjectSectionAssignments];
+    const sectionQueries = (type === "all" || type === "class") ? combinedSectionAssignments.map(sa => ({
       branch: sa.department,
       currentYear: sa.year,
       section: sa.section
