@@ -17,9 +17,9 @@ const initSocket = (server) => {
   io.on("connection", (socket) => {
     console.log("🔌 New client connected:", socket.id);
 
-    socket.on("join", (userId) => {
-      socket.join(userId);
-      console.log(`User ${userId} joined their room`);
+    socket.on("join", (room) => {
+      socket.join(room);
+      console.log(`Client joined room: ${room}`);
     });
 
     socket.on("disconnect", () => {

@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import api from '../../api/axios';
 import { useSearchParams } from 'react-router-dom';
 import { Send, Search, Check, CheckCheck, Users, UserCircle, MessageSquare } from 'lucide-react';
+import { useSocket } from '../../hooks/useSocket';
 
 const Messages = () => {
   const { user } = useAuth();
@@ -17,12 +18,13 @@ const Messages = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
   const messagesEndRef = useRef(null);
-  const pollingInterval = useRef(null);
+  const socket = useSocket();
 
   // Fetch Conversations
   const fetchConversations = async () => {
     try {
-      const res = await api.get('/chat/conversations');
+      const url = initialUserId ? `/chat/conversations?userId=${initialUserId}` : '/chat/conversations';
+      const res = await api.get(url);
       if (res.data.success) {
         const { direct, defaultContacts, groups } = res.data.data;
         
@@ -58,6 +60,13 @@ const Messages = () => {
            const initial = formattedChats.find(c => !c.isGroup && c._id === initialUserId);
            if (initial) setSelectedChat(initial);
         }
+
+        // Join socket rooms for all groups
+        if (socket) {
+          groups.forEach(g => {
+            socket.emit('join', g._id);
+          });
+        }
       }
     } catch (error) {
       console.error('Error fetching conversations:', error);
@@ -66,7 +75,7 @@ const Messages = () => {
 
   useEffect(() => {
     fetchConversations();
-  }, []);
+  }, [initialUserId]);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
@@ -102,17 +111,60 @@ const Messages = () => {
 
   useEffect(() => {
     fetchMessages();
-    
-    // Polling every 5 seconds
-    pollingInterval.current = setInterval(() => {
-      fetchMessages();
+  }, [selectedChat]);
+
+  // Socket listeners
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewMessage = (newMsg) => {
+      // If the message belongs to the currently open chat, append it
+      if (selectedChat) {
+        const isForCurrentDirectChat = !selectedChat.isGroup && !newMsg.groupId && 
+          (newMsg.sender._id === selectedChat._id || newMsg.receiver === selectedChat._id);
+        const isForCurrentGroupChat = selectedChat.isGroup && newMsg.groupId === selectedChat._id;
+
+        if (isForCurrentDirectChat || isForCurrentGroupChat) {
+          setMessages(prev => {
+            if (prev.find(m => m._id === newMsg._id)) return prev;
+            return [...prev, newMsg];
+          });
+          
+          // Auto mark as read if it's not sent by me
+          if (newMsg.sender._id !== user._id) {
+             api.post('/chat/read', selectedChat.isGroup ? { groupId: selectedChat._id } : { userId: selectedChat._id });
+          }
+        }
+      }
+      // Refresh the sidebar conversation list for unread counts and last message
       fetchConversations();
-    }, 5000);
+    };
+
+    const handleMessageRead = ({ groupId, userId, readBy }) => {
+      // Update readBy array in messages if the chat matches
+      if (selectedChat) {
+        const isForCurrentDirectChat = !selectedChat.isGroup && userId === selectedChat._id;
+        const isForCurrentGroupChat = selectedChat.isGroup && groupId === selectedChat._id;
+
+        if (isForCurrentDirectChat || isForCurrentGroupChat) {
+          setMessages(prev => prev.map(m => {
+            if (!m.readBy.includes(readBy)) {
+              return { ...m, readBy: [...m.readBy, readBy] };
+            }
+            return m;
+          }));
+        }
+      }
+    };
+
+    socket.on('newMessage', handleNewMessage);
+    socket.on('messageRead', handleMessageRead);
 
     return () => {
-      if (pollingInterval.current) clearInterval(pollingInterval.current);
+      socket.off('newMessage', handleNewMessage);
+      socket.off('messageRead', handleMessageRead);
     };
-  }, [selectedChat]);
+  }, [socket, selectedChat, user._id]);
 
   // Auto scroll
   useEffect(() => {
@@ -283,6 +335,12 @@ const Messages = () => {
                         <span>{formatTime(msg.createdAt)}</span>
                         {isMine && !selectedChat.isGroup && (
                           msg.readBy.length > 1 ? <CheckCheck size={12} className="text-blue-500" /> : <Check size={12} />
+                        )}
+                        {isMine && selectedChat.isGroup && msg.readBy.length > 1 && (
+                          <div className="group relative cursor-pointer flex items-center gap-1">
+                            <CheckCheck size={12} className="text-blue-500" />
+                            <span>Seen by {msg.readBy.length - 1}</span>
+                          </div>
                         )}
                       </div>
                     </div>

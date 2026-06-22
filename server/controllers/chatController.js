@@ -3,6 +3,7 @@ const User = require('../models/User');
 const { resolveClassFaculty, resolveProctorFaculty } = require('../utils/assignmentResolver');
 const ClassSectionAssignment = require('../models/ClassSectionAssignment');
 const SubjectSectionAssignment = require('../models/SubjectSectionAssignment');
+const { getIO } = require('../config/socket');
 
 // ==================== GET CONVERSATIONS ====================
 exports.getConversations = async (req, res) => {
@@ -11,6 +12,8 @@ exports.getConversations = async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
+
+    const { userId } = req.query;
 
     // 1. Fetch Users from past messages (Direct Messages)
     const messages = await Message.find({
@@ -35,6 +38,23 @@ exports.getConversations = async (req, res) => {
         });
       }
     });
+
+    // If userId is provided and not in directUsersMap, fetch and add
+    if (userId && !directUsersMap.has(userId)) {
+      const specificUser = await User.findById(userId).select('name profilePicture role department branch').lean();
+      if (specificUser) {
+        directUsersMap.set(userId, {
+          _id: specificUser._id,
+          name: specificUser.name,
+          profilePicture: specificUser.profilePicture,
+          role: specificUser.role,
+          department: specificUser.department || specificUser.branch,
+          lastMessage: '',
+          lastMessageTime: null,
+          unreadCount: 0
+        });
+      }
+    }
 
     // 2. Fetch Unread Counts for Direct Messages
     const unreadMsgs = await Message.find({
@@ -213,6 +233,19 @@ exports.sendMessage = async (req, res) => {
 
     await newMessage.populate('sender', 'name profilePicture role');
 
+    // Emit via Socket.io
+    try {
+      const io = getIO();
+      if (groupId) {
+        io.to(groupId).emit('newMessage', newMessage);
+      } else {
+        io.to(receiverId).emit('newMessage', newMessage);
+        io.to(req.user.id).emit('newMessage', newMessage); // emit to self
+      }
+    } catch (err) {
+      console.error('Socket emit failed:', err.message);
+    }
+
     res.status(201).json({
       success: true,
       data: newMessage
@@ -245,6 +278,17 @@ exports.markAsRead = async (req, res) => {
     await Message.updateMany(query, {
       $addToSet: { readBy: req.user.id }
     });
+
+    try {
+      const io = getIO();
+      if (groupId) {
+        io.to(groupId).emit('messageRead', { groupId, readBy: req.user.id });
+      } else if (userId) {
+        io.to(userId).emit('messageRead', { userId: req.user.id, readBy: req.user.id });
+      }
+    } catch (err) {
+      console.error('Socket emit failed:', err.message);
+    }
 
     res.status(200).json({ success: true, message: 'Messages marked as read' });
   } catch (error) {
