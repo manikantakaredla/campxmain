@@ -28,6 +28,7 @@ const OpportunitiesDashboard = lazy(() => import('./pages/student/Opportunities/
 const AnnouncementDetails = lazy(() => import('./pages/shared/AnnouncementDetails'))
 const ResourceDetails = lazy(() => import('./pages/shared/ResourceDetails'))
 const ActivityDetails = lazy(() => import('./pages/shared/ActivityDetails'))
+const Messages = lazy(() => import('./pages/shared/Messages'))
 
 const FacultyDashboard = lazy(() => import('./pages/faculty/FacultyDashboard'))
 const MyStudents = lazy(() => import('./pages/faculty/MyStudents'))
@@ -117,6 +118,7 @@ function App() {
           <Route path="/student/notifications" element={wrapSuspense(StudentNotifications)} />
           <Route path="/student/opportunities" element={wrapSuspense(OpportunitiesDashboard)} />
           <Route path="/student/class-updates" element={wrapSuspense(ClassUpdates)} />
+          <Route path="/student/messages" element={wrapSuspense(Messages)} />
           
           <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
           <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
@@ -147,6 +149,7 @@ function App() {
           <Route path="/faculty/activities/edit/:id" element={wrapSuspense(EditActivity)} />
           <Route path="/faculty/profile" element={wrapSuspense(FacultyProfile)} />
           <Route path="/faculty/notifications" element={wrapSuspense(FacultyNotifications)} />
+          <Route path="/faculty/messages" element={wrapSuspense(Messages)} />
           
           <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
           <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
@@ -182,6 +185,7 @@ function App() {
           <Route path="/management/activities/edit/:id" element={wrapSuspense(EditActivity)} />
           <Route path="/management/profile" element={wrapSuspense(FacultyProfile)} />
           <Route path="/management/notifications" element={wrapSuspense(FacultyNotifications)} />
+          <Route path="/management/messages" element={wrapSuspense(Messages)} />
           
           <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
           <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />

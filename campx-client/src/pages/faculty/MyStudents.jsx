@@ -4,11 +4,12 @@ import { SearchBar } from '../../components/common/SearchBar'
 import { Pagination } from '../../components/common/Pagination'
 import { Loader } from '../../components/common/Loader'
 import { EmptyState } from '../../components/common/EmptyState'
-import { Users, Search, Mail, Phone, GraduationCap, BookOpen, UserCheck, UserPlus, Megaphone, Folder, ArrowLeft } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Users, Search, Mail, Phone, GraduationCap, BookOpen, UserCheck, UserPlus, Megaphone, Folder, ArrowLeft, MessageSquare } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
 const MyStudents = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all') // all, class, proctor
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
@@ -220,6 +221,13 @@ const MyStudents = () => {
                           </p>
                         )}
                       </div>
+                      <button 
+                        onClick={(e) => { e.preventDefault(); navigate(`/faculty/messages?userId=${student._id}`); }} 
+                        className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors ml-auto" 
+                        title="Message Student"
+                      >
+                        <MessageSquare size={18} />
+                      </button>
                     </div>
                   </Link>
                 ))}

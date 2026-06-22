@@ -5,7 +5,7 @@ import { resourceService } from '../../services/resourceService';
 import api from '../../api/axios';
 import { 
   Megaphone, FileText, Users, UserCheck, 
-  Clock, ArrowRight, AlertTriangle, MapPin, Calendar, BookOpen
+  Clock, ArrowRight, AlertTriangle, MapPin, Calendar, BookOpen, MessageSquare
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -101,6 +101,13 @@ const ClassUpdates = () => {
                   <p className="text-xs text-gray-400 mt-1">{faculty.classTeacher.department}</p>
                 )}
               </div>
+              {faculty?.classTeacher && (
+                <div className="ml-auto">
+                  <Link to={`/student/messages?userId=${faculty.classTeacher._id}`} className="w-8 h-8 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors">
+                    <MessageSquare size={14} />
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
 
@@ -119,6 +126,13 @@ const ClassUpdates = () => {
                   <p className="text-xs text-gray-400 mt-1">{faculty.proctor.department}</p>
                 )}
               </div>
+              {faculty?.proctor && (
+                <div className="ml-auto">
+                  <Link to={`/student/messages?userId=${faculty.proctor._id}`} className="w-8 h-8 flex items-center justify-center bg-purple-50 text-purple-600 rounded-full hover:bg-purple-100 transition-colors">
+                    <MessageSquare size={14} />
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -149,6 +163,13 @@ const ClassUpdates = () => {
                         {tf.subjectId?.code}
                       </p>
                     </div>
+                    {tf.facultyId && (
+                      <div className="ml-auto flex items-center">
+                        <Link to={`/student/messages?userId=${tf.facultyId._id}`} className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors">
+                          <MessageSquare size={14} />
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

@@ -17,7 +17,8 @@ import {
   UserCircle,
   BookOpen,
   Briefcase,
-  TrendingUp
+  TrendingUp,
+  MessageSquare
 } from 'lucide-react'
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -49,6 +50,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
         { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
         { path: '/opportunities', icon: <Briefcase size={20} />, label: 'Opportunities' },
+        { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
         { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
         { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' }
       ]
@@ -61,7 +63,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         { path: '/students', icon: <Users size={20} />, label: 'Students' },
         { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
         { path: '/resources', icon: <FileText size={20} />, label: ' Resources' },
-
+        { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
         { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
         { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' },
       ]
@@ -77,6 +79,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
         { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
         { path: '/activities', icon: <Calendar size={20} />, label: 'Activities' },
+        { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
         { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
         { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' },
         // Inside management menu items, add:

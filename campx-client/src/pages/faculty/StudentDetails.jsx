@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { facultyService } from '../../services/facultyService'
 import { Loader } from '../../components/common/Loader'
-import { User, Mail, Phone, GraduationCap, BookOpen, Calendar, ArrowLeft } from 'lucide-react'
+import { User, Mail, Phone, GraduationCap, BookOpen, Calendar, ArrowLeft, MessageSquare } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const StudentDetails = () => {
@@ -40,14 +40,18 @@ const StudentDetails = () => {
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 max-w-3xl mx-auto">
         <div className="p-6 border-b border-gray-100 flex items-center gap-4">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
             <span className="text-white text-2xl font-bold">{student.name?.charAt(0)}</span>
           </div>
-          <div>
+          <div className="flex-1">
             <h2 className="text-xl font-bold text-gray-800">{student.name}</h2>
             <p className="text-gray-500">{student.rollNumber}</p>
             <p className="text-sm text-gray-400 capitalize">{student.course}</p>
           </div>
+          <Link to={`/faculty/messages?userId=${student._id}`} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap">
+            <MessageSquare size={18} />
+            <span className="hidden sm:inline">Message</span>
+          </Link>
         </div>
         
         <div className="p-6 space-y-4">

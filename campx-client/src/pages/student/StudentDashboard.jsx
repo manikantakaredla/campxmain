@@ -17,7 +17,8 @@ import {
   ArrowRight,
   Briefcase,
   Award,
-  Star
+  Star,
+  MessageSquare
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -212,7 +213,9 @@ const StudentDashboard = () => {
                     <h3 className="font-semibold text-gray-900 truncate">{assignedFaculty.classTeacher.name}</h3>
                     <p className="text-sm text-gray-500 truncate">{assignedFaculty.classTeacher.department}</p>
                   </div>
-                  <Briefcase size={20} className="text-blue-200" />
+                  <Link to={`/student/messages?userId=${assignedFaculty.classTeacher._id}`} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="Chat with Class Teacher">
+                    <MessageSquare size={18} />
+                  </Link>
                 </div>
               )}
               {assignedFaculty.proctor && (
@@ -225,7 +228,9 @@ const StudentDashboard = () => {
                     <h3 className="font-semibold text-gray-900 truncate">{assignedFaculty.proctor.name}</h3>
                     <p className="text-sm text-gray-500 truncate">{assignedFaculty.proctor.department}</p>
                   </div>
-                  <Award size={20} className="text-purple-200" />
+                  <Link to={`/student/messages?userId=${assignedFaculty.proctor._id}`} className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors" title="Chat with Proctor">
+                    <MessageSquare size={18} />
+                  </Link>
                 </div>
               )}
             </div>
