@@ -133,20 +133,22 @@ const ClassUpdates = () => {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {faculty.teachingFaculty.map(tf => (
-                <div key={tf._id} className="bg-white border border-blue-100 rounded-lg p-3 flex items-start gap-3 shadow-sm hover:border-blue-200 transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold flex-shrink-0">
-                    {tf.facultyId?.name?.charAt(0) || 'U'}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-0.5 truncate">
-                      {tf.subjectId?.name}
-                    </p>
-                    <p className="font-semibold text-gray-900 truncate text-sm">
-                      {tf.facultyId?.name}
-                    </p>
-                    <p className="text-[10px] text-gray-500 truncate mt-0.5">
-                      {tf.subjectId?.code}
-                    </p>
+                <div key={tf._id} className="bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors shadow-sm">
+                  <div className="flex gap-3">
+                    <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <BookOpen size={18} className="text-blue-600" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1 truncate">
+                        {tf.subjectId?.name}
+                      </p>
+                      <p className="font-medium text-gray-900 truncate">
+                        {tf.facultyId?.name}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate mt-0.5">
+                        {tf.subjectId?.code}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}

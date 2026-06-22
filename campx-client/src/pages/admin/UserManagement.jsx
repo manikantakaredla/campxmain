@@ -281,48 +281,64 @@ const UserManagement = () => {
         </div>
         
         
-        {viewState === 'students' && selectedSection && (
-          <div className="mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-indigo-500" />
-              Assigned Teaching Faculty
-            </h3>
-            {loadingFaculties ? (
-              <div className="animate-pulse flex gap-4">
-                <div className="h-16 bg-gray-100 rounded-lg flex-1"></div>
-                <div className="h-16 bg-gray-100 rounded-lg flex-1"></div>
-              </div>
-            ) : teachingFaculties.length === 0 ? (
-              <p className="text-sm text-gray-500">No teaching faculty assigned for this section.</p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {teachingFaculties.map(tf => (
-                  <div key={tf._id} className="border border-indigo-100 bg-indigo-50/50 rounded-lg p-3 flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 font-bold flex items-center justify-center flex-shrink-0">
-                      {tf.facultyId?.name?.charAt(0) || 'U'}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{tf.facultyId?.name}</p>
-                      <p className="text-xs text-gray-500">{tf.subjectId?.name} ({tf.subjectId?.code})</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-      {(viewState === 'students' || viewState === 'role_users') && (
-          <button
-            onClick={fetchUsers}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all"
-          >
-            <RefreshCw className="w-4 h-4" /> Refresh
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-3">
+          {viewState === 'sections' && (
+            <button 
+              onClick={() => {
+                setAssignData({ section: '', subject: '', faculty: '' })
+                fetchSubjectOptions()
+                setShowAssignModal(true)
+              }}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium flex items-center gap-2 shadow-sm transition-all"
+            >
+              <Briefcase className="w-4 h-4" /> Assign Faculty
+            </button>
+          )}
+          {(viewState === 'students' || viewState === 'role_users') && (
+            <button
+              onClick={fetchUsers}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 bg-white shadow-sm rounded-lg text-gray-700 hover:bg-gray-50 transition-all"
+            >
+              <RefreshCw className="w-4 h-4" /> Refresh
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="mb-6 flex flex-col md:flex-row gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      {viewState === 'students' && selectedSection && (
+        <div className="mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-indigo-500" />
+            Assigned Teaching Faculty
+          </h3>
+          {loadingFaculties ? (
+            <div className="animate-pulse flex gap-4">
+            <div className="h-16 bg-gray-100 rounded-lg flex-1"></div>
+            <div className="h-16 bg-gray-100 rounded-lg flex-1"></div>
+            </div>
+          ) : teachingFaculties.length === 0 ? (
+            <p className="text-sm text-gray-500">No teaching faculty assigned for this section.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {teachingFaculties.map(tf => (
+              <div key={tf._id} className="border border-indigo-100 bg-indigo-50/50 rounded-lg p-3 flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 font-bold flex items-center justify-center flex-shrink-0">
+                  {tf.facultyId?.name?.charAt(0) || 'U'}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{tf.facultyId?.name}</p>
+                  <p className="text-xs text-gray-500">{tf.subjectId?.name} ({tf.subjectId?.code})</p>
+                </div>
+              </div>
+            ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      </div>
+
+      <div className=\"mb-6 flex flex-col md:flex-row gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100\">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
@@ -444,20 +460,6 @@ const UserManagement = () => {
       )}
 
       
-      {viewState === 'sections' && (
-        <div className="mb-4 flex justify-end">
-          <button 
-            onClick={() => {
-              setAssignData({ section: '', subject: '', faculty: '' })
-              fetchSubjectOptions()
-              setShowAssignModal(true)
-            }}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium flex items-center gap-2 transition-all"
-          >
-            <Briefcase className="w-4 h-4" /> Assign Faculty
-          </button>
-        </div>
-      )}
 
       {viewState === 'sections' && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -490,37 +492,6 @@ const UserManagement = () => {
       )}
 
       
-        {viewState === 'students' && selectedSection && (
-          <div className="mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-indigo-500" />
-              Assigned Teaching Faculty
-            </h3>
-            {loadingFaculties ? (
-              <div className="animate-pulse flex gap-4">
-                <div className="h-16 bg-gray-100 rounded-lg flex-1"></div>
-                <div className="h-16 bg-gray-100 rounded-lg flex-1"></div>
-              </div>
-            ) : teachingFaculties.length === 0 ? (
-              <p className="text-sm text-gray-500">No teaching faculty assigned for this section.</p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {teachingFaculties.map(tf => (
-                  <div key={tf._id} className="border border-indigo-100 bg-indigo-50/50 rounded-lg p-3 flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 font-bold flex items-center justify-center flex-shrink-0">
-                      {tf.facultyId?.name?.charAt(0) || 'U'}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{tf.facultyId?.name}</p>
-                      <p className="text-xs text-gray-500">{tf.subjectId?.name} ({tf.subjectId?.code})</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
       {(viewState === 'students' || viewState === 'role_users') && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
           {loading ? (

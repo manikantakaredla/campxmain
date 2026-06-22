@@ -318,9 +318,17 @@ exports.getAssignedFaculty = async (req, res) => {
     const classResult = await resolveClassFaculty(student);
     const proctorResult = await resolveProctorFaculty(student);
 
+    // Handle branch name aliases (CSE vs B.Tech. - Computer Science and Engineering)
+    const branchAliases = [student.branch];
+    if (student.branch === 'CSE' || student.branch === 'Computer Science') {
+      branchAliases.push('B.Tech. - Computer Science and Engineering', 'CSE', 'Computer Science');
+    } else if (student.branch === 'B.Tech. - Computer Science and Engineering') {
+      branchAliases.push('CSE', 'Computer Science');
+    }
+
     // Fetch teaching faculty from SubjectSectionAssignment
     const teachingFaculty = await SubjectSectionAssignment.find({
-      department: student.branch,
+      department: { $in: branchAliases },
       year: student.currentYear,
       section: student.section,
       isActive: true
