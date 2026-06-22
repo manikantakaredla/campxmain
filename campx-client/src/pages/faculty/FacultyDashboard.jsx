@@ -17,7 +17,8 @@ import {
   Download,
   Eye,
   TrendingUp,
-  BookOpen
+  BookOpen,
+  Briefcase
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 

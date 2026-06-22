@@ -18,7 +18,8 @@ router.get("/me/workload", getWorkloadSummary);
 router.get("/class-assignments-summary", getClassAssignmentsSummary);
 router.get("/students/class", getClassStudents);
 router.get("/students/proctor", getProctorStudents);
-router.get("/students/all", getAllDepartmentStudents);
+router.get("/students/all", getAllAssignedStudents);
+router.get("/students/department", getAllDepartmentStudents);
 router.get("/students/search", searchStudents);
 router.get("/students/:studentId", getStudentDetail);
 
