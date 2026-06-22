@@ -33,7 +33,7 @@ const UserManagement = () => {
   const [showResetModal, setShowResetModal] = useState(null)
   const [showRoleModal, setShowRoleModal] = useState(null)
   const [showAssignModal, setShowAssignModal] = useState(false)
-  const [assignData, setAssignData] = useState({ section: '', subject: '', faculty: '' })
+  const [assignData, setAssignData] = useState({ year: '', section: '', subject: '', faculty: '' })
   const [subjectOptions, setSubjectOptions] = useState([])
   const [facultyOptions, setFacultyOptions] = useState([])
   const [teachingFaculties, setTeachingFaculties] = useState([])
@@ -126,9 +126,10 @@ const UserManagement = () => {
   }
 
   
-  const fetchSubjectOptions = async () => {
+  const fetchSubjectOptions = async (targetYear) => {
+    if(!targetYear) return;
     try {
-      const res = await api.get(`/admin/subjects/department/${selectedDept}/year/${yearFilter}`)
+      const res = await api.get(`/admin/subjects/department/${selectedDept}/year/${targetYear}`)
       setSubjectOptions(res.data.subjects || [])
     } catch (error) {
       toast.error('Failed to load subjects')
@@ -162,14 +163,14 @@ const UserManagement = () => {
   }
 
   const handleAssignSubmit = async () => {
-    if (!assignData.section || !assignData.subject || !assignData.faculty) {
+    if (!assignData.year || !assignData.section || !assignData.subject || !assignData.faculty) {
       toast.error("Please fill all fields");
       return;
     }
     try {
       await api.post('/admin/sections/assign-subject', {
         department: selectedDept,
-        year: yearFilter,
+        year: assignData.year,
         section: assignData.section,
         subjectId: assignData.subject,
         facultyId: assignData.faculty
@@ -285,8 +286,9 @@ const UserManagement = () => {
           {viewState === 'sections' && (
             <button 
               onClick={() => {
-                setAssignData({ section: '', subject: '', faculty: '' })
-                fetchSubjectOptions()
+                const initYear = yearFilter || '1';
+                setAssignData({ year: initYear, section: '', subject: '', faculty: '' })
+                fetchSubjectOptions(initYear)
                 setShowAssignModal(true)
               }}
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium flex items-center gap-2 shadow-sm transition-all"
@@ -668,14 +670,33 @@ const UserManagement = () => {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
                 <select 
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  value={assignData.year}
+                  onChange={(e) => {
+                    const newYear = e.target.value;
+                    setAssignData({...assignData, year: newYear, section: '', subject: '', faculty: ''});
+                    fetchSubjectOptions(newYear);
+                  }}
+                >
+                  <option value="">Select Year</option>
+                  {getYears().map(y => (
+                    <option key={y} value={y}>Year {y}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                <select 
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
                   value={assignData.section}
+                  disabled={!assignData.year}
                   onChange={(e) => setAssignData({...assignData, section: e.target.value})}
                 >
                   <option value="">Select Section</option>
-                  {currentSections.map(sec => (
+                  {getSections(settings, selectedDept, assignData.year).map(sec => (
                     <option key={sec} value={sec}>Section {sec}</option>
                   ))}
                 </select>
