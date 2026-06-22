@@ -813,6 +813,10 @@ exports.deleteAnnouncement = async (req, res) => {
       await AcademicActivity.deleteOne({ sourceAnnouncementId: announcement._id });
     }
     
+    // Delete associated notifications
+    const Notification = require("../models/Notification");
+    await Notification.deleteMany({ relatedId: announcement._id, type: "announcement" });
+    
     await announcement.deleteOne();
     
     res.status(200).json({
