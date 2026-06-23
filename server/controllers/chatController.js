@@ -416,3 +416,46 @@ exports.deleteMessage = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// ==================== DELETE DIRECT CONVERSATION ====================
+exports.deleteConversation = async (req, res) => {
+  try {
+    const { id: otherUserId } = req.params;
+    const userId = req.user.id;
+
+    // Hard delete all direct messages between these two users
+    await Message.deleteMany({
+      $or: [
+        { sender: userId, receiver: otherUserId },
+        { sender: otherUserId, receiver: userId }
+      ],
+      groupId: { $exists: false }
+    });
+
+    res.status(200).json({ success: true, message: 'Conversation deleted successfully' });
+  } catch (error) {
+    console.error('Delete conversation error:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete conversation' });
+  }
+};
+
+// ==================== DELETE GROUP CONVERSATION ====================
+exports.deleteGroupConversation = async (req, res) => {
+  try {
+    const { id: groupId } = req.params;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user || user.role === 'student') {
+      return res.status(403).json({ success: false, message: 'Students cannot delete group chats' });
+    }
+
+    // Hard delete all messages in the group
+    await Message.deleteMany({ groupId });
+
+    res.status(200).json({ success: true, message: 'Group conversation deleted successfully' });
+  } catch (error) {
+    console.error('Delete group conversation error:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete group conversation' });
+  }
+};

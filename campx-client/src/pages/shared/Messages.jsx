@@ -221,7 +221,10 @@ const Messages = () => {
         if (sentMsg.replyTo && sentMsg.replyTo.content) {
             sentMsg.replyTo.content = sentMsg.replyTo.isDeleted ? sentMsg.replyTo.content : decryptMessage(sentMsg.replyTo.content);
         }
-        setMessages(prev => [...prev, sentMsg]);
+        setMessages(prev => {
+          if (prev.find(m => m._id === sentMsg._id)) return prev;
+          return [...prev, sentMsg];
+        });
         setNewMessage('');
         setReplyingTo(null);
         fetchConversations(); // Update last message in list
@@ -242,6 +245,24 @@ const Messages = () => {
       }
     } catch (error) {
       console.error('Error deleting message:', error);
+    }
+  };
+
+  const handleDeleteChat = async () => {
+    if (!window.confirm('Are you sure you want to delete this conversation? This will delete all messages for both of you.')) return;
+    try {
+      const url = selectedChat.isGroup 
+        ? `/chat/conversations/group/${selectedChat._id}` 
+        : `/chat/conversations/${selectedChat._id}`;
+      const res = await api.delete(url);
+      if (res.data.success) {
+        setSelectedChat(null);
+        setMessages([]);
+        fetchConversations();
+      }
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+      alert('Cannot delete this chat or an error occurred.');
     }
   };
 
@@ -365,6 +386,15 @@ const Messages = () => {
                   {!selectedChat.isGroup && selectedChat.department && ` • ${selectedChat.department}`}
                 </p>
               </div>
+              <div className="ml-auto">
+                <button 
+                  onClick={handleDeleteChat}
+                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                  title="Delete Conversation"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             </div>
 
             {/* Messages Area */}
@@ -374,7 +404,7 @@ const Messages = () => {
                 const showSenderName = selectedChat.isGroup && !isMine && (index === 0 || messages[index-1].sender._id !== msg.sender._id);
 
                 return (
-                  <div key={msg._id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                  <div key={msg._id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} group`}>
                     <div className={`flex flex-col ${isMine ? 'items-end' : 'items-start'} max-w-[70%]`}>
                       {showSenderName && (
                         <span className="text-xs text-gray-500 mb-1 ml-1">{msg.sender.name}</span>

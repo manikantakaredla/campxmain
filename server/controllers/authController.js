@@ -278,7 +278,13 @@ exports.verifyOTP = async (req, res) => {
         branch: user.branch,
         currentYear: user.currentYear,
         currentSemester: user.currentSemester,
-        batch: user.batch
+        batch: user.batch,
+        employeeId: user.employeeId,
+        department: user.department,
+        designation: user.designation,
+        staffRole: user.staffRole,
+        phoneNumber: user.phoneNumber,
+        createdAt: user.createdAt
       }
     });
 
@@ -428,7 +434,13 @@ exports.loginUser = async (req, res) => {
         currentYear: user.currentYear,
         currentSemester: user.currentSemester,
         batch: user.batch,
-        profilePicture: user.profilePicture
+        profilePicture: user.profilePicture,
+        employeeId: user.employeeId,
+        department: user.department,
+        designation: user.designation,
+        staffRole: user.staffRole,
+        phoneNumber: user.phoneNumber,
+        createdAt: user.createdAt
       }
     });
 
