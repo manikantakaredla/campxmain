@@ -400,14 +400,14 @@ const Messages = () => {
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50">
               {messages.map((msg, index) => {
-                const isMine = msg.sender._id === user._id;
-                const showSenderName = selectedChat.isGroup && !isMine && (index === 0 || messages[index-1].sender._id !== msg.sender._id);
+                const isMine = msg.sender?._id === user._id;
+                const showSenderName = selectedChat.isGroup && !isMine && (index === 0 || messages[index-1].sender?._id !== msg.sender?._id);
 
                 return (
                   <div key={msg._id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} group`}>
                     <div className={`flex flex-col ${isMine ? 'items-end' : 'items-start'} max-w-[70%]`}>
                       {showSenderName && (
-                        <span className="text-xs text-gray-500 mb-1 ml-1">{msg.sender.name}</span>
+                        <span className="text-xs text-gray-500 mb-1 ml-1">{msg.sender?.name || 'Deleted User'}</span>
                       )}
                       {msg.replyTo && (
                         <div className={`mb-1 p-2 rounded-lg text-xs border-l-2 opacity-75 max-w-full truncate ${isMine ? 'bg-blue-700/20 border-blue-200 text-gray-600' : 'bg-gray-100 border-gray-300 text-gray-500'}`}>

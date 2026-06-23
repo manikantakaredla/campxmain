@@ -163,7 +163,7 @@ exports.getConversations = async (req, res) => {
         if (!groups.find(g => g._id === id)) {
           groups.push({
             _id: id,
-            name: `Subject Class (${sa.department} - ${sa.year} Yr - Sec ${sa.section})`,
+            name: `Class Group (${sa.department} - ${sa.year} Yr - Sec ${sa.section})`,
             type: 'class'
           });
         }
