@@ -129,6 +129,7 @@ function App() {
           <Route path="*" element={<Navigate to="/student/dashboard" replace />} />
         </Route>
       </Routes>
+      </ErrorBoundary>
     )
   }
 
@@ -161,6 +162,7 @@ function App() {
           <Route path="*" element={<Navigate to="/faculty/dashboard" replace />} />
         </Route>
       </Routes>
+      </ErrorBoundary>
     )
   }
 
@@ -198,6 +200,7 @@ function App() {
           <Route path="*" element={<Navigate to="/management/dashboard" replace />} />
         </Route>
       </Routes>
+      </ErrorBoundary>
     )
   }
 
@@ -229,6 +232,7 @@ function App() {
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Route>
       </Routes>
+      </ErrorBoundary>
     )
   }
 
