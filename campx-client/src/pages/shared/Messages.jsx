@@ -130,6 +130,34 @@ const Messages = () => {
       if (newMsg.replyTo) {
          newMsg.replyTo.content = newMsg.replyTo.isDeleted ? newMsg.replyTo.content : decryptMessage(newMsg.replyTo.content);
       }
+      // Update the left sidebar locally without hitting the server!
+      setConversations(prev => {
+        const updated = prev.map(chat => {
+          const isDirectMatch = !chat.isGroup && !newMsg.groupId && 
+            (newMsg.sender._id === chat._id || newMsg.receiver === chat._id);
+          const isGroupMatch = chat.isGroup && newMsg.groupId === chat._id;
+          
+          if (isDirectMatch || isGroupMatch) {
+            const isCurrentlyOpen = selectedChat && selectedChat._id === chat._id;
+            const shouldIncrementUnread = (newMsg.sender._id !== user._id) && !isCurrentlyOpen;
+            
+            return {
+              ...chat,
+              lastMessage: newMsg.content,
+              lastMessageTime: newMsg.createdAt,
+              unreadCount: shouldIncrementUnread ? (chat.unreadCount || 0) + 1 : chat.unreadCount
+            };
+          }
+          return chat;
+        });
+        
+        return updated.sort((a, b) => {
+          const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+          const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+          return timeB - timeA;
+        });
+      });
+
       // If the message belongs to the currently open chat, append it
       if (selectedChat) {
         const isForCurrentDirectChat = !selectedChat.isGroup && !newMsg.groupId && 
@@ -273,7 +301,7 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-6rem)] md:h-[calc(100vh-6rem)] pb-20 md:pb-0 bg-white md:rounded-xl shadow-sm md:border border-gray-100 overflow-hidden">
+    <div className="flex h-[calc(100dvh-6rem)] md:h-[calc(100vh-6rem)] pb-20 md:pb-0 bg-white md:rounded-xl shadow-sm md:border border-gray-100 overflow-hidden">
       {/* Left Pane - Inbox */}
       <div className={`${selectedChat ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r border-gray-100 flex-col bg-gray-50/50`}>
         <div className="p-4 border-b border-gray-100">

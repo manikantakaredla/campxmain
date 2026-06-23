@@ -46,7 +46,7 @@ const MobileBottomNav = () => {
           to={item.path}
           className={({ isActive }) =>
             `flex flex-col items-center gap-1 transition-colors duration-200 ${
-              isActive ? 'text-fitbit-primary' : 'text-gray-400 hover:text-gray-600'
+              isActive ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
             }`
           }
         >
