@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../hooks/useAuth';
 import api from '../../api/axios';
 import { useSearchParams } from 'react-router-dom';
-import { Send, Search, Check, CheckCheck, Users, UserCircle, MessageSquare, Trash2, Reply, X } from 'lucide-react';
+import { Send, Search, Check, CheckCheck, Users, UserCircle, MessageSquare, Trash2, Reply, X, ArrowLeft } from 'lucide-react';
 import { useSocket } from '../../hooks/useSocket';
 import { encryptMessage, decryptMessage } from '../../utils/encryption';
 
@@ -18,6 +16,7 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
+  const [isSending, setIsSending] = useState(false);
   
   const messagesEndRef = useRef(null);
   const socket = useSocket();
@@ -199,8 +198,9 @@ const Messages = () => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !selectedChat) return;
+    if (!newMessage.trim() || !selectedChat || isSending) return;
 
+    setIsSending(true);
     try {
       const payload = {
         content: encryptMessage(newMessage),
@@ -226,6 +226,8 @@ const Messages = () => {
       }
     } catch (error) {
       console.error('Error sending message:', error);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -248,9 +250,9 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-6rem)] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="flex h-[calc(100vh-6rem)] md:h-[calc(100vh-6rem)] pb-20 md:pb-0 bg-white md:rounded-xl shadow-sm md:border border-gray-100 overflow-hidden">
       {/* Left Pane - Inbox */}
-      <div className="w-1/3 border-r border-gray-100 flex flex-col bg-gray-50/50">
+      <div className={`${selectedChat ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r border-gray-100 flex-col bg-gray-50/50`}>
         <div className="p-4 border-b border-gray-100">
           <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
             <MessageSquare size={24} className="text-blue-600" />
@@ -330,11 +332,17 @@ const Messages = () => {
       </div>
 
       {/* Right Pane - Chat Window */}
-      <div className="flex-1 flex flex-col bg-white">
+      <div className={`${!selectedChat ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-white w-full`}>
         {selectedChat ? (
           <>
             {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-4 bg-white">
+            <div className="px-4 md:px-6 py-4 border-b border-gray-100 flex items-center gap-3 md:gap-4 bg-white sticky top-0 z-10 shadow-sm md:shadow-none">
+              <button 
+                onClick={() => setSelectedChat(null)} 
+                className="md:hidden p-2 -ml-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
+              >
+                <ArrowLeft size={20} />
+              </button>
               {selectedChat.isGroup ? (
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                   selectedChat.type === 'proctor' ? 'bg-purple-100 text-purple-600' : 'bg-emerald-100 text-emerald-600'
@@ -385,7 +393,7 @@ const Messages = () => {
                           <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
                         </div>
                         
-                        <div className={`opacity-0 group-hover:opacity-100 flex gap-1 ${isMine ? 'mr-2' : 'ml-2'}`}>
+                        <div className={`flex gap-1 transition-opacity opacity-100 md:opacity-0 md:group-hover:opacity-100 ${isMine ? 'mr-2' : 'ml-2'}`}>
                           {!msg.isDeleted && (
                              <button onClick={() => setReplyingTo(msg)} className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors bg-white rounded-full shadow-sm border border-gray-100" title="Reply">
                                <Reply size={14} />
@@ -437,11 +445,12 @@ const Messages = () => {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 bg-gray-50 border border-gray-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
+                  disabled={isSending}
+                  className="flex-1 bg-gray-50 border border-gray-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all disabled:opacity-50"
                 />
                 <button
                   type="submit"
-                  disabled={!newMessage.trim()}
+                  disabled={!newMessage.trim() || isSending}
                   className="bg-blue-600 text-white p-2.5 rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                 >
                   <Send size={18} />

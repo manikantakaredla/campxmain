@@ -127,6 +127,7 @@ exports.uploadFaculty = async (req, res) => {
         await FacultyData.create({
           empid: row.empid.toUpperCase(),
           name: row.name,
+          email: row.email.toLowerCase(),
           dept: row.dept,
           designation: row.designation,
           staff_role: row.staff_role.toLowerCase(),

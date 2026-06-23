@@ -46,6 +46,12 @@ const validateFacultyRow = (row, index) => {
   if (!row.name || row.name.trim() === "") {
     errors.push({ row: index + 2, identifier: row.empid, message: "Name is required" });
   }
+
+  if (!row.email || row.email.trim() === "") {
+    errors.push({ row: index + 2, identifier: row.empid, message: "Email is required" });
+  } else if (!row.email.endsWith("@adityauniversity.in")) {
+    errors.push({ row: index + 2, identifier: row.empid, message: "Email must end with @adityauniversity.in" });
+  }
   
   if (!row.dept || row.dept.trim() === "") {
     errors.push({ row: index + 2, identifier: row.empid, message: "Department is required" });

@@ -22,11 +22,11 @@ const DataUpload = () => {
       template: 'student_template.csv',
       sample: 'name,roll,section,email,course,ph_no\nJohn Doe,24B11CS052,A,john.doe@adityauniversity.in,B.Tech,9876543210' },
     { id: 'faculty', label: 'Faculty', 
-      description: 'Upload faculty data with employee ID, name, department, designation, role',
-      columns: ['empid', 'name', 'dept', 'designation', 'staff_role'],
+      description: 'Upload faculty data with employee ID, name, email, department, designation, role',
+      columns: ['empid', 'name', 'email', 'dept', 'designation', 'staff_role'],
       endpoint: '/admin/upload/faculty',
       template: 'faculty_template.csv',
-      sample: 'empid,name,dept,designation,staff_role\nFAC001,Dr. Rajesh Kumar,Computer Science,Professor,faculty' }
+      sample: 'empid,name,email,dept,designation,staff_role\nFAC001,Dr. Rajesh Kumar,rajesh.k@adityauniversity.in,Computer Science,Professor,faculty' }
   ]
 
   const currentTab = tabs.find(t => t.id === activeTab)

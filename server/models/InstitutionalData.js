@@ -22,6 +22,7 @@ studentDataSchema.index({ uploadedBy: 1 });
 const facultyDataSchema = new mongoose.Schema({
   empid: { type: String, required: true, unique: true, uppercase: true },  // unique creates index
   name: { type: String, required: true },
+  email: { type: String, required: true, unique: true, lowercase: true },
   dept: { type: String, required: true },
   designation: { type: String, required: true },
   staff_role: { 
