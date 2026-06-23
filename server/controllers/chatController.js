@@ -4,6 +4,7 @@ const { resolveClassFaculty, resolveProctorFaculty } = require('../utils/assignm
 const ClassSectionAssignment = require('../models/ClassSectionAssignment');
 const SubjectSectionAssignment = require('../models/SubjectSectionAssignment');
 const { getIO } = require('../config/socket');
+const mongoose = require('mongoose');
 
 // ==================== GET CONVERSATIONS ====================
 exports.getConversations = async (req, res) => {
@@ -15,60 +16,93 @@ exports.getConversations = async (req, res) => {
 
     const { userId } = req.query;
 
-    // 1. Fetch Users from past messages (Direct Messages)
-    const messages = await Message.find({
-      $or: [{ sender: user._id }, { receiver: user._id }],
-      groupId: { $exists: false }
-    }).sort({ createdAt: -1 }).populate('sender receiver', 'name profilePicture role department branch currentYear section');
-
-    const directUsersMap = new Map();
-    
-    messages.forEach(msg => {
-      const otherUser = msg.sender._id.toString() === user._id.toString() ? msg.receiver : msg.sender;
-      if (otherUser && !directUsersMap.has(otherUser._id.toString())) {
-        directUsersMap.set(otherUser._id.toString(), {
-          _id: otherUser._id,
-          name: otherUser.name,
-          profilePicture: otherUser.profilePicture,
-          role: otherUser.role,
-          department: otherUser.department || otherUser.branch,
-          lastMessage: msg.content,
-          lastMessageTime: msg.createdAt,
-          unreadCount: 0 // Will calculate below
-        });
+    // 1. Fetch Users from past messages (Direct Messages) using Aggregation
+    const userIdObj = user._id;
+    const messagesAgg = await Message.aggregate([
+      {
+        $match: {
+          $or: [{ sender: userIdObj }, { receiver: userIdObj }],
+          groupId: { $exists: false }
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ["$sender", userIdObj] },
+              "$receiver",
+              "$sender"
+            ]
+          },
+          lastMessage: { $first: "$content" },
+          lastMessageTime: { $first: "$createdAt" },
+          unreadCount: {
+            $sum: {
+              $cond: [
+                { 
+                  $and: [
+                    { $eq: ["$receiver", userIdObj] },
+                    { $not: { $in: [userIdObj, { $ifNull: ["$readBy", []] }] } }
+                  ] 
+                },
+                1,
+                0
+              ]
+            }
+          }
+        }
       }
-    });
+    ]);
 
-    // If userId is provided and not in directUsersMap, fetch and add
-    if (userId && !directUsersMap.has(userId)) {
-      const specificUser = await User.findById(userId).select('name profilePicture role department branch').lean();
-      if (specificUser) {
-        directUsersMap.set(userId, {
-          _id: specificUser._id,
-          name: specificUser.name,
-          profilePicture: specificUser.profilePicture,
-          role: specificUser.role,
-          department: specificUser.department || specificUser.branch,
-          lastMessage: '',
-          lastMessageTime: null,
-          unreadCount: 0
-        });
+    const contactIds = messagesAgg.map(m => m._id).filter(id => id);
+    if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+      if (!contactIds.some(id => id.toString() === userId.toString())) {
+        contactIds.push(new mongoose.Types.ObjectId(userId));
       }
     }
 
-    // 2. Fetch Unread Counts for Direct Messages
-    const unreadMsgs = await Message.find({
-      receiver: user._id,
-      groupId: { $exists: false },
-      readBy: { $ne: user._id }
-    });
+    const contactsInfo = await User.find({ _id: { $in: contactIds } })
+      .select('name profilePicture role department branch')
+      .lean();
     
-    unreadMsgs.forEach(msg => {
-      const senderId = msg.sender.toString();
-      if (directUsersMap.has(senderId)) {
-        directUsersMap.get(senderId).unreadCount += 1;
-      }
+    const contactsInfoMap = new Map();
+    contactsInfo.forEach(c => contactsInfoMap.set(c._id.toString(), c));
+
+    const directUsersMap = new Map();
+    messagesAgg.forEach(m => {
+       const info = contactsInfoMap.get(m._id?.toString());
+       if (info) {
+          directUsersMap.set(info._id.toString(), {
+             _id: info._id,
+             name: info.name,
+             profilePicture: info.profilePicture,
+             role: info.role,
+             department: info.department || info.branch,
+             lastMessage: m.lastMessage,
+             lastMessageTime: m.lastMessageTime,
+             unreadCount: m.unreadCount
+          });
+       }
     });
+
+    if (userId && !directUsersMap.has(userId)) {
+       const info = contactsInfoMap.get(userId.toString());
+       if (info) {
+          directUsersMap.set(userId, {
+             _id: info._id,
+             name: info.name,
+             profilePicture: info.profilePicture,
+             role: info.role,
+             department: info.department || info.branch,
+             lastMessage: '',
+             lastMessageTime: null,
+             unreadCount: 0
+          });
+       }
+    }
 
     // 3. Pre-populate default contacts & Groups based on role
     const groups = [];
@@ -82,7 +116,7 @@ exports.getConversations = async (req, res) => {
       if (classResult?.faculty) {
         if (!directUsersMap.has(classResult.faculty._id.toString())) {
           defaultContacts.push({
-            ...classResult.faculty,
+            ...(classResult.faculty.toObject ? classResult.faculty.toObject() : classResult.faculty),
             label: 'Class Teacher'
           });
         }
@@ -90,7 +124,7 @@ exports.getConversations = async (req, res) => {
       if (proctorResult?.faculty) {
         if (!directUsersMap.has(proctorResult.faculty._id.toString())) {
           defaultContacts.push({
-            ...proctorResult.faculty,
+            ...(proctorResult.faculty.toObject ? proctorResult.faculty.toObject() : proctorResult.faculty),
             label: 'Proctor'
           });
         }
@@ -142,22 +176,55 @@ exports.getConversations = async (req, res) => {
       });
     }
 
-    // Prepare group unread counts & last message
-    for (let i = 0; i < groups.length; i++) {
-      const g = groups[i];
-      const lastMsg = await Message.findOne({ groupId: g._id }).sort({ createdAt: -1 });
-      if (lastMsg) {
-        g.lastMessage = lastMsg.content;
-        g.lastMessageTime = lastMsg.createdAt;
+    // Prepare group unread counts & last message using Aggregation
+    const groupIds = groups.map(g => g._id);
+    const groupAgg = await Message.aggregate([
+      {
+        $match: {
+          groupId: { $in: groupIds }
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      },
+      {
+        $group: {
+          _id: "$groupId",
+          lastMessage: { $first: "$content" },
+          lastMessageTime: { $first: "$createdAt" },
+          unreadCount: {
+            $sum: {
+              $cond: [
+                { 
+                  $and: [
+                    { $ne: ["$sender", userIdObj] },
+                    { $not: { $in: [userIdObj, { $ifNull: ["$readBy", []] }] } }
+                  ] 
+                },
+                1,
+                0
+              ]
+            }
+          }
+        }
       }
-      
-      const unreadCount = await Message.countDocuments({ 
-        groupId: g._id, 
-        sender: { $ne: user._id }, 
-        readBy: { $ne: user._id } 
-      });
-      g.unreadCount = unreadCount;
-    }
+    ]);
+
+    const groupAggMap = new Map();
+    groupAgg.forEach(g => groupAggMap.set(g._id, g));
+
+    groups.forEach(g => {
+       const agg = groupAggMap.get(g._id);
+       if (agg) {
+          g.lastMessage = agg.lastMessage;
+          g.lastMessageTime = agg.lastMessageTime;
+          g.unreadCount = agg.unreadCount;
+       } else {
+          g.lastMessage = '';
+          g.lastMessageTime = null;
+          g.unreadCount = 0;
+       }
+    });
 
     res.status(200).json({
       success: true,
@@ -196,6 +263,11 @@ exports.getMessages = async (req, res) => {
     const messages = await Message.find(query)
       .sort({ createdAt: 1 })
       .populate('sender', 'name profilePicture role')
+      .populate({
+        path: 'replyTo',
+        select: 'content sender isDeleted',
+        populate: { path: 'sender', select: 'name' }
+      })
       .lean();
 
     res.status(200).json({
@@ -211,7 +283,7 @@ exports.getMessages = async (req, res) => {
 // ==================== SEND MESSAGE ====================
 exports.sendMessage = async (req, res) => {
   try {
-    const { receiverId, groupId, content } = req.body;
+    const { receiverId, groupId, content, replyTo } = req.body;
     
     if (!content) {
       return res.status(400).json({ success: false, message: 'Message content is required' });
@@ -226,12 +298,20 @@ exports.sendMessage = async (req, res) => {
       receiver: receiverId || undefined,
       groupId: groupId || undefined,
       content,
+      replyTo: replyTo || undefined,
       readBy: [req.user.id] // sender has read it
     });
 
     await newMessage.save();
 
     await newMessage.populate('sender', 'name profilePicture role');
+    if (replyTo) {
+      await newMessage.populate({
+        path: 'replyTo',
+        select: 'content sender isDeleted',
+        populate: { path: 'sender', select: 'name' }
+      });
+    }
 
     // Emit via Socket.io
     try {
@@ -293,6 +373,46 @@ exports.markAsRead = async (req, res) => {
     res.status(200).json({ success: true, message: 'Messages marked as read' });
   } catch (error) {
     console.error('markAsRead error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ==================== DELETE MESSAGE ====================
+exports.deleteMessage = async (req, res) => {
+  try {
+    const messageId = req.params.id;
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({ success: false, message: 'Message not found' });
+    }
+
+    if (message.sender.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'You can only delete your own messages' });
+    }
+
+    message.isDeleted = true;
+    message.content = "This message was deleted";
+    await message.save();
+
+    // Emit socket event to update clients
+    try {
+      const io = getIO();
+      if (message.groupId) {
+        io.to(message.groupId).emit('messageDeleted', { messageId });
+      } else {
+        if (message.receiver) {
+          io.to(message.receiver.toString()).emit('messageDeleted', { messageId });
+        }
+        io.to(req.user.id).emit('messageDeleted', { messageId });
+      }
+    } catch (err) {
+      console.error('Socket emit failed:', err.message);
+    }
+
+    res.status(200).json({ success: true, message: 'Message deleted successfully' });
+  } catch (error) {
+    console.error('deleteMessage error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

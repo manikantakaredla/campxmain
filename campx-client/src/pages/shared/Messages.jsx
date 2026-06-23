@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../api/axios';
 import { useSearchParams } from 'react-router-dom';
-import { Send, Search, Check, CheckCheck, Users, UserCircle, MessageSquare } from 'lucide-react';
+import { Send, Search, Check, CheckCheck, Users, UserCircle, MessageSquare, Trash2, Reply, X } from 'lucide-react';
 import { useSocket } from '../../hooks/useSocket';
+import { encryptMessage, decryptMessage } from '../../utils/encryption';
 
 const Messages = () => {
   const { user } = useAuth();
@@ -16,6 +17,7 @@ const Messages = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [replyingTo, setReplyingTo] = useState(null);
   
   const messagesEndRef = useRef(null);
   const socket = useSocket();
@@ -45,8 +47,8 @@ const Messages = () => {
         });
 
         const formattedChats = [
-          ...groups.map(g => ({ ...g, isGroup: true })),
-          ...allDirects.map(d => ({ ...d, isGroup: false }))
+          ...groups.map(g => ({ ...g, isGroup: true, lastMessage: decryptMessage(g.lastMessage) })),
+          ...allDirects.map(d => ({ ...d, isGroup: false, lastMessage: decryptMessage(d.lastMessage) }))
         ].sort((a, b) => {
           const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
           const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
@@ -95,7 +97,12 @@ const Messages = () => {
       const query = selectedChat.isGroup ? `groupId=${selectedChat._id}` : `userId=${selectedChat._id}`;
       const res = await api.get(`/chat/messages?${query}`);
       if (res.data.success) {
-        setMessages(res.data.data);
+        const decryptedMessages = res.data.data.map(m => ({
+          ...m,
+          content: m.isDeleted ? m.content : decryptMessage(m.content),
+          replyTo: m.replyTo ? { ...m.replyTo, content: m.replyTo.isDeleted ? m.replyTo.content : decryptMessage(m.replyTo.content) } : null
+        }));
+        setMessages(decryptedMessages);
         
         // Mark as read
         const hasUnread = res.data.data.some(m => !m.readBy.includes(user._id));
@@ -118,6 +125,10 @@ const Messages = () => {
     if (!socket) return;
 
     const handleNewMessage = (newMsg) => {
+      newMsg.content = newMsg.isDeleted ? newMsg.content : decryptMessage(newMsg.content);
+      if (newMsg.replyTo) {
+         newMsg.replyTo.content = newMsg.replyTo.isDeleted ? newMsg.replyTo.content : decryptMessage(newMsg.replyTo.content);
+      }
       // If the message belongs to the currently open chat, append it
       if (selectedChat) {
         const isForCurrentDirectChat = !selectedChat.isGroup && !newMsg.groupId && 
@@ -157,12 +168,27 @@ const Messages = () => {
       }
     };
 
+    const handleMessageDeleted = ({ messageId }) => {
+      setMessages(prev => prev.map(m => {
+        if (m._id === messageId) {
+          return { ...m, isDeleted: true, content: 'This message was deleted' };
+        }
+        if (m.replyTo && m.replyTo._id === messageId) {
+          return { ...m, replyTo: { ...m.replyTo, isDeleted: true, content: 'This message was deleted' } };
+        }
+        return m;
+      }));
+      fetchConversations();
+    };
+
     socket.on('newMessage', handleNewMessage);
     socket.on('messageRead', handleMessageRead);
+    socket.on('messageDeleted', handleMessageDeleted);
 
     return () => {
       socket.off('newMessage', handleNewMessage);
       socket.off('messageRead', handleMessageRead);
+      socket.off('messageDeleted', handleMessageDeleted);
     };
   }, [socket, selectedChat, user._id]);
 
@@ -177,7 +203,8 @@ const Messages = () => {
 
     try {
       const payload = {
-        content: newMessage,
+        content: encryptMessage(newMessage),
+        replyTo: replyingTo ? replyingTo._id : undefined
       };
       if (selectedChat.isGroup) {
         payload.groupId = selectedChat._id;
@@ -187,12 +214,30 @@ const Messages = () => {
 
       const res = await api.post('/chat/messages', payload);
       if (res.data.success) {
-        setMessages(prev => [...prev, res.data.data]);
+        const sentMsg = res.data.data;
+        sentMsg.content = sentMsg.isDeleted ? sentMsg.content : decryptMessage(sentMsg.content);
+        if (sentMsg.replyTo && sentMsg.replyTo.content) {
+            sentMsg.replyTo.content = sentMsg.replyTo.isDeleted ? sentMsg.replyTo.content : decryptMessage(sentMsg.replyTo.content);
+        }
+        setMessages(prev => [...prev, sentMsg]);
         setNewMessage('');
+        setReplyingTo(null);
         fetchConversations(); // Update last message in list
       }
     } catch (error) {
       console.error('Error sending message:', error);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId) => {
+    try {
+      const res = await api.delete(`/chat/messages/${messageId}`);
+      if (res.data.success) {
+         setMessages(prev => prev.map(m => m._id === messageId ? { ...m, isDeleted: true, content: 'This message was deleted' } : m));
+         fetchConversations();
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error);
     }
   };
 
@@ -324,12 +369,34 @@ const Messages = () => {
                       {showSenderName && (
                         <span className="text-xs text-gray-500 mb-1 ml-1">{msg.sender.name}</span>
                       )}
-                      <div className={`px-4 py-2.5 rounded-2xl shadow-sm ${
-                        isMine 
-                          ? 'bg-blue-600 text-white rounded-br-sm' 
-                          : 'bg-white border border-gray-100 text-gray-800 rounded-bl-sm'
-                      }`}>
-                        <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
+                      {msg.replyTo && (
+                        <div className={`mb-1 p-2 rounded-lg text-xs border-l-2 opacity-75 max-w-full truncate ${isMine ? 'bg-blue-700/20 border-blue-200 text-gray-600' : 'bg-gray-100 border-gray-300 text-gray-500'}`}>
+                           <span className="font-semibold block">{msg.replyTo.sender?.name || 'Unknown'}</span>
+                           {msg.replyTo.content}
+                        </div>
+                      )}
+                      
+                      <div className={`flex items-center gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div className={`px-4 py-2.5 rounded-2xl shadow-sm ${
+                          isMine 
+                            ? 'bg-blue-600 text-white rounded-br-sm' 
+                            : 'bg-white border border-gray-100 text-gray-800 rounded-bl-sm'
+                        } ${msg.isDeleted ? 'italic opacity-60 !bg-gray-100 !text-gray-500 border-none shadow-none' : ''}`}>
+                          <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
+                        </div>
+                        
+                        <div className={`opacity-0 group-hover:opacity-100 flex gap-1 ${isMine ? 'mr-2' : 'ml-2'}`}>
+                          {!msg.isDeleted && (
+                             <button onClick={() => setReplyingTo(msg)} className="p-1.5 text-gray-400 hover:text-blue-500 transition-colors bg-white rounded-full shadow-sm border border-gray-100" title="Reply">
+                               <Reply size={14} />
+                             </button>
+                          )}
+                          {isMine && !msg.isDeleted && (
+                             <button onClick={() => handleDeleteMessage(msg._id)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors bg-white rounded-full shadow-sm border border-gray-100" title="Delete">
+                               <Trash2 size={14} />
+                             </button>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-1 mt-1 text-[10px] text-gray-400">
                         <span>{formatTime(msg.createdAt)}</span>
@@ -351,8 +418,20 @@ const Messages = () => {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 border-t border-gray-100 bg-white">
-              <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+            <div className="border-t border-gray-100 bg-white flex flex-col">
+              {replyingTo && (
+                <div className="px-4 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                  <div className="flex flex-col text-sm truncate max-w-[80%]">
+                    <span className="text-xs font-semibold text-blue-600">Replying to {replyingTo.sender?.name || 'Unknown'}</span>
+                    <span className="text-gray-500 truncate">{replyingTo.content}</span>
+                  </div>
+                  <button onClick={() => setReplyingTo(null)} className="text-gray-400 hover:text-gray-600">
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+              <div className="p-4">
+                <form onSubmit={handleSendMessage} className="flex items-center gap-2">
                 <input
                   type="text"
                   value={newMessage}
@@ -368,6 +447,7 @@ const Messages = () => {
                   <Send size={18} />
                 </button>
               </form>
+              </div>
             </div>
           </>
         ) : (

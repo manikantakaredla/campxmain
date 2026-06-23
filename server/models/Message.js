@@ -21,6 +21,14 @@ const messageSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+  replyTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Message'
+  },
   readBy: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
