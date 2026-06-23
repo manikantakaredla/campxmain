@@ -74,10 +74,9 @@ const RoleBasedRedirect = ({ role }) => {
   const redirectMap = {
     student: '/student/dashboard',
     faculty: '/faculty/dashboard',
-    hod: '/management/dashboard',
-    deputyhod: '/management/dashboard',
-    dean: '/management/dashboard',
-    principal: '/management/dashboard',
+    hod: '/admin/dashboard',
+    dean: '/admin/dashboard',
+    principal: '/admin/dashboard',
     admin: '/admin/dashboard'
   }
   return <Navigate to={redirectMap[role] || '/'} replace />
@@ -166,45 +165,7 @@ function App() {
     )
   }
 
-  if (['hod', 'deputyhod', 'dean', 'principal'].includes(role)) {
-    return (
-      <ErrorBoundary>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Navigate to="/management/dashboard" replace />} />
-          <Route path="/management/dashboard" element={wrapSuspense(ManagementDashboard)} />
-          <Route path="/management/faculty" element={wrapSuspense(FacultyManagement)} />
-          <Route path="/management/faculty/:id" element={wrapSuspense(FacultyDetails)} />
-          <Route path="/management/assign-students" element={wrapSuspense(AssignStudents)} />
-          <Route path="/management/students" element={wrapSuspense(DepartmentStudents)} />
-          <Route path="/management/students/:id" element={wrapSuspense(ManagementStudentDetails)} />
-          <Route path="/management/upload/class" element={wrapSuspense(UploadAssignments)} />
-          <Route path="/management/upload/proctor" element={wrapSuspense(UploadAssignments)} />
-          <Route path="/management/announcements" element={wrapSuspense(MyAnnouncements)} />
-          <Route path="/management/announcements/create" element={wrapSuspense(FacultyCreateAnnouncement)} />
-          <Route path="/management/announcements/edit/:id" element={wrapSuspense(FacultyEditAnnouncement)} />
-          <Route path="/management/resources" element={wrapSuspense(MyResources)} />
-          <Route path="/management/resources/upload" element={wrapSuspense(UploadResource)} />
-          <Route path="/management/resources/edit/:id" element={wrapSuspense(EditResource)} />
-          <Route path="/management/activities" element={wrapSuspense(MyActivities)} />
-          <Route path="/management/activities/create" element={wrapSuspense(CreateActivity)} />
-          <Route path="/management/activities/edit/:id" element={wrapSuspense(EditActivity)} />
-          <Route path="/management/profile" element={wrapSuspense(FacultyProfile)} />
-          <Route path="/management/notifications" element={wrapSuspense(FacultyNotifications)} />
-          <Route path="/management/messages" element={wrapSuspense(Messages)} />
-          
-          <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
-          <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
-          <Route path="/activity/:id" element={wrapSuspense(ActivityDetails)} />
-          
-          <Route path="*" element={<Navigate to="/management/dashboard" replace />} />
-        </Route>
-      </Routes>
-      </ErrorBoundary>
-    )
-  }
-
-  if (role === 'admin') {
+  if (['admin', 'hod', 'dean', 'principal'].includes(role)) {
     return (
       <ErrorBoundary>
       <Routes>

@@ -11,6 +11,15 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
   const [showNotifications, setShowNotifications] = useState(false)
   const navigate = useNavigate()
 
+  const handleNotificationClick = (notif) => {
+    setShowNotifications(false);
+    if (notif.type === 'message') {
+      navigate(`/${user?.role === 'admin' ? 'admin' : user?.role}/messages?userId=${notif.relatedId}`);
+    } else {
+      navigate(`/${user?.role === 'admin' ? 'admin' : user?.role}/notifications`);
+    }
+  };
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="flex items-center justify-end px-6 py-3">
@@ -40,7 +49,11 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
                   <div className="max-h-64 overflow-y-auto">
                     {notifications?.length > 0 ? (
                       notifications.slice(0, 5).map((notif, idx) => (
-                        <div key={idx} className={`p-3 border-b border-gray-50 text-sm ${notif.isRead ? 'bg-white' : 'bg-blue-50'}`}>
+                        <div 
+                          key={idx} 
+                          className={`p-3 border-b border-gray-50 text-sm cursor-pointer hover:bg-gray-50 transition-colors ${notif.isRead ? 'bg-white' : 'bg-blue-50'}`}
+                          onClick={() => handleNotificationClick(notif)}
+                        >
                           <p className="font-medium text-gray-800">{notif.title}</p>
                           <p className="text-gray-600 text-xs mt-1 truncate">{notif.message}</p>
                         </div>

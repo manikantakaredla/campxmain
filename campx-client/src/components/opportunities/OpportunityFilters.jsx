@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, Filter } from 'lucide-react';
 
-const OpportunityFilters = ({ onSearchChange, onTypeChange, onStatusChange }) => {
+const OpportunityFilters = ({ onSearchChange, onTypeChange, onStatusChange, hideType }) => {
   return (
     <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-4 mb-6">
       <div className="relative flex-1">
@@ -17,15 +17,18 @@ const OpportunityFilters = ({ onSearchChange, onTypeChange, onStatusChange }) =>
       </div>
       
       <div className="flex gap-4">
-        <select 
-          onChange={(e) => onTypeChange(e.target.value)}
-          className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg border bg-gray-50"
-        >
-          <option value="">All Types</option>
-          <option value="Placement Drive">Placement Drive</option>
-          <option value="Internship">Internship</option>
-          <option value="Job Opportunity">Job Opportunity</option>
-        </select>
+        {!hideType && (
+          <select 
+            onChange={(e) => onTypeChange(e.target.value)}
+            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg border bg-gray-50"
+          >
+            <option value="">All Types</option>
+            <option value="Placement Drive">Placement Drive</option>
+            <option value="Internship">Internship</option>
+            <option value="Job Opportunity">Job Opportunity</option>
+            <option value="Hackathon">Hackathon</option>
+          </select>
+        )}
 
         <select 
           onChange={(e) => onStatusChange(e.target.value)}

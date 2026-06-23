@@ -24,6 +24,10 @@ exports.getFacultyList = async (req, res) => {
     if (designation && designation !== "all") query.designation = designation;
     if (status && status !== "all") query.isActive = status === "active";
 
+    if (req.user.role === 'hod') {
+      query.department = req.user.branch;
+    }
+
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const facultyList = await User.find(query)
       .select("name employeeId department designation email phoneNumber isActive profilePicture facultySubjects")
@@ -163,16 +167,24 @@ exports.updateFacultySubjects = async (req, res) => {
 // ==================== ADMIN ANALYTICS ====================
 exports.getFacultyAnalytics = async (req, res) => {
   try {
-    const totalFaculty = await User.countDocuments({ role: { $in: ["faculty", "hod", "dean"] }, isActive: true });
+    let query = { role: { $in: ["faculty", "hod", "dean"] }, isActive: true };
+    if (req.user.role === 'hod') {
+      query.department = req.user.branch;
+    }
+    const totalFaculty = await User.countDocuments(query);
     
     // Total subjects assigned
-    const facultyWithSubjects = await User.find({ 
+    let facultyQuery = { 
       role: { $in: ["faculty", "hod", "dean"] },
       $or: [
         { 'facultySubjects.primary': { $exists: true, $not: { $size: 0 } } },
         { 'facultySubjects.secondary': { $exists: true, $not: { $size: 0 } } }
       ]
-    }).select('facultySubjects');
+    };
+    if (req.user.role === 'hod') {
+      facultyQuery.department = req.user.branch;
+    }
+    const facultyWithSubjects = await User.find(facultyQuery).select('facultySubjects');
 
     let totalSubjectsAssigned = 0;
     facultyWithSubjects.forEach(f => {
@@ -184,8 +196,12 @@ exports.getFacultyAnalytics = async (req, res) => {
     const totalProctorStudentsAssigned = await ProctorStudentAssignment.countDocuments();
 
     // Department Breakdown
+    let deptMatch = { role: { $in: ["faculty", "hod", "dean"] }, isActive: true };
+    if (req.user.role === 'hod') {
+      deptMatch.department = req.user.branch;
+    }
     const deptBreakdown = await User.aggregate([
-      { $match: { role: { $in: ["faculty", "hod", "dean"] }, isActive: true } },
+      { $match: deptMatch },
       { $group: { _id: "$department", count: { $sum: 1 } } },
       { $sort: { count: -1 } }
     ]);

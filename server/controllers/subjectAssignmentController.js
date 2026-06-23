@@ -80,7 +80,7 @@ exports.getFacultyBySubject = async (req, res) => {
     
     // Find all faculty members whose primary or secondary subjects include this subjectId
     const faculties = await User.find({
-      role: { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] },
+      role: { $in: ["faculty", "hod", "dean", "principal"] },
       isActive: true,
       $or: [
         { "facultySubjects.primary": subjectId },

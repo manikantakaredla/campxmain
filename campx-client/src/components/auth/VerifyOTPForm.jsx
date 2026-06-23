@@ -51,7 +51,7 @@ const VerifyOTPForm = ({ email, setActiveTab }) => {
         
         const role = response.user.role
         if (role === 'student') navigate('/student/dashboard')
-        else if (['faculty', 'hod', 'deputyhod', 'dean', 'principal'].includes(role)) navigate('/faculty/dashboard')
+        else if (['faculty', 'hod', 'dean', 'principal'].includes(role)) navigate('/faculty/dashboard')
         else if (role === 'admin') navigate('/admin/dashboard')
       } else {
         toast.error(response.message || 'Verification failed')

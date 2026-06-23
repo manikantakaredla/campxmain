@@ -70,7 +70,7 @@ exports.getDashboardStats = async (req, res) => {
 
     const totalStudents = await User.countDocuments({ role: "student" }).lean();
     const totalFaculty = await User.countDocuments({ 
-      role: { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] }
+      role: { $in: ["faculty", "hod", "dean", "principal"] }
     }).lean();
     const totalAnnouncements = await Announcement.countDocuments().lean();
     const totalResources = await Resource.countDocuments().lean();
@@ -127,9 +127,16 @@ exports.getAllUsers = async (req, res) => {
     if (role) {
       query.role = role;
     }
-    if (req.query.branch) {
-      const branchInput = req.query.branch.toUpperCase();
-      const variations = [req.query.branch];
+    
+    // For HODs, automatically lock to their department
+    let requestedBranch = req.query.branch;
+    if (req.user.role === 'hod' && req.user.department) {
+      requestedBranch = req.user.department;
+    }
+
+    if (requestedBranch) {
+      const branchInput = requestedBranch.toUpperCase();
+      const variations = [requestedBranch];
       
       const map = {
         "CSE": ["COMPUTER SCIENCE AND ENGINEERING", "B.TECH COMPUTER SCIENCE AND ENGINEERING", "CS"],
@@ -323,7 +330,7 @@ exports.updateUserRole = async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
     
-    const validRoles = ["student", "faculty", "hod", "deputyhod", "dean", "principal"];
+    const validRoles = ["student", "faculty", "hod", "dean", "principal"];
     if (!validRoles.includes(role)) {
       return res.status(400).json({ success: false, message: "Invalid role" });
     }

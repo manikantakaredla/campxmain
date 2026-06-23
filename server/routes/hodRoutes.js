@@ -19,7 +19,7 @@ const protect = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
 
 // HOD, Deputy HOD, Dean, Principal, Admin can access
-router.use(protect, authorizeRoles("hod", "deputyhod", "dean", "principal", "admin"));
+router.use(protect, authorizeRoles("hod", "dean", "principal", "admin"));
 
 router.get("/faculty", getDepartmentFaculty);
 router.get("/students", getDepartmentStudents);

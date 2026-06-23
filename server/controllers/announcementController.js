@@ -105,7 +105,7 @@ async function createNotificationsForAnnouncement(announcement) {
       if (announcement.audience === "students") {
         query.role = "student";
       } else {
-        query.role = { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] };
+        query.role = { $in: ["faculty", "hod", "dean", "principal"] };
       }
       
       if (announcement.targetBranches && announcement.targetBranches.length > 0) {

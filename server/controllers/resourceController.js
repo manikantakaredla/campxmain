@@ -64,7 +64,7 @@ exports.createResource = async (req, res) => {
     }
 
     // Faculty verification: check if subject is assigned to them
-    if (["faculty", "hod", "deputyhod"].includes(currentUser.role)) {
+    if (["faculty", "hod"].includes(currentUser.role)) {
       const primaryIds = currentUser.facultySubjects?.primary?.map(id => id.toString()) || [];
       const secondaryIds = currentUser.facultySubjects?.secondary?.map(id => id.toString()) || [];
       
@@ -432,7 +432,7 @@ exports.updateResource = async (req, res) => {
 
       // Check faculty permission
       const currentUser = await User.findById(req.user.id);
-      if (["faculty", "hod", "deputyhod"].includes(currentUser.role)) {
+      if (["faculty", "hod"].includes(currentUser.role)) {
         const primaryIds = currentUser.facultySubjects?.primary?.map(id => id.toString()) || [];
         const secondaryIds = currentUser.facultySubjects?.secondary?.map(id => id.toString()) || [];
         

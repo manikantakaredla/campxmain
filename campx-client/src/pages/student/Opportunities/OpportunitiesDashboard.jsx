@@ -1,33 +1,26 @@
 import React, { useState } from 'react';
 import OpportunityCards from './OpportunityCards';
 import SavedTab from './SavedTab';
-import ApplicationsTab from './ApplicationsTab';
-import InterviewTab from './InterviewTab';
 import PlacementsTab from './PlacementsTab';
-import SuccessStoriesTab from './SuccessStoriesTab';
-import { Briefcase, Bookmark, FileText, MessageSquare, Award, Star } from 'lucide-react';
+import { Briefcase, Bookmark, Award, Trophy } from 'lucide-react';
 
 const OpportunitiesDashboard = () => {
   const [activeTab, setActiveTab] = useState('all');
 
   const tabs = [
     { id: 'all', label: 'All Opportunities', icon: Briefcase },
+    { id: 'hackathons', label: 'Hackathons', icon: Trophy },
     { id: 'saved', label: 'Saved', icon: Bookmark },
-    { id: 'applications', label: 'My Applications', icon: FileText },
-    { id: 'interviews', label: 'Interview Experiences', icon: MessageSquare },
-    { id: 'placements', label: 'Previous Placements', icon: Award },
-    { id: 'stories', label: 'Success Stories', icon: Star }
+    { id: 'placements', label: 'Previous Placements', icon: Award }
   ];
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'all': return <OpportunityCards />;
+      case 'all': return <OpportunityCards fixedType="" />;
+      case 'hackathons': return <OpportunityCards fixedType="Hackathon" />;
       case 'saved': return <SavedTab />;
-      case 'applications': return <ApplicationsTab />;
-      case 'interviews': return <InterviewTab />;
       case 'placements': return <PlacementsTab />;
-      case 'stories': return <SuccessStoriesTab />;
-      default: return <OpportunityCards />;
+      default: return <OpportunityCards fixedType="" />;
     }
   };
 

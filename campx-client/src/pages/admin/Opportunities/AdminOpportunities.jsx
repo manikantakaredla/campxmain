@@ -3,9 +3,11 @@ import { getOpportunities, deleteOpportunity, restoreOpportunity } from '../../.
 import OpportunityForm from './OpportunityForm';
 import ApplicationsManager from './ApplicationsManager';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../../hooks/useAuth';
 import { Plus, Edit2, Trash2, RotateCcw, Users, Eye, Bookmark, FileCheck } from 'lucide-react';
 
 const AdminOpportunities = () => {
+  const { user } = useAuth();
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState([]);
@@ -80,15 +82,17 @@ const AdminOpportunities = () => {
           <h1 className="text-2xl font-bold text-gray-900">Manage Opportunities</h1>
           <p className="text-gray-600">Create and track drives, internships, and placements.</p>
         </div>
-        <button 
-          onClick={() => { setEditingOp(null); setIsFormOpen(true); }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2"
-        >
-          <Plus size={18} /> Add Opportunity
-        </button>
+        {user?.role === 'admin' && (
+          <button 
+            onClick={() => { setEditingOp(null); setIsFormOpen(true); }}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2"
+          >
+            <Plus size={18} /> Add Opportunity
+          </button>
+        )}
       </div>
 
-      {selectedIds.length > 0 && (
+      {user?.role === 'admin' && selectedIds.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4 flex justify-between items-center animate-in fade-in duration-200">
           <span className="font-medium text-blue-800">{selectedIds.length} items selected</span>
           <div className="flex gap-2">
@@ -106,9 +110,11 @@ const AdminOpportunities = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left">
-                <input type="checkbox" onChange={handleSelectAll} checked={selectedIds.length === opportunities.length && opportunities.length > 0} className="rounded text-blue-600" />
-              </th>
+              {user?.role === 'admin' && (
+                <th className="px-4 py-3 text-left">
+                  <input type="checkbox" onChange={handleSelectAll} checked={selectedIds.length === opportunities.length && opportunities.length > 0} className="rounded text-blue-600" />
+                </th>
+              )}
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Opportunity</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Analytics</th>
@@ -127,9 +133,11 @@ const AdminOpportunities = () => {
                 
                 return (
                   <tr key={op._id} className={op.isDeleted ? 'bg-red-50/30 opacity-75' : 'hover:bg-gray-50'}>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <input type="checkbox" checked={selectedIds.includes(op._id)} onChange={() => handleSelectOne(op._id)} className="rounded text-blue-600" />
-                    </td>
+                    {user?.role === 'admin' && (
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <input type="checkbox" checked={selectedIds.includes(op._id)} onChange={() => handleSelectOne(op._id)} className="rounded text-blue-600" />
+                      </td>
+                    )}
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="font-medium text-gray-900">{op.companyName}</div>
                       <div className="text-sm text-gray-500">{op.title}</div>
@@ -157,20 +165,24 @@ const AdminOpportunities = () => {
                         >
                           <Users size={18} />
                         </button>
-                        <button 
-                          onClick={() => { setEditingOp(op); setIsFormOpen(true); }}
-                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        {op.isDeleted ? (
-                          <button onClick={() => handleRestore(op._id)} className="p-1.5 text-green-600 hover:bg-green-50 rounded">
-                            <RotateCcw size={18} />
-                          </button>
-                        ) : (
-                          <button onClick={() => handleDelete(op._id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded">
-                            <Trash2 size={18} />
-                          </button>
+                        {user?.role === 'admin' && (
+                          <>
+                            <button 
+                              onClick={() => { setEditingOp(op); setIsFormOpen(true); }}
+                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            {op.isDeleted ? (
+                              <button onClick={() => handleRestore(op._id)} className="p-1.5 text-green-600 hover:bg-green-50 rounded">
+                                <RotateCcw size={18} />
+                              </button>
+                            ) : (
+                              <button onClick={() => handleDelete(op._id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded">
+                                <Trash2 size={18} />
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
                     </td>

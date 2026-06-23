@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["student", "faculty", "hod", "deputyhod", "dean", "principal", "admin"],
+    enum: ["student", "faculty", "hod", "dean", "principal", "admin"],
     required: true
   },
   isVerified: {
@@ -90,7 +90,7 @@ const userSchema = new mongoose.Schema({
   designation: { type: String },
   staffRole: {
     type: String,
-    enum: ["faculty", "hod", "deputyhod", "dean", "principal", "admin"]
+    enum: ["faculty", "hod", "dean", "principal", "admin"]
   },
   managedBranches: {
     type: [String],

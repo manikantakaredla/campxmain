@@ -64,7 +64,7 @@ const validateFacultyRow = (row, index) => {
   if (!row.staff_role || row.staff_role.trim() === "") {
     errors.push({ row: index + 2, identifier: row.empid, message: "Staff role is required" });
   } else {
-    const validRoles = ["faculty", "hod", "deputyhod", "dean", "principal"];
+    const validRoles = ["faculty", "hod", "dean", "principal"];
     if (!validRoles.includes(row.staff_role.toLowerCase())) {
       errors.push({ row: index + 2, identifier: row.empid, message: `Staff role must be one of: ${validRoles.join(", ")}` });
     }

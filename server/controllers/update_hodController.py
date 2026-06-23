@@ -15,7 +15,7 @@ faculty_old = """    const hod = await User.findById(req.user.id);
 
     const faculty = await User.find({
       department: department,
-      role: { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] },
+      role: { $in: ["faculty", "hod", "dean", "principal"] },
       isActive: true
     }).select("name email employeeId department designation staffRole profilePicture");"""
 
@@ -37,7 +37,7 @@ faculty_new = """    const hod = await User.findById(req.user.id);
 
     const faculty = await User.find({
       department: { $in: branches },
-      role: { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] },
+      role: { $in: ["faculty", "hod", "dean", "principal"] },
       isActive: true
     }).select("name email employeeId department designation staffRole profilePicture");"""
 

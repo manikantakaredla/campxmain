@@ -7,7 +7,7 @@ with open(file1, 'r', encoding='utf-8') as f:
 enforce_dept = """
     const currentUser = await User.findById(req.user.id);
     let finalTargetDepartment = targetDepartment || null;
-    if (["faculty", "hod", "deputyhod"].includes(currentUser.role)) {
+    if (["faculty", "hod"].includes(currentUser.role)) {
       finalTargetDepartment = currentUser.department;
     }
 """
@@ -27,7 +27,7 @@ with open(file2, 'r', encoding='utf-8') as f:
 enforce_branch = """
     const currentUser = await User.findById(req.user.id);
     let finalTargetBranch = targetBranch || null;
-    if (["faculty", "hod", "deputyhod"].includes(currentUser.role)) {
+    if (["faculty", "hod"].includes(currentUser.role)) {
       finalTargetBranch = currentUser.department;
     }
 """

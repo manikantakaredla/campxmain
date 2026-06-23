@@ -19,8 +19,7 @@ const MobileBottomNav = () => {
   const basePath = 
     role === 'student' ? '/student' :
     role === 'faculty' ? '/faculty' :
-    ['hod', 'deputyhod', 'dean', 'principal'].includes(role) ? '/management' :
-    role === 'admin' ? '/admin' : '';
+    ['admin', 'hod', 'dean', 'principal'].includes(role) ? '/admin' : '';
 
   const navItems = [
     { icon: <Home size={24} />, path: `${basePath}/dashboard`, label: 'Home' },

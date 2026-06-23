@@ -12,7 +12,7 @@ const {
 const protect = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
 
-router.use(protect, authorizeRoles("faculty", "hod", "deputyhod", "dean", "principal"));
+router.use(protect, authorizeRoles("faculty", "hod", "dean", "principal"));
 
 router.get("/me/workload", getWorkloadSummary);
 router.get("/class-assignments-summary", getClassAssignmentsSummary);

@@ -5,6 +5,6 @@ const protect = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
 const upload = require("../middleware/uploadMiddleware");
 
-router.post("/", protect, authorizeRoles("faculty", "hod", "deputyhod", "dean", "principal", "admin"), upload.single("file"), uploadFile);
+router.post("/", protect, authorizeRoles("faculty", "hod", "dean", "principal", "admin"), upload.single("file"), uploadFile);
 
 module.exports = router;

@@ -27,7 +27,7 @@ const Messages = () => {
   const fetchConversations = async () => {
     try {
       const url = initialUserId ? `/chat/conversations?userId=${initialUserId}` : '/chat/conversations';
-      const res = await api.get(url);
+      const res = await api.get(url, { skipCache: true });
       if (res.data.success) {
         const { direct, defaultContacts, groups } = res.data.data;
         
@@ -96,7 +96,7 @@ const Messages = () => {
 
     try {
       const query = selectedChat.isGroup ? `groupId=${selectedChat._id}` : `userId=${selectedChat._id}`;
-      const res = await api.get(`/chat/messages?${query}`);
+      const res = await api.get(`/chat/messages?${query}`, { skipCache: true });
       if (res.data.success) {
         const decryptedMessages = res.data.data.map(m => ({
           ...m,
@@ -301,9 +301,9 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex h-[calc(100dvh-6rem)] md:h-[calc(100vh-6rem)] pb-20 md:pb-0 bg-white md:rounded-xl shadow-sm md:border border-gray-100 overflow-hidden">
+    <div className="flex h-[calc(100dvh-6rem)] md:h-[calc(100vh-6rem)] pb-20 md:pb-0 bg-white md:rounded-xl shadow-sm md:border border-gray-100 overflow-hidden relative">
       {/* Left Pane - Inbox */}
-      <div className={`${selectedChat ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r border-gray-100 flex-col bg-gray-50/50`}>
+      <div className="flex w-full md:w-1/3 border-r border-gray-100 flex-col bg-gray-50/50">
         <div className="p-4 border-b border-gray-100">
           <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
             <MessageSquare size={24} className="text-blue-600" />
@@ -383,7 +383,7 @@ const Messages = () => {
       </div>
 
       {/* Right Pane - Chat Window */}
-      <div className={`${!selectedChat ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-white w-full`}>
+      <div className={`${!selectedChat ? 'hidden md:flex' : 'flex fixed inset-0 z-[60] h-[100dvh] md:static md:h-auto md:z-auto'} flex-1 flex-col bg-white w-full`}>
         {selectedChat ? (
           <>
             {/* Header */}
@@ -426,7 +426,7 @@ const Messages = () => {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 md:space-y-4 bg-slate-50/50 overscroll-contain">
               {messages.map((msg, index) => {
                 const isMine = msg.sender?._id === user._id;
                 const showSenderName = selectedChat.isGroup && !isMine && (index === 0 || messages[index-1].sender?._id !== msg.sender?._id);
@@ -486,7 +486,7 @@ const Messages = () => {
             </div>
 
             {/* Input Area */}
-            <div className="border-t border-gray-100 bg-white flex flex-col">
+            <div className="border-t border-gray-100 bg-white flex flex-col shrink-0">
               {replyingTo && (
                 <div className="px-4 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
                   <div className="flex flex-col text-sm truncate max-w-[80%]">
@@ -498,7 +498,7 @@ const Messages = () => {
                   </button>
                 </div>
               )}
-              <div className="p-4">
+              <div className="p-3 md:p-4 pb-5 md:pb-4">
                 <form onSubmit={handleSendMessage} className="flex items-center gap-2">
                 <input
                   type="text"

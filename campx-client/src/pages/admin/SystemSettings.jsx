@@ -8,8 +8,10 @@ import {
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import SubjectManagement from '../../components/admin/SubjectManagement';
+import { useAuth } from '../../hooks/useAuth';
 
 const SystemSettings = () => {
+  const { user } = useAuth();
   const [settings, setSettings] = useState({
     platformName: 'CAMPX',
     supportEmail: 'support@adityauniversity.in',
@@ -24,7 +26,7 @@ const SystemSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [expandedBranches, setExpandedBranches] = useState({});
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState(user?.role === 'admin' ? 'general' : 'academic');
 
   useEffect(() => {
     fetchSettings();
@@ -130,7 +132,7 @@ const SystemSettings = () => {
   }
 
   const tabs = [
-    { id: 'general', label: 'General', icon: Settings },
+    ...(user?.role === 'admin' ? [{ id: 'general', label: 'General', icon: Settings }] : []),
     { id: 'academic', label: 'Academic Master', icon: Layers },
     { id: 'subjects', label: 'Subjects Master', icon: BookOpen },
   ];

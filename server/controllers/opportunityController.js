@@ -31,12 +31,34 @@ exports.getOpportunities = async (req, res, next) => {
     
     const startIndex = (page - 1) * limit;
     const total = await Opportunity.countDocuments(query);
-    const opportunities = await Opportunity.find(query)
+    let opportunities = await Opportunity.find(query)
       .sort({ priority: 1, createdAt: -1 })
       .skip(startIndex)
       .limit(Number(limit))
       .populate('createdBy', 'name email')
       .lean();
+      
+    if (req.user && req.user.role === 'student') {
+      const savedOps = await SavedOpportunity.find({ studentId: req.user.id }).select('opportunityId');
+      const savedOpIds = savedOps.map(s => s.opportunityId.toString());
+      
+      const apps = await Application.find({ studentId: req.user.id }).select('opportunityId status');
+      const appMap = {};
+      apps.forEach(app => {
+        appMap[app.opportunityId.toString()] = app.status;
+      });
+      
+      opportunities = opportunities.map(op => ({
+        ...op,
+        isSaved: savedOpIds.includes(op._id.toString()),
+        applicationStatus: appMap[op._id.toString()] || null
+      }));
+      
+      // If requested only saved ops
+      if (req.query.saved === 'true') {
+        opportunities = opportunities.filter(op => op.isSaved);
+      }
+    }
       
     res.status(200).json({ success: true, count: opportunities.length, pagination: { page: Number(page), limit: Number(limit), total }, data: opportunities });
   } catch (error) { next(error); }

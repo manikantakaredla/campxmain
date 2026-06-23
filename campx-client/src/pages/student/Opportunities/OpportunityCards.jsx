@@ -6,15 +6,19 @@ import { getOpportunities, saveOpportunity, removeSavedOpportunity, applyForOppo
 import toast from 'react-hot-toast';
 import { Inbox } from 'lucide-react';
 
-const OpportunityCards = () => {
+const OpportunityCards = ({ fixedType }) => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOp, setSelectedOp] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const [search, setSearch] = useState('');
-  const [type, setType] = useState('');
+  const [type, setType] = useState(fixedType || '');
   const [status, setStatus] = useState('');
+
+  useEffect(() => {
+    setType(fixedType || '');
+  }, [fixedType]);
 
   const fetchOpportunities = async () => {
     try {
@@ -65,7 +69,12 @@ const OpportunityCards = () => {
 
   return (
     <div>
-      <OpportunityFilters onSearchChange={setSearch} onTypeChange={setType} onStatusChange={setStatus} />
+      <OpportunityFilters 
+        onSearchChange={setSearch} 
+        onTypeChange={setType} 
+        onStatusChange={setStatus} 
+        hideType={!!fixedType} 
+      />
       
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

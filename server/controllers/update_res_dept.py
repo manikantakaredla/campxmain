@@ -4,14 +4,14 @@ with open(file, 'r', encoding='utf-8') as f:
 
 dept_old = """    const currentUser = await User.findById(req.user.id);
     let finalTargetBranch = targetBranch || null;
-    if (["faculty", "hod", "deputyhod"].includes(currentUser.role)) {
+    if (["faculty", "hod"].includes(currentUser.role)) {
       finalTargetBranch = currentUser.department;
     }"""
 
 dept_new = """    const currentUser = await User.findById(req.user.id);
     let finalTargetBranch = targetBranch || null;
     
-    if (["faculty", "hod", "deputyhod"].includes(currentUser.role)) {
+    if (["faculty", "hod"].includes(currentUser.role)) {
       finalTargetBranch = currentUser.department;
     } else if (["dean", "principal", "management"].includes(currentUser.role)) {
       const allowedBranches = currentUser.managedBranches && currentUser.managedBranches.length > 0 

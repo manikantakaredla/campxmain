@@ -34,7 +34,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       const handleNewMessage = (msg) => {
         if (!location.pathname.includes('/messages')) {
           toast((t) => (
-             <div className="flex flex-col gap-1 cursor-pointer" onClick={() => { toast.dismiss(t.id); navigate('/messages'); }}>
+             <div className="flex flex-col gap-1 cursor-pointer" onClick={() => { toast.dismiss(t.id); navigate(`/${user?.role}/messages?userId=${msg.sender?._id || ''}`); }}>
                <p className="font-bold text-sm text-blue-600">New Message</p>
                <p className="text-xs font-semibold text-gray-800">{msg.sender?.name || 'Someone'}</p>
                <p className="text-xs text-gray-600 line-clamp-1">{msg.content}</p>
@@ -91,39 +91,31 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       ]
     }
     
-    // HOD/Dean/Principal specific
-    if (['hod', 'deputyhod', 'dean', 'principal'].includes(role)) {
-      return [
-        { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-        { path: '/faculty', icon: <Briefcase size={20} />, label: 'Faculty Management' },
-        { path: '/students', icon: <GraduationCap size={20} />, label: 'Department Students' },
-        { path: '/assign-students', icon: <Users size={20} />, label: 'Assign Students' },
-        { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
-        { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
-        { path: '/activities', icon: <Calendar size={20} />, label: 'Activities' },
-        { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
-        { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
-        { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' },
-        // Inside management menu items, add:
-{ path: '/upload/class', icon: <Upload size={20} />, label: 'Upload CSV' },
-      ]
-    }
-    
-    // Admin specific
-    if (role === 'admin') {
-      return [
+    // Admin & Management specific
+    if (['admin', 'hod', 'dean', 'principal'].includes(role)) {
+      const items = [
         { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
         { path: '/users', icon: <Users size={20} />, label: 'User Management' },
         { path: '/faculty-management', icon: <Briefcase size={20} />, label: 'Faculty Management' },
         { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
         { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
         { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
-        { path: '/opportunities', icon: <Briefcase size={20} />, label: 'Opportunities' },
-        { path: '/placements/upload', icon: <Upload size={20} />, label: 'Upload Placements' },
-        { path: '/placements/analytics', icon: <TrendingUp size={20} />, label: 'Placement Analytics' },
-        { path: '/upload-data', icon: <Upload size={20} />, label: 'Upload Data' },
-        { path: '/settings', icon: <Settings size={20} />, label: 'Settings' },
+        { path: '/opportunities', icon: <Briefcase size={20} />, label: 'Opportunities' }
       ]
+
+      if (role === 'admin') {
+        items.push({ path: '/placements/upload', icon: <Upload size={20} />, label: 'Upload Placements' })
+      }
+
+      items.push({ path: '/placements/analytics', icon: <TrendingUp size={20} />, label: 'Placement Analytics' })
+
+      if (role === 'admin') {
+        items.push({ path: '/upload-data', icon: <Upload size={20} />, label: 'Upload Data' })
+      }
+
+      items.push({ path: '/settings', icon: <Settings size={20} />, label: 'Settings' })
+
+      return items
     }
     
     return commonItems
@@ -141,8 +133,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const getBasePath = () => {
     if (role === 'student') return '/student'
     if (role === 'faculty') return '/faculty'
-    if (['hod', 'deputyhod', 'dean', 'principal'].includes(role)) return '/management'
-    if (role === 'admin') return '/admin'
+    if (['admin', 'hod', 'dean', 'principal'].includes(role)) return '/admin'
     return ''
   }
 

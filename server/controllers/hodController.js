@@ -14,7 +14,7 @@ exports.getDepartmentFaculty = async (req, res) => {
     const hod = await User.findById(req.user.id);
     
     let query = {
-      role: { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] },
+      role: { $in: ["faculty", "hod", "dean", "principal"] },
       isActive: true
     };
 
@@ -303,7 +303,7 @@ exports.getClassAssignments = async (req, res) => {
       // Get all faculty in department
       const facultyList = await User.find({ 
         department: hod.department,
-        role: { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] }
+        role: { $in: ["faculty", "hod", "dean", "principal"] }
       }).select("_id");
       query.facultyId = { $in: facultyList.map(f => f._id) };
     }
@@ -360,7 +360,7 @@ exports.getProctorAssignments = async (req, res) => {
     } else if (hod.role !== "admin") {
       const facultyList = await User.find({ 
         department: hod.department,
-        role: { $in: ["faculty", "hod", "deputyhod", "dean", "principal"] }
+        role: { $in: ["faculty", "hod", "dean", "principal"] }
       }).select("_id");
       query.facultyId = { $in: facultyList.map(f => f._id) };
     }

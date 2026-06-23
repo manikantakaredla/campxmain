@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import { calendarService } from '../../services/calendarService'
 import { Loader } from '../../components/common/Loader'
-import { 
-  Calendar, ChevronLeft, ChevronRight, MapPin, Clock, 
+import {
+  Calendar, ChevronLeft, ChevronRight, MapPin, Clock,
   GraduationCap, Briefcase, Code, BookOpen, X,
   Filter, Trophy, Target, CalendarDays, List, Eye,
   Trash2, AlertCircle
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
+import { useAuth } from '../../hooks/useAuth'
 
 const CalendarManagement = () => {
+  const { user } = useAuth()
   const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -29,7 +31,7 @@ const CalendarManagement = () => {
     { value: 'Placement Drive', label: 'Placement', icon: <Briefcase size={14} />, color: 'bg-orange-100 text-orange-700' },
     { value: 'Guest Lecture', label: 'Guest Lecture', icon: <GraduationCap size={14} />, color: 'bg-indigo-100 text-indigo-700' },
     { value: 'Hackathon', label: 'Hackathon', icon: <Code size={14} />, color: 'bg-pink-100 text-pink-700' },
-    { value: 'Exam Notice', label: 'Exam', icon: <BookOpen size={14} />, color: 'bg-red-100 text-red-700' },
+    { value: 'Exam Notice', label: 'Exam', icon: <BookOpen size={14} />, color: 'bg-red-100 tsat-red-700' },
     { value: 'Sports', label: 'Sports', icon: <Trophy size={14} />, color: 'bg-emerald-100 text-emerald-700' },
     { value: 'Event', label: 'Event', icon: <Calendar size={14} />, color: 'bg-teal-100 text-teal-700' },
   ]
@@ -89,17 +91,17 @@ const CalendarManagement = () => {
     const month = String(currentDate.getMonth() + 1).padStart(2, '0')
     const dayStr = String(day).padStart(2, '0')
     const dateStr = `${year}-${month}-${dayStr}`
-    
+
     let events = activities.filter(activity => {
       const d = new Date(activity.startDate)
       const activityDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
       return activityDate === dateStr
     })
-    
+
     if (filterType !== 'all') {
       events = events.filter(e => e.type === filterType)
     }
-    
+
     return events
   }
 
@@ -125,21 +127,21 @@ const CalendarManagement = () => {
     const daysInMonth = getDaysInMonth(currentDate)
     const firstDay = getFirstDayOfMonth(currentDate)
     const days = []
-    
+
     const prevMonthDays = getDaysInMonth(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
     for (let i = firstDay - 1; i >= 0; i--) {
       days.push({ day: prevMonthDays - i, isCurrentMonth: false })
     }
-    
+
     for (let i = 1; i <= daysInMonth; i++) {
       days.push({ day: i, isCurrentMonth: true })
     }
-    
+
     const remainingDays = 42 - days.length
     for (let i = 1; i <= remainingDays; i++) {
       days.push({ day: i, isCurrentMonth: false })
     }
-    
+
     return days
   }
 
@@ -160,10 +162,10 @@ const CalendarManagement = () => {
   }
 
   const formatEventDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
+    return new Date(date).toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
     })
   }
 
@@ -181,14 +183,14 @@ const CalendarManagement = () => {
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Calendar Management</h1>
             </div>
             <div className="flex items-center gap-2">
-              <button 
+              <button
                 onClick={() => setViewMode(viewMode === 'month' ? 'list' : 'month')}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 rounded-lg text-sm hover:bg-white/20 transition-all"
               >
                 {viewMode === 'month' ? <List size={14} /> : <CalendarDays size={14} />}
                 <span>{viewMode === 'month' ? 'List View' : 'Month View'}</span>
               </button>
-              <button 
+              <button
                 onClick={goToToday}
                 className="px-3 py-1.5 bg-white/10 rounded-lg text-sm hover:bg-white/20 transition-all"
               >
@@ -201,7 +203,7 @@ const CalendarManagement = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
+
           {/* Main Calendar Section */}
           <div className="lg:col-span-2">
             {viewMode === 'month' ? (
@@ -209,15 +211,15 @@ const CalendarManagement = () => {
                 {/* Calendar Toolbar */}
                 <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                   <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => changeMonth(-1)} 
+                    <button
+                      onClick={() => changeMonth(-1)}
                       className="p-1.5 rounded-lg hover:bg-gray-200 transition-all text-gray-600"
                     >
                       <ChevronLeft size={18} />
                     </button>
                     <h2 className="text-lg font-semibold text-gray-800">{formatMonthYear(currentDate)}</h2>
-                    <button 
-                      onClick={() => changeMonth(1)} 
+                    <button
+                      onClick={() => changeMonth(1)}
                       className="p-1.5 rounded-lg hover:bg-gray-200 transition-all text-gray-600"
                     >
                       <ChevronRight size={18} />
@@ -225,11 +227,10 @@ const CalendarManagement = () => {
                   </div>
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all ${
-                      showFilters || activeFilterCount > 0
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all ${showFilters || activeFilterCount > 0
                         ? 'bg-blue-100 text-blue-700'
                         : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                    }`}
+                      }`}
                   >
                     <Filter size={14} />
                     <span>Filter</span>
@@ -247,11 +248,10 @@ const CalendarManagement = () => {
                         <button
                           key={type.value}
                           onClick={() => setFilterType(type.value)}
-                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                            filterType === type.value
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${filterType === type.value
                               ? 'bg-blue-600 text-white'
                               : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                          }`}
+                            }`}
                         >
                           {type.icon}
                           <span>{type.label}</span>
@@ -259,8 +259,8 @@ const CalendarManagement = () => {
                       ))}
                     </div>
                     {activeFilterCount > 0 && (
-                      <button 
-                        onClick={() => setFilterType('all')} 
+                      <button
+                        onClick={() => setFilterType('all')}
                         className="mt-2 text-xs text-red-500 hover:text-red-600 flex items-center gap-1"
                       >
                         <X size={12} /> Clear filters
@@ -283,24 +283,22 @@ const CalendarManagement = () => {
                   {renderCalendarDays().map((day, idx) => {
                     const eventsOnDay = day.isCurrentMonth ? getEventsForDate(day.day) : []
                     const hasEvents = eventsOnDay.length > 0
-                    const isToday = day.isCurrentMonth && 
-                      day.day === new Date().getDate() && 
+                    const isToday = day.isCurrentMonth &&
+                      day.day === new Date().getDate() &&
                       currentDate.getMonth() === new Date().getMonth() &&
                       currentDate.getFullYear() === new Date().getFullYear()
-                    
+
                     return (
                       <div
                         key={idx}
-                        className={`min-h-[110px] p-1.5 border border-gray-100 transition-all ${
-                          day.isCurrentMonth ? 'bg-white' : 'bg-gray-50'
-                        } ${hasEvents ? 'hover:bg-blue-50/20 cursor-pointer' : ''}`}
+                        className={`min-h-[110px] p-1.5 border border-gray-100 transition-all ${day.isCurrentMonth ? 'bg-white' : 'bg-gray-50'
+                          } ${hasEvents ? 'hover:bg-blue-50/20 cursor-pointer' : ''}`}
                       >
-                        <span className={`text-sm font-medium w-7 h-7 inline-flex items-center justify-center rounded-full ${
-                          isToday ? 'bg-blue-600 text-white shadow-sm' : ''
-                        } ${!day.isCurrentMonth ? 'text-gray-400' : 'text-gray-700'}`}>
+                        <span className={`text-sm font-medium w-7 h-7 inline-flex items-center justify-center rounded-full ${isToday ? 'bg-blue-600 text-white shadow-sm' : ''
+                          } ${!day.isCurrentMonth ? 'text-gray-400' : 'text-gray-700'}`}>
                           {day.day}
                         </span>
-                        
+
                         {hasEvents && (
                           <div className="mt-1 space-y-0.5">
                             {eventsOnDay.slice(0, 2).map((event, i) => (
@@ -336,25 +334,23 @@ const CalendarManagement = () => {
                     <h2 className="font-semibold text-gray-800">All Events</h2>
                     <button
                       onClick={() => setShowFilters(!showFilters)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm ${
-                        showFilters ? 'bg-blue-100 text-blue-700' : 'bg-white text-gray-600 border border-gray-200'
-                      }`}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm ${showFilters ? 'bg-blue-100 text-blue-700' : 'bg-white text-gray-600 border border-gray-200'
+                        }`}
                     >
                       <Filter size={14} /> Filters
                     </button>
                   </div>
-                  
+
                   {showFilters && (
                     <div className="flex flex-wrap gap-1.5 mt-3">
                       {eventTypes.map((type) => (
                         <button
                           key={type.value}
                           onClick={() => setFilterType(type.value)}
-                          className={`px-2.5 py-1 rounded-md text-xs font-medium ${
-                            filterType === type.value
+                          className={`px-2.5 py-1 rounded-md text-xs font-medium ${filterType === type.value
                               ? 'bg-blue-600 text-white'
                               : 'bg-white text-gray-600 border border-gray-200'
-                          }`}
+                            }`}
                         >
                           {type.label}
                         </button>
@@ -362,7 +358,7 @@ const CalendarManagement = () => {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
                   {activities.filter(a => filterType === 'all' || a.type === filterType).length === 0 ? (
                     <div className="p-12 text-center text-gray-400">
@@ -433,23 +429,23 @@ const CalendarManagement = () => {
                   Upcoming Events
                 </h3>
                 {activeFilterCount > 0 && (
-                  <button 
-                    onClick={() => setFilterType('all')} 
+                  <button
+                    onClick={() => setFilterType('all')}
                     className="mt-2 text-xs text-blue-200 hover:text-white flex items-center gap-1"
                   >
                     <X size={12} /> Clear filter
                   </button>
                 )}
               </div>
-              
+
               <div className="p-3 max-h-[500px] overflow-y-auto">
                 {upcomingEvents.length === 0 ? (
                   <div className="text-center py-12">
                     <Calendar size={40} className="text-gray-300 mx-auto mb-3" />
                     <p className="text-sm text-gray-500">No upcoming events</p>
                     {filterType !== 'all' && (
-                      <button 
-                        onClick={() => setFilterType('all')} 
+                      <button
+                        onClick={() => setFilterType('all')}
                         className="mt-2 text-xs text-blue-600 hover:underline"
                       >
                         Show all events
@@ -501,7 +497,7 @@ const CalendarManagement = () => {
               </div>
             </div>
 
-            
+
           </div>
         </div>
       </div>
@@ -522,7 +518,7 @@ const CalendarManagement = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-5 space-y-4">
               <div className="flex items-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
@@ -534,34 +530,36 @@ const CalendarManagement = () => {
                   <span>{formatEventTime(selectedEvent.startDate)}</span>
                 </div>
               </div>
-              
+
               {selectedEvent.venue && (
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <MapPin size={14} />
                   <span>{selectedEvent.venue}</span>
                 </div>
               )}
-              
+
               <div>
                 <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(selectedEvent.status)}`}>
                   {getStatusLabel(selectedEvent.status)}
                 </span>
               </div>
-              
+
               {selectedEvent.description && (
                 <div className="pt-3 border-t border-gray-100">
                   <h4 className="text-sm font-semibold text-gray-700 mb-2">Description</h4>
                   <p className="text-sm text-gray-600 leading-relaxed">{selectedEvent.description}</p>
                 </div>
               )}
-              
+
               <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => setShowDeleteModal(selectedEvent)}
-                  className="flex-1 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium text-sm"
-                >
-                  Delete Event
-                </button>
+                {(user?.role === 'admin' || user?._id === selectedEvent.createdBy?._id) && (
+                  <button
+                    onClick={() => setShowDeleteModal(selectedEvent)}
+                    className="flex-1 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium text-sm"
+                  >
+                    Delete Event
+                  </button>
+                )}
                 <button
                   onClick={() => setShowEventModal(false)}
                   className="flex-1 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-all font-medium text-sm"

@@ -1,4 +1,4 @@
-const { body, query } = require('express-validator');
+const { body, query, param } = require('express-validator');
 
 exports.validateOpportunity = [
   body('title').trim().notEmpty().withMessage('Title is required'),
@@ -16,9 +16,9 @@ exports.validateOpportunity = [
 ];
 
 exports.validateApplication = [
-  body('opportunityId').isMongoId().withMessage('Valid Opportunity ID is required')
+  param('id').isMongoId().withMessage('Valid Opportunity ID is required')
 ];
 
 exports.validateSavedOpportunity = [
-  body('opportunityId').isMongoId().withMessage('Valid Opportunity ID is required')
+  param('id').isMongoId().withMessage('Valid Opportunity ID is required')
 ];

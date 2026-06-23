@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSettings } from '../../hooks/useSettings'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../hooks/useAuth'
 import { 
   Users, Eye, Edit, Trash2, CheckCircle, XCircle, 
   Search, Filter, ChevronLeft, ChevronRight, 
@@ -21,6 +22,7 @@ const UserManagement = () => {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(false)
   const { settings } = useSettings()
+  const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [yearFilter, setYearFilter] = useState('1')
@@ -44,6 +46,17 @@ const UserManagement = () => {
   const itemsPerPage = 10
 
   const departments = getBranches(settings);
+
+  useEffect(() => {
+    // Lock department for HOD
+    if (user?.role === 'hod' && user?.department) {
+      const normalizedDept = Object.keys(settings?.academicMaster || {}).find(
+        key => settings.academicMaster[key].name === user.department || key === user.department
+      ) || user.department;
+      setSelectedDept(normalizedDept);
+      setViewState('sections');
+    }
+  }, [user, settings]);
 
   let currentSections = [];
   if (selectedDept && yearFilter) {
@@ -437,7 +450,7 @@ const UserManagement = () => {
 
           <h2 className="text-lg font-semibold text-gray-700 mb-4">Departments</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {departments.map(dept => (
+            {user?.role === 'admin' && departments.map(dept => (
               <div 
                 key={dept}
                 onClick={() => {
@@ -520,57 +533,62 @@ const UserManagement = () => {
                         </td>
                       </tr>
                     ) : (
-                      users.map((user) => (
-                        <tr key={user._id} className="border-t border-gray-100 hover:bg-gray-50 transition-all">
+                      users.map((userItem) => (
+                        <tr key={userItem._id} className="border-t border-gray-100 hover:bg-gray-50 transition-all">
                           <td className="p-4">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 bg-indigo-100 text-indigo-700 font-bold rounded-full flex items-center justify-center">
-                                {user.name?.charAt(0) || 'U'}
+                                {userItem.name?.charAt(0) || 'U'}
                               </div>
                               <div>
-                                <p className="font-medium text-gray-800">{user.name}</p>
+                                <p className="font-medium text-gray-800">{userItem.name}</p>
                                 <p className="text-xs text-gray-400">
-                                  {user.rollNumber || user.employeeId || 'N/A'}
+                                  {userItem.rollNumber || userItem.employeeId || 'N/A'}
                                 </p>
                               </div>
                             </div>
                           </td>
                           <td className="p-4">
-                            <p className="text-sm text-gray-600">{user.email}</p>
-                            <p className="text-xs text-gray-400">{user.phoneNumber || 'No phone'}</p>
+                            <p className="text-sm text-gray-600">{userItem.email}</p>
+                            <p className="text-xs text-gray-400">{userItem.phoneNumber || 'No phone'}</p>
                           </td>
                           <td className="p-4">
                             <span className="inline-flex text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
-                              {user.role}
+                              {userItem.role}
                             </span>
                           </td>
                           <td className="p-4">
                             <div className="flex flex-col gap-1 items-start">
-                              {user.isActive ? (
+                              {userItem.isActive ? (
                                 <span className="inline-flex text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full"><CheckCircle className="w-3 h-3 mr-1"/> Active</span>
                               ) : (
                                 <span className="inline-flex text-xs px-2 py-1 bg-red-100 text-red-700 rounded-full"><XCircle className="w-3 h-3 mr-1"/> Inactive</span>
                               )}
-                              {user.role !== 'admin' && (
-                                <button onClick={() => toggleUserStatus(user)} className="text-xs text-blue-600 hover:underline">
-                                  {user.isActive ? 'Deactivate' : 'Activate'}
+                              {userItem.role !== 'admin' && (
+                                <button onClick={() => toggleUserStatus(userItem)} className="text-xs text-blue-600 hover:underline">
+                                  {userItem.isActive ? 'Deactivate' : 'Activate'}
                                 </button>
                               )}
                             </div>
                           </td>
                           <td className="p-4">
                             <div className="flex gap-2">
-                              <Link to={`/admin/users/${user._id}`} className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors" title="View Details">
+                              <Link to={`/admin/users/${userItem._id}`} className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors" title="View Details">
                                 <Eye className="w-4 h-4" />
                               </Link>
-                              <button onClick={() => { setShowResetModal(user); }} className="p-1.5 text-gray-400 hover:text-orange-600 transition-colors" title="Reset Password">
+                              <button onClick={() => { setShowResetModal(userItem); }} className="p-1.5 text-gray-400 hover:text-orange-600 transition-colors" title="Reset Password">
                                 <RefreshCw className="w-4 h-4" />
                               </button>
-                              <button onClick={() => { setNewRole(user.role); setShowRoleModal(user); }} className="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Change Role">
-                                <Shield className="w-4 h-4" />
-                              </button>
-                              <button onClick={() => setShowDeleteModal(user)} className="p-1.5 text-gray-400 hover:text-red-600 transition-colors" title="Delete User">
-                                </button>
+                              {user?.role === 'admin' && (
+                                <>
+                                  <button onClick={() => { setNewRole(userItem.role); setShowRoleModal(userItem); }} className="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Change Role">
+                                    <Shield className="w-4 h-4" />
+                                  </button>
+                                  <button onClick={() => setShowDeleteModal(userItem)} className="p-1.5 text-gray-400 hover:text-red-600 transition-colors" title="Delete User">
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </>
+                              )}
                               </div>
                             </td>
                           </tr>
@@ -587,20 +605,20 @@ const UserManagement = () => {
                       No users found
                     </div>
                   ) : (
-                    users.map((user) => (
-                      <div key={user._id} className="p-4 hover:bg-gray-50 transition-all flex flex-col gap-3">
+                    users.map((userItem) => (
+                      <div key={userItem._id} className="p-4 hover:bg-gray-50 transition-all flex flex-col gap-3">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-indigo-100 text-indigo-700 font-bold rounded-full flex items-center justify-center flex-shrink-0">
-                            {user.name?.charAt(0) || 'U'}
+                            {userItem.name?.charAt(0) || 'U'}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-800 line-clamp-1">{user.name}</p>
+                            <p className="font-medium text-gray-800 line-clamp-1">{userItem.name}</p>
                             <p className="text-xs text-gray-400">
-                              {user.rollNumber || user.employeeId || 'N/A'} • {user.role}
+                              {userItem.rollNumber || userItem.employeeId || 'N/A'} • {userItem.role}
                             </p>
                           </div>
                           <div>
-                            {user.isActive ? (
+                            {userItem.isActive ? (
                               <span className="inline-flex text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
                             ) : (
                               <span className="inline-flex text-[10px] px-2 py-0.5 bg-red-100 text-red-700 rounded-full">Inactive</span>
@@ -609,18 +627,22 @@ const UserManagement = () => {
                         </div>
                         <div className="flex items-center justify-between mt-1">
                           <div className="flex gap-2">
-                            <Link to={`/admin/users/${user._id}`} className="p-2 bg-gray-100 text-gray-600 rounded-lg" title="View Details">
+                            <Link to={`/admin/users/${userItem._id}`} className="p-2 bg-gray-100 text-gray-600 rounded-lg" title="View Details">
                               <Eye className="w-4 h-4" />
                             </Link>
-                            <button onClick={() => { setShowResetModal(user); }} className="p-2 bg-gray-100 text-orange-600 rounded-lg" title="Reset Password">
+                            <button onClick={() => { setShowResetModal(userItem); }} className="p-2 bg-gray-100 text-orange-600 rounded-lg" title="Reset Password">
                               <RefreshCw className="w-4 h-4" />
                             </button>
-                            <button onClick={() => { setNewRole(user.role); setShowRoleModal(user); }} className="p-2 bg-gray-100 text-purple-600 rounded-lg" title="Change Role">
-                              <Shield className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => setShowDeleteModal(user)} className="p-2 bg-red-50 text-red-600 rounded-lg" title="Delete User">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            {user?.role === 'admin' && (
+                              <>
+                                <button onClick={() => { setNewRole(userItem.role); setShowRoleModal(userItem); }} className="p-2 bg-gray-100 text-purple-600 rounded-lg" title="Change Role">
+                                  <Shield className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => setShowDeleteModal(userItem)} className="p-2 bg-red-50 text-red-600 rounded-lg" title="Delete User">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -800,7 +822,7 @@ const UserManagement = () => {
               <option value="student">Student</option>
               <option value="faculty">Faculty</option>
               <option value="hod">HOD</option>
-              <option value="deputyhod">Deputy HOD</option>
+              <option value=>Deputy HOD</option>
               <option value="dean">Dean</option>
               <option value="principal">Principal</option>
               <option value="admin">Admin</option>

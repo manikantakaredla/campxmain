@@ -41,8 +41,12 @@ api.interceptors.response.use(
 
 // --- Client-Side SWR Caching for "Powerful Speed" ---
 const cache = new Map();
-const getCacheKey = (url, params) => url + JSON.stringify(params || {});
+export const getCacheKey = (url, params) => url + JSON.stringify(params || {});
 export const clearCache = () => cache.clear();
+export const getCachedData = (url, params) => {
+  const key = getCacheKey(url, params);
+  return cache.has(key) ? cache.get(key).data : null;
+};
 
 const originalGet = api.get;
 api.get = async (url, config = {}) => {
@@ -68,15 +72,15 @@ api.get = async (url, config = {}) => {
 
 // Clear cache on any mutation
 const originalPost = api.post;
-api.post = async (url, data, config) => { clearCache(); return originalPost(url, data, config); };
+api.post = async (url, data, config) => { return originalPost(url, data, config); };
 
 const originalPut = api.put;
-api.put = async (url, data, config) => { clearCache(); return originalPut(url, data, config); };
+api.put = async (url, data, config) => { return originalPut(url, data, config); };
 
 const originalPatch = api.patch;
-api.patch = async (url, data, config) => { clearCache(); return originalPatch(url, data, config); };
+api.patch = async (url, data, config) => { return originalPatch(url, data, config); };
 
 const originalDelete = api.delete;
-api.delete = async (url, config) => { clearCache(); return originalDelete(url, config); };
+api.delete = async (url, config) => { return originalDelete(url, config); };
 
 export default api

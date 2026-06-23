@@ -57,7 +57,6 @@ router.post(
   authorizeRoles(
     "faculty",
     "hod",
-    "deputyhod",
     "dean",
     "principal",
     "admin"
@@ -75,7 +74,6 @@ router.put(
   authorizeRoles(
     "faculty",
     "hod",
-    "deputyhod",
     "dean",
     "principal",
     "admin"
@@ -93,7 +91,6 @@ router.delete(
   authorizeRoles(
     "faculty",
     "hod",
-    "deputyhod",
     "dean",
     "principal",
     "admin"

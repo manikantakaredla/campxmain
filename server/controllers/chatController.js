@@ -3,6 +3,7 @@ const User = require('../models/User');
 const { resolveClassFaculty, resolveProctorFaculty } = require('../utils/assignmentResolver');
 const ClassSectionAssignment = require('../models/ClassSectionAssignment');
 const SubjectSectionAssignment = require('../models/SubjectSectionAssignment');
+const notificationService = require('../services/notificationService');
 const { getIO } = require('../config/socket');
 const mongoose = require('mongoose');
 
@@ -164,7 +165,7 @@ exports.getConversations = async (req, res) => {
         });
       }
 
-    } else if (['faculty', 'hod', 'deputyhod', 'dean', 'principal'].includes(user.role)) {
+    } else if (['faculty', 'hod', 'dean', 'principal'].includes(user.role)) {
       // Add Groups for Faculty
       const classAssignments = await ClassSectionAssignment.find({ facultyId: user._id, isActive: true });
       classAssignments.forEach(ca => {
@@ -346,6 +347,23 @@ exports.sendMessage = async (req, res) => {
       console.error('Socket emit failed:', err.message);
     }
 
+    // Create Notification
+    try {
+      if (receiverId) {
+        await notificationService.createNotification({
+          title: `New Message`,
+          message: `You have a new message from ${req.user.name}`,
+          type: 'message',
+          category: 'message',
+          relatedId: req.user.id, // the sender, so clicking redirects to chat with sender
+          targetUsers: [receiverId],
+          createdBy: req.user.id
+        });
+      }
+    } catch (err) {
+      console.error('Failed to create notification for message:', err);
+    }
+
     res.status(201).json({
       success: true,
       data: newMessage
@@ -494,7 +512,7 @@ exports.getUserGroupIds = async (userId) => {
       }
       const proctorResult = await resolveProctorFaculty(user);
       if (proctorResult?.faculty) groupIds.push(`proctor_${proctorResult.faculty._id}`);
-    } else if (['faculty', 'hod', 'deputyhod', 'dean', 'principal'].includes(user.role)) {
+    } else if (['faculty', 'hod', 'dean', 'principal'].includes(user.role)) {
       const classAssignments = await ClassSectionAssignment.find({ facultyId: user._id, isActive: true });
       classAssignments.forEach(ca => groupIds.push(`class_${getShortBranch(ca.department)}_${ca.year}_${ca.section}`));
       

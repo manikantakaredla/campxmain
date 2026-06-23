@@ -7,9 +7,11 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
+import { useAuth } from '../../hooks/useAuth'
 
 const AnnouncementManagement = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [announcements, setAnnouncements] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -317,20 +319,24 @@ const AnnouncementManagement = () => {
                             >
                               <Eye className="w-4 h-4" />
                             </Link>
-                            <Link 
-                              to={`/admin/announcements/edit/${announcement._id}`}
-                              className="p-1 text-gray-400 hover:text-green-600 transition-colors"
-                              title="Edit"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Link>
-                            <button 
-                              onClick={() => setShowDeleteModal(announcement)}
-                              className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            {(user?.role === 'admin' || user?._id === announcement.createdBy?._id) && (
+                              <>
+                                <Link 
+                                  to={`/admin/announcements/edit/${announcement._id}`}
+                                  className="p-1 text-gray-400 hover:text-green-600 transition-colors"
+                                  title="Edit"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Link>
+                                <button 
+                                  onClick={() => setShowDeleteModal(announcement)}
+                                  className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>

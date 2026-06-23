@@ -27,7 +27,7 @@ const facultyDataSchema = new mongoose.Schema({
   designation: { type: String, required: true },
   staff_role: { 
     type: String, 
-    enum: ["faculty", "hod", "deputyhod", "dean", "principal"],
+    enum: ["faculty", "hod", "dean", "principal"],
     required: true 
   },
   isRegistered: { type: Boolean, default: false },

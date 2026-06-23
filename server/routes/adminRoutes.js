@@ -60,10 +60,10 @@ router.get("/faculty/:id", authorizeRoles("admin", "management"), getFacultyDeta
 router.put("/faculty/:id/subjects", authorizeRoles("admin"), updateFacultySubjects);
 
 // ==================== SUBJECT ASSIGNMENT (Admin) ====================
-router.get("/sections/:department/:year/:section/subjects", authorizeRoles("admin", "hod", "deputyhod", "dean", "principal"), getSectionSubjects);
-router.post("/sections/assign-subject", authorizeRoles("admin", "hod", "deputyhod", "dean", "principal"), assignSubjectFaculty);
-router.get("/subjects/:subjectId/faculty", authorizeRoles("admin", "hod", "deputyhod", "dean", "principal"), getFacultyBySubject);
-router.get("/subjects/department/:department/year/:year", authorizeRoles("admin", "hod", "deputyhod", "dean", "principal"), getSubjectsByDepartmentAndYear);
+router.get("/sections/:department/:year/:section/subjects", authorizeRoles("admin", "hod", "dean", "principal"), getSectionSubjects);
+router.post("/sections/assign-subject", authorizeRoles("admin", "hod", "dean", "principal"), assignSubjectFaculty);
+router.get("/subjects/:subjectId/faculty", authorizeRoles("admin", "hod", "dean", "principal"), getFacultyBySubject);
+router.get("/subjects/department/:department/year/:year", authorizeRoles("admin", "hod", "dean", "principal"), getSubjectsByDepartmentAndYear);
 
 
 // Student and Faculty data upload (Admin only) - USE csvUpload
@@ -72,13 +72,13 @@ router.post("/upload/faculty", authorizeRoles("admin"), csvUpload.single("file")
 
 // Class and Proctor assignments (Admin + Management) - USE csvUpload
 router.post("/upload/class-assignments", 
-  authorizeRoles("admin", "hod", "deputyhod", "dean", "principal"), 
+  authorizeRoles("admin", "hod", "dean", "principal"), 
   csvUpload.single("file"),
   uploadClassAssignments
 );
 
 router.post("/upload/proctor-assignments", 
-  authorizeRoles("admin", "hod", "deputyhod", "dean", "principal"), 
+  authorizeRoles("admin", "hod", "dean", "principal"), 
   csvUpload.single("file"),
   uploadProctorAssignments
 );

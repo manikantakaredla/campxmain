@@ -5,8 +5,8 @@ import { SearchBar } from '../../components/common/SearchBar'
 import { Pagination } from '../../components/common/Pagination'
 import { Loader } from '../../components/common/Loader'
 import { EmptyState } from '../../components/common/EmptyState'
-import { 
-  Megaphone, Plus, Edit, Trash2, Eye, 
+import {
+  Megaphone, Plus, Edit, Trash2, Eye,
   MapPin, X
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -20,13 +20,13 @@ const MyAnnouncements = () => {
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 })
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('my')
-  
+
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null)
   const [submitting, setSubmitting] = useState(false)
-  
+
   // Form data
   const [formData, setFormData] = useState({
     title: '',
@@ -37,9 +37,9 @@ const MyAnnouncements = () => {
     expiryDate: '',
     contacts: [],
     addToCalendar: false,
-        attachment: null
+    attachment: null
   })
-  
+
   const [newContact, setNewContact] = useState({ role: '', name: '', phone: '' })
 
   useEffect(() => {
@@ -49,12 +49,12 @@ const MyAnnouncements = () => {
   const fetchAnnouncements = async () => {
     setLoading(true)
     try {
-      const response = filterType === 'all' 
-        ? await announcementService.getAll() 
+      const response = filterType === 'all'
+        ? await announcementService.getAll()
         : await announcementService.getMyAnnouncements()
       let filtered = response.announcements || []
       if (searchTerm) {
-        filtered = filtered.filter(a => 
+        filtered = filtered.filter(a =>
           a.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           a.description.toLowerCase().includes(searchTerm.toLowerCase())
         )
@@ -85,7 +85,7 @@ const MyAnnouncements = () => {
     }
   }
 
-    const handleCheckboxChange = (e) => {
+  const handleCheckboxChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.checked })
   }
 
@@ -122,7 +122,7 @@ const MyAnnouncements = () => {
       toast.error('Please fill in title and description')
       return
     }
-    
+
     setSubmitting(true)
     try {
       const submitData = new FormData()
@@ -137,11 +137,11 @@ const MyAnnouncements = () => {
       if (formData.attachment) {
         submitData.append('attachment', formData.attachment)
       }
-      
+
       await api.post('/announcements', submitData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
-      
+
       toast.success('Announcement created successfully')
       setShowCreateModal(false)
       resetForm()
@@ -202,8 +202,8 @@ const MyAnnouncements = () => {
       location: '',
       expiryDate: '',
       contacts: [],
-    addToCalendar: false,
-        attachment: null
+      addToCalendar: false,
+      attachment: null
     })
     setNewContact({ role: '', name: '', phone: '' })
   }
@@ -222,7 +222,7 @@ const MyAnnouncements = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
         {/* Left Panel: Form */}
-      
+
 
         {/* Right Panel: List */}
         <div className="lg:col-span-2 flex flex-col h-full overflow-hidden">
@@ -239,7 +239,7 @@ const MyAnnouncements = () => {
                   onClick={() => setFilterType('my')}
                   className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${filterType === 'my' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
                 >
-                  mAnnouncements
+                  My Announcements
                 </button>
               </div>
               <div className="w-full sm:w-64">
@@ -250,7 +250,7 @@ const MyAnnouncements = () => {
             {loading ? (
               <Loader />
             ) : announcements.length === 0 ? (
-              <EmptyState 
+              <EmptyState
                 icon={<Megaphone className="w-12 h-12" />}
                 title="No announcements"
                 description={filterType === 'my' ? "You haven't created any announcements yet" : "No announcements found"}
@@ -262,12 +262,11 @@ const MyAnnouncements = () => {
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex gap-2 mb-1">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-semibold ${
-                            announcement.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-                            announcement.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-                            announcement.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-green-100 text-green-700'
-                          }`}>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-semibold ${announcement.priority === 'urgent' ? 'bg-red-100 text-red-700' :
+                              announcement.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+                                announcement.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-green-100 text-green-700'
+                            }`}>
                             {announcement.priority || 'NORMAL'}
                           </span>
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 uppercase font-semibold">
@@ -277,7 +276,7 @@ const MyAnnouncements = () => {
                         <h3 className="font-semibold text-gray-800 text-sm mb-1 truncate">{announcement.title}</h3>
                         <p className="text-xs text-gray-500 line-clamp-2">{announcement.description}</p>
                       </div>
-                      
+
                       <div className="flex items-center gap-1">
                         <Link to={`/announcement/${announcement._id}`} className="p-1.5 text-gray-400 hover:text-blue-600">
                           <Eye className="w-4 h-4" />
@@ -301,7 +300,7 @@ const MyAnnouncements = () => {
 
             {pagination.pages > 1 && (
               <div className="mt-4 pt-4 border-t border-gray-100">
-                <Pagination 
+                <Pagination
                   currentPage={pagination.page}
                   totalPages={pagination.pages}
                   onPageChange={(page) => setPagination(prev => ({ ...prev, page }))}

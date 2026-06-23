@@ -7,8 +7,10 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
+import { useAuth } from '../../hooks/useAuth'
 
 const ResourceManagement = () => {
+  const { user } = useAuth()
   const [resources, setResources] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -218,19 +220,23 @@ const ResourceManagement = () => {
                     </span>
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
-                      onClick={() => handleToggleStatus(resource)} 
-                      className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
-                      title={resource.status === 'active' ? 'Unpublish' : 'Publish'}
-                    >
-                      {resource.status === 'active' ? <EyeOff className="w-4 h-4" /> : <UploadCloud className="w-4 h-4" />}
-                    </button>
+                    {(user?.role === 'admin' || user?._id === resource.uploadedBy?._id) && (
+                      <button 
+                        onClick={() => handleToggleStatus(resource)} 
+                        className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                        title={resource.status === 'active' ? 'Unpublish' : 'Publish'}
+                      >
+                        {resource.status === 'active' ? <EyeOff className="w-4 h-4" /> : <UploadCloud className="w-4 h-4" />}
+                      </button>
+                    )}
                     <Link to={`/resource/${resource._id}`} className="p-1.5 text-gray-400 hover:text-blue-600">
                       <Eye className="w-4 h-4" />
                     </Link>
-                    <button onClick={() => setShowDeleteModal(resource)} className="p-1.5 text-gray-400 hover:text-red-600">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {(user?.role === 'admin' || user?._id === resource.uploadedBy?._id) && (
+                      <button onClick={() => setShowDeleteModal(resource)} className="p-1.5 text-gray-400 hover:text-red-600">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
                 <h3 className="font-semibold text-gray-800 mb-1 line-clamp-1 flex items-center gap-2">

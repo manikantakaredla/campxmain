@@ -60,7 +60,7 @@ content = content.replace(destructure_old, destructure_new)
 old_role_logic = """    const currentUser = await User.findById(req.user.id);
     let finalTargetDepartment = targetDepartment || null;
     
-    if (["faculty", "hod", "deputyhod"].includes(currentUser.role)) {
+    if (["faculty", "hod"].includes(currentUser.role)) {
       finalTargetDepartment = currentUser.department;
     } else if (["dean", "principal", "management"].includes(currentUser.role)) {
       const allowedBranches = currentUser.managedBranches && currentUser.managedBranches.length > 0 
@@ -138,7 +138,7 @@ new_role_logic = """    const currentUser = await User.findById(req.user.id);
       } catch(e) { announcementData.targetSections = []; }
     }
     
-    if (["faculty", "hod", "deputyhod"].includes(currentUser.role) && announcementData.targetMyDepartment) {
+    if (["faculty", "hod"].includes(currentUser.role) && announcementData.targetMyDepartment) {
       announcementData.targetBranches = [currentUser.department];
     } else if (["dean", "principal", "management"].includes(currentUser.role)) {
       const allowedBranches = currentUser.managedBranches && currentUser.managedBranches.length > 0 
