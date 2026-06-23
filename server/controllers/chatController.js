@@ -6,6 +6,23 @@ const SubjectSectionAssignment = require('../models/SubjectSectionAssignment');
 const { getIO } = require('../config/socket');
 const mongoose = require('mongoose');
 
+const getShortBranch = (str) => {
+  if (!str) return "UNKNOWN";
+  const s = str.toUpperCase();
+  if (s.includes('COMPUTER SCIENCE') || s.includes('CSE')) return 'CSE';
+  if (s.includes('ELECTRONIC') || s.includes('ECE')) return 'ECE';
+  if (s.includes('ELECTRICAL') || s.includes('EEE')) return 'EEE';
+  if (s.includes('MECHANICAL') || s.includes('MECH')) return 'MECH';
+  if (s.includes('CIVIL')) return 'CIVIL';
+  if (s.includes('INFORMATION') || s.includes('IT')) return 'IT';
+  if (s.includes('ARTIFICIAL') || s.includes('AIML') || s.includes('AI & ML')) return 'AIML';
+  if (s.includes('DATA SCIENCE') || s.includes('DS')) return 'DS';
+  if (s.includes('AGRICULTUR') || s.includes('AGRI')) return 'AGRI';
+  if (s.includes('MINING')) return 'MINING';
+  if (s.includes('PETROLEUM') || s.includes('PETRO')) return 'PETRO';
+  return str.split(' ')[0].toUpperCase();
+};
+
 // ==================== GET CONVERSATIONS ====================
 exports.getConversations = async (req, res) => {
   try {
@@ -132,9 +149,10 @@ exports.getConversations = async (req, res) => {
 
       // Add Groups
       if (user.branch && user.currentYear && user.section) {
+        const branch = getShortBranch(user.branch);
         groups.push({
-          _id: `class_${user.branch}_${user.currentYear}_${user.section}`,
-          name: `Class Group (${user.branch} - ${user.currentYear} Yr - Sec ${user.section})`,
+          _id: `class_${branch}_${user.currentYear}_${user.section}`,
+          name: `Class Group (${branch} - ${user.currentYear} Yr - Sec ${user.section})`,
           type: 'class'
         });
       }
@@ -150,20 +168,22 @@ exports.getConversations = async (req, res) => {
       // Add Groups for Faculty
       const classAssignments = await ClassSectionAssignment.find({ facultyId: user._id, isActive: true });
       classAssignments.forEach(ca => {
+        const dept = getShortBranch(ca.department);
         groups.push({
-          _id: `class_${ca.department}_${ca.year}_${ca.section}`,
-          name: `Class Group (${ca.department} - ${ca.year} Yr - Sec ${ca.section})`,
+          _id: `class_${dept}_${ca.year}_${ca.section}`,
+          name: `Class Group (${dept} - ${ca.year} Yr - Sec ${ca.section})`,
           type: 'class'
         });
       });
 
       const subjectAssignments = await SubjectSectionAssignment.find({ facultyId: user._id, isActive: true });
       subjectAssignments.forEach(sa => {
-        const id = `class_${sa.department}_${sa.year}_${sa.section}`;
+        const dept = getShortBranch(sa.department);
+        const id = `class_${dept}_${sa.year}_${sa.section}`;
         if (!groups.find(g => g._id === id)) {
           groups.push({
             _id: id,
-            name: `Class Group (${sa.department} - ${sa.year} Yr - Sec ${sa.section})`,
+            name: `Class Group (${dept} - ${sa.year} Yr - Sec ${sa.section})`,
             type: 'class'
           });
         }
@@ -457,5 +477,35 @@ exports.deleteGroupConversation = async (req, res) => {
   } catch (error) {
     console.error('Delete group conversation error:', error);
     res.status(500).json({ success: false, message: 'Failed to delete group conversation' });
+  }
+};
+
+// ==================== GLOBAL SOCKET ROOM HELPER ====================
+exports.getUserGroupIds = async (userId) => {
+  try {
+    const User = require('../models/User');
+    const user = await User.findById(userId);
+    if (!user) return [];
+    
+    const groupIds = [];
+    if (user.role === 'student') {
+      if (user.branch && user.currentYear && user.section) {
+         groupIds.push(`class_${getShortBranch(user.branch)}_${user.currentYear}_${user.section}`);
+      }
+      const proctorResult = await resolveProctorFaculty(user);
+      if (proctorResult?.faculty) groupIds.push(`proctor_${proctorResult.faculty._id}`);
+    } else if (['faculty', 'hod', 'deputyhod', 'dean', 'principal'].includes(user.role)) {
+      const classAssignments = await ClassSectionAssignment.find({ facultyId: user._id, isActive: true });
+      classAssignments.forEach(ca => groupIds.push(`class_${getShortBranch(ca.department)}_${ca.year}_${ca.section}`));
+      
+      const subjectAssignments = await SubjectSectionAssignment.find({ facultyId: user._id, isActive: true });
+      subjectAssignments.forEach(sa => groupIds.push(`class_${getShortBranch(sa.department)}_${sa.year}_${sa.section}`));
+      
+      groupIds.push(`proctor_${user._id}`);
+    }
+    return [...new Set(groupIds)];
+  } catch (err) {
+    console.error('Error getting user group ids:', err);
+    return [];
   }
 };

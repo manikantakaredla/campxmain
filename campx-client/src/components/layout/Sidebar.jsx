@@ -1,6 +1,8 @@
-import React from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import React, { useContext, useEffect } from 'react'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import { SocketContext } from '../../context/SocketContext'
+import toast from 'react-hot-toast'
 import {
   LayoutDashboard,
   Megaphone,
@@ -24,6 +26,26 @@ import {
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const socket = useContext(SocketContext)
+
+  useEffect(() => {
+    if (socket) {
+      const handleNewMessage = (msg) => {
+        if (!location.pathname.includes('/messages')) {
+          toast((t) => (
+             <div className="flex flex-col gap-1 cursor-pointer" onClick={() => { toast.dismiss(t.id); navigate('/messages'); }}>
+               <p className="font-bold text-sm text-blue-600">New Message</p>
+               <p className="text-xs font-semibold text-gray-800">{msg.sender?.name || 'Someone'}</p>
+               <p className="text-xs text-gray-600 line-clamp-1">{msg.content}</p>
+             </div>
+          ), { duration: 4000 });
+        }
+      };
+      socket.on('newMessage', handleNewMessage);
+      return () => socket.off('newMessage', handleNewMessage);
+    }
+  }, [socket, location.pathname, navigate]);
 
   // Define menu items based on user role
   const getMenuItems = () => {

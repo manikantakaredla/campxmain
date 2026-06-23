@@ -17,9 +17,21 @@ const initSocket = (server) => {
   io.on("connection", (socket) => {
     console.log("🔌 New client connected:", socket.id);
 
-    socket.on("join", (room) => {
-      socket.join(room);
+    socket.on("join", async (room) => {
+      socket.join(room); // the room is the userId
       console.log(`Client joined room: ${room}`);
+      
+      // Also join all their associated group rooms
+      try {
+        const { getUserGroupIds } = require('../controllers/chatController');
+        const groupIds = await getUserGroupIds(room);
+        groupIds.forEach(id => {
+          socket.join(id);
+          console.log(`Client ${room} automatically joined group room: ${id}`);
+        });
+      } catch (err) {
+        console.error('Error auto-joining group rooms:', err);
+      }
     });
 
     socket.on("disconnect", () => {
