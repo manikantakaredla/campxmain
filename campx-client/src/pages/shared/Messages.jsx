@@ -1,7 +1,9 @@
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../../api/axios';
 import { useSearchParams } from 'react-router-dom';
 import { Send, Search, Check, CheckCheck, Users, UserCircle, MessageSquare, Trash2, Reply, X, ArrowLeft } from 'lucide-react';
 import { useSocket } from '../../hooks/useSocket';
+import { useAuth } from '../../hooks/useAuth';
 import { encryptMessage, decryptMessage } from '../../utils/encryption';
 
 const Messages = () => {

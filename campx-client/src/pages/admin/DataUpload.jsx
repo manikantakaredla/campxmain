@@ -16,17 +16,17 @@ const DataUpload = () => {
 
   const tabs = [
     { id: 'students', label: 'Students', 
-      description: 'Upload student data with name, roll, section, email, course, phone',
+      description: 'Upload student data. Supported branches: CSE, ECE, EEE, MECH, CIVIL, IT, AIML, DS, AGRI, MINING, PETRO',
       columns: ['name', 'roll', 'section', 'email', 'course', 'ph_no'],
       endpoint: '/admin/upload/students',
       template: 'student_template.csv',
-      sample: 'name,roll,section,email,course,ph_no\nJohn Doe,24B11CS052,A,john.doe@adityauniversity.in,B.Tech,9876543210' },
+      sample: 'name,roll,section,email,course,ph_no\nJohn Doe,24B11CS052,A,john.doe@adityauniversity.in,B.Tech,9876543210\nJane Smith,24B11EC012,B,jane.s@adityauniversity.in,B.Tech,9876543211\nAlice Johnson,24B11ME001,A,alice.j@adityauniversity.in,B.Tech,9876543212' },
     { id: 'faculty', label: 'Faculty', 
-      description: 'Upload faculty data with employee ID, name, email, department, designation, role',
+      description: 'Upload faculty data. Supported departments: CSE, ECE, EEE, MECH, CIVIL, IT, AIML, DS, AGRI, MINING, PETRO',
       columns: ['empid', 'name', 'email', 'dept', 'designation', 'staff_role'],
       endpoint: '/admin/upload/faculty',
       template: 'faculty_template.csv',
-      sample: 'empid,name,email,dept,designation,staff_role\nFAC001,Dr. Rajesh Kumar,rajesh.k@adityauniversity.in,Computer Science,Professor,faculty' }
+      sample: 'empid,name,email,dept,designation,staff_role\nFAC001,Dr. Rajesh Kumar,rajesh.k@adityauniversity.in,CSE,Professor,faculty\nFAC002,Dr. Anita Sharma,anita.s@adityauniversity.in,ECE,Associate Professor,hod\nFAC003,Prof. John Doe,john.d@adityauniversity.in,MECH,Assistant Professor,faculty\nFAC004,Dr. Sarah Lee,sarah.l@adityauniversity.in,CIVIL,Professor,dean\nFAC005,Prof. Amit Patel,amit.p@adityauniversity.in,AGRI,Assistant Professor,faculty' }
   ]
 
   const currentTab = tabs.find(t => t.id === activeTab)
