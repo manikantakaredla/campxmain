@@ -9,6 +9,7 @@ const OpportunityCard = ({
   isSaved, 
   applicationStatus 
 }) => {
+  const [hasVisitedLink, setHasVisitedLink] = React.useState(false);
   const isEligible = true; // In real app, calculate based on student profile
 
   return (
@@ -81,15 +82,26 @@ const OpportunityCard = ({
           View Details
         </button>
         <button 
-          onClick={() => onApply(opportunity)}
+          onClick={() => {
+            if (opportunity.applicationLink && !hasVisitedLink) {
+              window.open(opportunity.applicationLink, '_blank');
+              setHasVisitedLink(true);
+            } else {
+              onApply(opportunity);
+            }
+          }}
           disabled={opportunity.status === 'Closed' || applicationStatus}
           className={`flex-1 py-1.5 md:py-2 px-2 md:px-4 font-medium rounded-lg transition-colors text-xs md:text-sm ${
             opportunity.status === 'Closed' || applicationStatus 
               ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-              : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+              : (hasVisitedLink ? 'bg-green-600 text-white hover:bg-green-700 shadow-sm' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm')
           }`}
         >
-          {applicationStatus ? 'Applied' : 'Apply Now'}
+          {applicationStatus 
+            ? 'Applied' 
+            : (opportunity.applicationLink && !hasVisitedLink 
+                ? 'Apply Now' 
+                : (opportunity.applicationLink && hasVisitedLink ? 'Mark as Registered' : 'Apply Now'))}
         </button>
         <button 
           onClick={() => onSave(opportunity)}
