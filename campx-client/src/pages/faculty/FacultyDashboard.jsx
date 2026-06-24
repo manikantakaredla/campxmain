@@ -82,11 +82,23 @@ const FacultyDashboard = () => {
 
   const fetchResources = async () => {
     try {
-      const res = await resourceService.getAll({ limit: 5 });
-      setRecentResources(res.resources?.slice(0, 5) || []);
-      setStats(prev => ({ ...prev, resources: res.resources?.length || 0 }));
+      const res = await resourceService.getAll({ uploadedBy: user?._id, limit: 3 })
+      setRecentResources(res.resources || [])
+      setStats(prev => ({ ...prev, resources: res.pagination?.total || 0 }))
     } catch (error) {
-      console.error('Error fetching resources:', error);
+      console.error('Error fetching resources:', error)
+    }
+  }
+
+  const handleDeleteResource = async (id) => {
+    if (window.confirm('Are you sure you want to delete this resource?')) {
+      try {
+        await resourceService.delete(id)
+        toast.success('Resource deleted successfully')
+        fetchResources()
+      } catch (error) {
+        toast.error('Failed to delete resource')
+      }
     }
   }
 
@@ -501,7 +513,7 @@ const FacultyDashboard = () => {
                             >
                               <Edit size={16} />
                             </Link>
-                            <button className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                            <button onClick={() => handleDeleteResource(item._id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
                               <Trash2 size={16} />
                             </button>
                           </>

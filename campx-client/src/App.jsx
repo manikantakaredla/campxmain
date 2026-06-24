@@ -178,6 +178,7 @@ function App() {
           <Route path="/admin/announcements/create" element={wrapSuspense(AdminCreateAnnouncement)} />
           <Route path="/admin/announcements/edit/:id" element={wrapSuspense(AdminEditAnnouncement)} />
           <Route path="/admin/resources" element={wrapSuspense(ResourceManagement)} />
+          <Route path="/admin/resources/upload" element={wrapSuspense(UploadResource)} />
           <Route path="/admin/calendar" element={wrapSuspense(CalendarManagement)} />
           <Route path="/admin/upload-data" element={wrapSuspense(DataUpload)} />
           <Route path="/admin/settings" element={wrapSuspense(SystemSettings)} />

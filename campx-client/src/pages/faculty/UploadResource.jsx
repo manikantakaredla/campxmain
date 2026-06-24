@@ -3,6 +3,7 @@ import { authService } from '../../services/authService'
 import { useSettings } from '../../hooks/useSettings'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { resourceService } from '../../services/resourceService'
+import api from '../../services/api'
 import { Upload, X, FileText, AlertCircle, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -38,17 +39,24 @@ const UploadResource = () => {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const res = await resourceService.getFacultySubjects()
-        if (res.success) {
-          const allAssigned = [
-            ...(res.primary || []).map(s => ({ ...s, isPrimary: true })),
-            ...(res.secondary || []).map(s => ({ ...s, isPrimary: false }))
-          ]
-          setAssignedSubjects(allAssigned)
+        if (isAdminOrHigher) {
+          const res = await api.get('/subjects')
+          if (res.data?.success) {
+            setAssignedSubjects(res.data.subjects)
+          }
+        } else {
+          const res = await resourceService.getFacultySubjects()
+          if (res.success) {
+            const allAssigned = [
+              ...(res.primary || []).map(s => ({ ...s, isPrimary: true })),
+              ...(res.secondary || []).map(s => ({ ...s, isPrimary: false }))
+            ]
+            setAssignedSubjects(allAssigned)
+          }
         }
       } catch (error) {
         console.error('Failed to fetch subjects', error)
-        toast.error('Failed to load assigned subjects')
+        toast.error('Failed to load subjects')
       } finally {
         setFetchingSubjects(false)
       }
@@ -235,7 +243,7 @@ const UploadResource = () => {
                 <option value="">-- Select Subject --</option>
                 {assignedSubjects.map(sub => (
                   <option key={sub._id} value={sub._id}>
-                    {sub.name} ({sub.code}) - {sub.department} [Sem {sub.semester}] {sub.isPrimary ? '(Primary)' : '(Secondary)'}
+                    {sub.name} ({sub.code}) - {sub.department} [Sem {sub.semester}] {isAdminOrHigher ? '' : (sub.isPrimary ? '(Primary)' : '(Secondary)')}
                   </option>
                 ))}
               </select>
