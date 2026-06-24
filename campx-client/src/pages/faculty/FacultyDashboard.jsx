@@ -4,10 +4,10 @@ import { announcementService } from '../../services/announcementService'
 import { resourceService } from '../../services/resourceService'
 import { facultyService } from '../../services/facultyService'
 import { Link } from 'react-router-dom'
-import { 
-  Megaphone, 
-  FileText, 
-  Users, 
+import {
+  Megaphone,
+  FileText,
+  Users,
   Calendar,
   Plus,
   ChevronRight,
@@ -159,7 +159,7 @@ const FacultyDashboard = () => {
   }
 
   const getPriorityColor = (priority) => {
-    switch(priority) {
+    switch (priority) {
       case 'urgent': return 'bg-red-50 text-red-600'
       case 'high': return 'bg-orange-50 text-orange-600'
       case 'medium': return 'bg-yellow-50 text-yellow-600'
@@ -168,37 +168,37 @@ const FacultyDashboard = () => {
   }
 
   const statCards = [
-    { 
-      label: 'Announcements', 
-      value: stats.announcements, 
-      icon: Megaphone, 
+    {
+      label: 'Announcements',
+      value: stats.announcements,
+      icon: Megaphone,
       link: '/faculty/announcements',
       color: 'blue',
       bg: 'bg-blue-50',
       text: 'text-blue-600'
     },
-    { 
-      label: 'Resources', 
-      value: stats.resources, 
-      icon: FileText, 
+    {
+      label: 'Resources',
+      value: stats.resources,
+      icon: FileText,
       link: '/faculty/resources',
       color: 'emerald',
       bg: 'bg-emerald-50',
       text: 'text-emerald-600'
     },
-    { 
-      label: 'Class Students', 
-      value: stats.classStudents, 
-      icon: Users, 
+    {
+      label: 'Class Students',
+      value: stats.classStudents,
+      icon: Users,
       link: '/faculty/students',
       color: 'purple',
       bg: 'bg-purple-50',
       text: 'text-purple-600'
     },
-    { 
-      label: 'Proctor Students', 
-      value: stats.proctorStudents, 
-      icon: UserPlus, 
+    {
+      label: 'Proctor Students',
+      value: stats.proctorStudents,
+      icon: UserPlus,
       link: '/faculty/students?type=proctor',
       color: 'amber',
       bg: 'bg-amber-50',
@@ -222,14 +222,14 @@ const FacultyDashboard = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link 
+            <Link
               to="/faculty/announcements/create"
               className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-[0_2px_10px_-3px_rgba(37,99,235,0.4)] hover:shadow-[0_8px_20px_-3px_rgba(37,99,235,0.4)] hover:-translate-y-0.5 hover:bg-blue-700 transition-all duration-300"
             >
               <Plus size={16} />
               New Announcement
             </Link>
-            <Link 
+            <Link
               to="/faculty/resources/upload"
               className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:bg-gray-50 transition-all duration-300"
             >
@@ -256,8 +256,8 @@ const FacultyDashboard = () => {
                   <p className="text-3xl font-black text-gray-900 tracking-tight">{card.value}</p>
                   <p className="text-xs font-bold text-gray-500 mt-1 uppercase tracking-wider">{card.label}</p>
                 </div>
-                <Link 
-                  to={card.link} 
+                <Link
+                  to={card.link}
                   className={`inline-flex items-center gap-1 text-xs font-bold mt-4 ${card.text} hover:opacity-80 transition-opacity`}
                 >
                   View details
@@ -268,42 +268,7 @@ const FacultyDashboard = () => {
           })}
         </div>
 
-        {/* Workload Summary */}
-        {workloadSummary && (
-          <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl shadow-lg border-none overflow-hidden mb-8 relative text-white">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -mr-20 -mt-20"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-500 opacity-20 rounded-full blur-2xl -ml-10 -mb-10"></div>
-            
-            <div className="px-6 py-5 border-b border-white/10 relative z-10">
-              <h3 className="text-lg font-bold flex items-center gap-2">
-                <div className="p-2 bg-white/10 rounded-lg">
-                  <Briefcase className="w-5 h-5 text-purple-200" />
-                </div>
-                My Workload Summary
-              </h3>
-            </div>
-            <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-6 relative z-10">
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:bg-white/15 transition-all text-center">
-                <p className="text-sm font-semibold text-indigo-100 mb-2 uppercase tracking-widest">Primary Subjects</p>
-                <p className="text-4xl font-black text-white">{workloadSummary.subjects?.primary?.length || 0}</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:bg-white/15 transition-all text-center">
-                <p className="text-sm font-semibold text-purple-100 mb-2 uppercase tracking-widest">Secondary Subjects</p>
-                <p className="text-4xl font-black text-white">{workloadSummary.subjects?.secondary?.length || 0}</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:bg-white/15 transition-all text-center">
-                <p className="text-sm font-semibold text-emerald-100 mb-2 uppercase tracking-widest">Class Sections</p>
-                <p className="text-4xl font-black text-white">{workloadSummary.classAssignments?.length || 0}</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:bg-white/15 transition-all text-center">
-                <p className="text-sm font-semibold text-orange-100 mb-2 uppercase tracking-widest">Proctor Students</p>
-                <p className="text-4xl font-black text-white">
-                  {workloadSummary.proctorAssignments?.reduce((acc, curr) => acc + curr.studentCount, 0) || 0}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* My Subjects Resources */}
         {subjectResources.length > 0 && (
@@ -329,20 +294,20 @@ const FacultyDashboard = () => {
                     <h4 className="text-gray-900 font-bold text-base mb-1 group-hover:text-blue-600 transition-colors">{sub.name}</h4>
                     <p className="text-xs text-gray-500 mb-5 font-medium">{sub.department} • Semester {sub.semester}</p>
                   </div>
-                  
+
                   <div className="flex items-center justify-between pt-4 border-t border-gray-50">
                     <span className="text-xs font-bold text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
                       {sub.resourceCount} Resources
                     </span>
                     <div className="flex gap-2">
-                      <Link 
+                      <Link
                         to={`/faculty/resources?subjectId=${sub._id}`}
                         className="px-3 py-1.5 border border-gray-200 text-xs font-bold rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                         title="View Resources"
                       >
                         View
                       </Link>
-                      <Link 
+                      <Link
                         to={`/faculty/resources/upload?subjectId=${sub._id}`}
                         className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors"
                         title="Quick Upload"
@@ -380,7 +345,7 @@ const FacultyDashboard = () => {
                     </div>
                     <span>{sec.studentCount} Students Enrolled</span>
                   </div>
-                  <Link 
+                  <Link
                     to={`/faculty/students?branch=${sec.department}&year=${sec.year}&section=${sec.section}`}
                     className="w-full inline-flex justify-center items-center gap-2 py-2.5 bg-gray-50 hover:bg-purple-50 border border-gray-100 hover:border-purple-200 rounded-xl text-sm font-bold text-gray-700 hover:text-purple-700 transition-colors"
                   >
@@ -408,7 +373,7 @@ const FacultyDashboard = () => {
                 View all
               </Link>
             </div>
-            
+
             <div className="flex-1 divide-y divide-gray-50">
               {recentAnnouncements.length === 0 ? (
                 <div className="py-16 flex flex-col items-center justify-center">
@@ -437,14 +402,14 @@ const FacultyDashboard = () => {
                         <p className="text-sm text-gray-500 mt-1 line-clamp-1">{item.description}</p>
                       </div>
                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white shadow-sm border border-gray-100 rounded-lg p-1">
-                        <Link 
-                          to={`/faculty/announcements/edit/${item._id}`} 
+                        <Link
+                          to={`/faculty/announcements/edit/${item._id}`}
                           className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                         >
                           <Edit size={16} />
                         </Link>
-                        <button 
-                          onClick={() => handleDeleteAnnouncement(item._id)} 
+                        <button
+                          onClick={() => handleDeleteAnnouncement(item._id)}
                           className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                         >
                           <Trash2 size={16} />
@@ -470,7 +435,7 @@ const FacultyDashboard = () => {
                 View all
               </Link>
             </div>
-            
+
             <div className="flex-1 divide-y divide-gray-50">
               {recentResources.length === 0 ? (
                 <div className="py-16 flex flex-col items-center justify-center">
@@ -499,16 +464,16 @@ const FacultyDashboard = () => {
                         <p className="text-sm text-gray-500 mt-1 line-clamp-1">{item.description}</p>
                       </div>
                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white shadow-sm border border-gray-100 rounded-lg p-1">
-                        <Link 
-                          to={`/faculty/resources/${item._id}`} 
+                        <Link
+                          to={`/faculty/resources/${item._id}`}
                           className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
                         >
                           <Eye size={16} />
                         </Link>
                         {(item.uploadedBy === user?._id || item.uploadedBy?._id === user?._id) && (
                           <>
-                            <Link 
-                              to={`/faculty/resources/edit/${item._id}`} 
+                            <Link
+                              to={`/faculty/resources/edit/${item._id}`}
                               className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                             >
                               <Edit size={16} />
@@ -529,7 +494,7 @@ const FacultyDashboard = () => {
 
         {/* Quick Actions Bar */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Link 
+          <Link
             to="/faculty/announcements/create"
             className="flex items-center gap-4 p-5 bg-white border border-gray-100 shadow-sm rounded-2xl hover:border-blue-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group"
           >
@@ -545,7 +510,7 @@ const FacultyDashboard = () => {
             </div>
           </Link>
 
-          <Link 
+          <Link
             to="/faculty/resources/upload"
             className="flex items-center gap-4 p-5 bg-white border border-gray-100 shadow-sm rounded-2xl hover:border-emerald-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group"
           >
@@ -561,7 +526,7 @@ const FacultyDashboard = () => {
             </div>
           </Link>
 
-          <Link 
+          <Link
             to="/faculty/students"
             className="flex items-center gap-4 p-5 bg-white border border-gray-100 shadow-sm rounded-2xl hover:border-purple-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group"
           >
