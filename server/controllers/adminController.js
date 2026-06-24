@@ -120,12 +120,14 @@ exports.getDashboardStats = async (req, res) => {
 // ==================== GET ALL USERS ====================
 exports.getAllUsers = async (req, res) => {
   try {
-    const { role, search, page = 1, limit = 20 } = req.query;
+    const { role, search, page = 1, limit = 20, status } = req.query;
     
-    let query = {};
+    let userQuery = {};
+    let studentBranchQuery = null;
+    let facultyBranchQuery = null;
     
     if (role) {
-      query.role = role;
+      userQuery.role = role;
     }
     
     // For HODs, automatically lock to their department
@@ -153,7 +155,6 @@ exports.getAllUsers = async (req, res) => {
       if (map[branchInput]) {
         variations.push(...map[branchInput]);
       } else {
-        // Also check reverse if it's a long name
         for (const [key, vals] of Object.entries(map)) {
           if (vals.some(v => v === branchInput || branchInput.includes(v))) {
             variations.push(key, ...vals);
@@ -161,18 +162,27 @@ exports.getAllUsers = async (req, res) => {
         }
       }
       
-      // Case-insensitive regex array
-      query.branch = { $in: variations.map(v => new RegExp(`^${v}$`, 'i')) };
+      const branchRegexArray = variations.map(v => new RegExp(`^${v}$`, 'i'));
+      
+      if (!role || role === 'student') {
+        userQuery.branch = { $in: branchRegexArray };
+        studentBranchQuery = { $in: branchRegexArray };
+      }
+      if (!role || role !== 'student') {
+        userQuery.department = { $in: branchRegexArray };
+        facultyBranchQuery = { $in: branchRegexArray };
+      }
     }
+
     if (req.query.section) {
-      query.section = req.query.section;
+      userQuery.section = req.query.section;
     }
     if (req.query.currentYear) {
-      query.currentYear = parseInt(req.query.currentYear);
+      userQuery.currentYear = parseInt(req.query.currentYear);
     }
     
     if (search) {
-      query.$or = [
+      userQuery.$or = [
         { name: { $regex: search, $options: "i" } },
         { email: { $regex: search, $options: "i" } },
         { rollNumber: { $regex: search, $options: "i" } },
@@ -180,19 +190,109 @@ exports.getAllUsers = async (req, res) => {
       ];
     }
     
+    let allUsers = [];
+
+    // 1. Fetch Registered Users
+    if (status !== 'not_verified') {
+      const users = await User.find(userQuery).select("-password").lean();
+      allUsers.push(...users);
+    }
+
+    // 2. Fetch Not Registered Students & Faculty
+    if (status !== 'active' && status !== 'inactive') {
+      // Students
+      if (!role || role === 'student') {
+        const sdQuery = { isRegistered: false };
+        if (studentBranchQuery) sdQuery.branch = studentBranchQuery;
+        if (req.query.section) sdQuery.section = req.query.section;
+        if (search) {
+          sdQuery.$or = [
+            { name: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+            { roll: { $regex: search, $options: "i" } }
+          ];
+        }
+        const studentsData = await StudentData.find(sdQuery).lean();
+        const mappedStudents = studentsData.map(s => ({
+          _id: s._id,
+          name: s.name,
+          email: s.email,
+          rollNumber: s.roll,
+          branch: s.branch,
+          section: s.section,
+          course: s.course,
+          phoneNumber: s.ph_no,
+          role: 'student',
+          isRegistered: false,
+          isActive: false,
+          createdAt: s.createdAt,
+          isFromData: true
+        }));
+        allUsers.push(...mappedStudents);
+      }
+
+      // Faculty
+      if (!role || ['faculty', 'hod', 'dean', 'principal'].includes(role)) {
+        const fdQuery = { isRegistered: false };
+        if (facultyBranchQuery) fdQuery.dept = facultyBranchQuery;
+        if (role && role !== 'admin') fdQuery.staff_role = role;
+        if (search) {
+          fdQuery.$or = [
+            { name: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+            { empid: { $regex: search, $options: "i" } }
+          ];
+        }
+        const facultyData = await FacultyData.find(fdQuery).lean();
+        const mappedFaculty = facultyData.map(f => ({
+          _id: f._id,
+          name: f.name,
+          email: f.email,
+          employeeId: f.empid,
+          department: f.dept,
+          designation: f.designation,
+          role: f.staff_role,
+          isRegistered: false,
+          isActive: false,
+          createdAt: f.createdAt,
+          isFromData: true
+        }));
+        allUsers.push(...mappedFaculty);
+      }
+    }
+
+    // Apply Year Filter for StudentData records
+    if (req.query.currentYear) {
+      allUsers = allUsers.filter(u => {
+        if (u.role !== 'student') return false;
+        if (u.currentYear === parseInt(req.query.currentYear)) return true;
+        if (u.isFromData && u.rollNumber) {
+          const academicInfo = calculateAcademicInfo(u.rollNumber);
+          return academicInfo.currentYear === parseInt(req.query.currentYear);
+        }
+        return false;
+      });
+    }
+
+    // Apply Status Filter for User records
+    if (status === 'active') {
+      allUsers = allUsers.filter(u => u.isActive === true && u.isRegistered !== false);
+    } else if (status === 'inactive') {
+      allUsers = allUsers.filter(u => u.isActive === false && u.isRegistered !== false);
+    } else if (status === 'not_verified') {
+      allUsers = allUsers.filter(u => u.isRegistered === false);
+    }
+
+    // Sort by createdAt descending
+    allUsers.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    const total = allUsers.length;
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    
-    const users = await User.find(query)
-      .select("-password")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
-    
-    const total = await User.countDocuments(query);
+    const paginatedUsers = allUsers.slice(skip, skip + parseInt(limit));
     
     res.status(200).json({
       success: true,
-      users,
+      users: paginatedUsers,
       pagination: {
         total,
         page: parseInt(page),

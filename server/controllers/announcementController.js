@@ -405,6 +405,14 @@ exports.createAnnouncement = async (req, res) => {
         parsedTargetSections = typeof targetSections === 'string' ? JSON.parse(targetSections) : targetSections;
       } catch(e) { parsedTargetSections = []; }
     }
+    
+    // Enforcement: Faculty & HOD are restricted to their own department
+    if (["faculty", "hod"].includes(currentUser.role)) {
+      if (currentUser.department) {
+        parsedTargetBranches = [currentUser.department];
+        targetDepartment = currentUser.department;
+      }
+    }
 
     // Build announcement data
     const announcementData = {

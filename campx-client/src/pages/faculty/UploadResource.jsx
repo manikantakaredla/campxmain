@@ -111,8 +111,8 @@ const UploadResource = () => {
       return
     }
 
-    if (!formData.subjectId) {
-      toast.error('Please select a subject')
+    if (formData.resourceType === 'Notes' && !formData.subjectId) {
+      toast.error('Please select a subject for Notes')
       return
     }
 
@@ -217,6 +217,7 @@ const UploadResource = () => {
           </div>
 
           {/* Subject Selector */}
+          {formData.resourceType === 'Notes' && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Subject <span className="text-red-500">*</span>
@@ -240,6 +241,7 @@ const UploadResource = () => {
               </select>
             )}
           </div>
+          )}
 
           {/* Resource Type & Unit Number */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

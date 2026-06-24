@@ -120,80 +120,91 @@ const StudentDashboard = () => {
   ]
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-5 py-6">
+    <div className="bg-[#f8f9fa] min-h-screen font-sans">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                Welcome, {user?.name?.split(' ')[0]} 
-              </h1>
-              <p className="text-gray-500 text-sm mt-1">
-                Student Dashboard
-              </p>
-            </div>
-           
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 flex items-center gap-2">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                Welcome, {user?.name?.split(' ')[0]}
+              </span>
+            </h1>
+            <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5 font-medium">
+              Student Dashboard
+            </p>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-          <div className="bg-white rounded-2xl md:rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2 md:mb-4">
-              <div className="w-8 h-8 md:w-12 md:h-12 bg-blue-50 rounded-xl md:rounded-2xl flex items-center justify-center">
-                <Megaphone className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-bl-full opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shadow-sm">
+                <Megaphone size={18} className="text-blue-600" />
               </div>
-              <TrendingUp size={14} className="text-green-500 hidden md:block" />
+              <TrendingUp size={16} className="text-green-500 hidden md:block" />
             </div>
-            <p className="text-2xl md:text-3xl font-bold text-gray-800">{stats.announcements}</p>
-            <p className="text-xs md:text-sm text-gray-500 mt-0.5 md:mt-1 truncate">Announcements</p>
-            <Link to="/student/announcements" className="text-xs md:text-sm font-medium text-blue-600 mt-2 md:mt-4 inline-flex items-center gap-1">
-              View all <ArrowRight size={12} className="md:w-3.5 md:h-3.5" />
+            <div>
+              <p className="text-2xl font-black text-gray-900 tracking-tight">{stats.announcements}</p>
+              <p className="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wider">Announcements</p>
+            </div>
+            <Link to="/student/announcements" className="text-xs font-bold text-blue-600 mt-4 inline-flex items-center gap-1 hover:text-blue-800 transition-colors">
+              View all <ArrowRight size={12} />
             </Link>
           </div>
 
-          <div className="bg-white rounded-2xl md:rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2 md:mb-4">
-              <div className="w-8 h-8 md:w-12 md:h-12 bg-green-50 rounded-xl md:rounded-2xl flex items-center justify-center">
-                <FileText className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
+          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-green-50 rounded-bl-full opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center shadow-sm">
+                <FileText size={18} className="text-green-600" />
               </div>
             </div>
-            <p className="text-2xl md:text-3xl font-bold text-gray-800">{stats.resources}</p>
-            <p className="text-xs md:text-sm text-gray-500 mt-0.5 md:mt-1 truncate">Resources</p>
-            <Link to="/student/resources" className="text-xs md:text-sm font-medium text-green-600 mt-2 md:mt-4 inline-flex items-center gap-1">
-              Browse <ArrowRight size={12} className="md:w-3.5 md:h-3.5" />
+            <div>
+              <p className="text-2xl font-black text-gray-900 tracking-tight">{stats.resources}</p>
+              <p className="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wider">Resources</p>
+            </div>
+            <Link to="/student/resources" className="text-xs font-bold text-green-600 mt-4 inline-flex items-center gap-1 hover:text-green-800 transition-colors">
+              Browse <ArrowRight size={12} />
             </Link>
           </div>
 
-          <div className="bg-white rounded-2xl md:rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2 md:mb-4">
-              <div className="w-8 h-8 md:w-12 md:h-12 bg-purple-50 rounded-xl md:rounded-2xl flex items-center justify-center">
-                <Calendar className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
+          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-purple-50 rounded-bl-full opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center shadow-sm">
+                <Calendar size={18} className="text-purple-600" />
               </div>
             </div>
-            <p className="text-2xl md:text-3xl font-bold text-gray-800">{stats.events}</p>
-            <p className="text-xs md:text-sm text-gray-500 mt-0.5 md:mt-1 truncate">Events</p>
-            <Link to="/student/calendar" className="text-xs md:text-sm font-medium text-purple-600 mt-2 md:mt-4 inline-flex items-center gap-1">
-              Calendar <ArrowRight size={12} className="md:w-3.5 md:h-3.5" />
+            <div>
+              <p className="text-2xl font-black text-gray-900 tracking-tight">{stats.events}</p>
+              <p className="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wider">Events</p>
+            </div>
+            <Link to="/student/calendar" className="text-xs font-bold text-purple-600 mt-4 inline-flex items-center gap-1 hover:text-purple-800 transition-colors">
+              Calendar <ArrowRight size={12} />
             </Link>
           </div>
 
-          <div className="bg-white rounded-2xl md:rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2 md:mb-4">
-              <div className="w-8 h-8 md:w-12 md:h-12 bg-orange-50 rounded-xl md:rounded-2xl flex items-center justify-center">
-                <Bell className="w-4 h-4 md:w-5 md:h-5 text-orange-600" />
+          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-orange-50 rounded-bl-full opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center shadow-sm relative">
+                <Bell size={18} className="text-orange-600" />
               </div>
               {stats.unreadNotifications > 0 && (
-                <span className="bg-red-500 text-white text-[10px] md:text-xs px-1.5 py-0.5 md:px-2 md:py-1 rounded-full font-medium shadow-sm">
-                  {stats.unreadNotifications}
+                <span className="bg-red-500 text-white text-[10px] md:text-xs px-2 py-1 rounded-md font-bold shadow-sm">
+                  {stats.unreadNotifications} New
                 </span>
               )}
             </div>
-            <p className="text-2xl md:text-3xl font-bold text-gray-800">{stats.unreadNotifications}</p>
-            <p className="text-xs md:text-sm text-gray-500 mt-0.5 md:mt-1 truncate">Alerts</p>
-            <Link to="/student/notifications" className="text-xs md:text-sm font-medium text-orange-600 mt-2 md:mt-4 inline-flex items-center gap-1">
-              Check <ArrowRight size={12} className="md:w-3.5 md:h-3.5" />
+            <div>
+              <p className="text-2xl font-black text-gray-900 tracking-tight">{stats.unreadNotifications}</p>
+              <p className="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wider">Alerts</p>
+            </div>
+            <Link to="/student/notifications" className="text-xs font-bold text-orange-600 mt-4 inline-flex items-center gap-1 hover:text-orange-800 transition-colors">
+              Check <ArrowRight size={12} />
             </Link>
           </div>
         </div>
@@ -201,34 +212,43 @@ const StudentDashboard = () => {
         {/* Assigned Faculty Section */}
         {assignedFaculty && (assignedFaculty.classTeacher || assignedFaculty.proctor) && (
           <div className="mb-8">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">My Assigned Faculty</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Award size={20} className="text-indigo-600" />
+              <h2 className="text-lg font-bold text-gray-900">My Assigned Faculty</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {assignedFaculty.classTeacher && (
-                <div className="bg-white rounded-xl border border-blue-100 p-4 shadow-sm flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xl flex-shrink-0">
-                    {assignedFaculty.classTeacher.name?.charAt(0)}
+                <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] hover:shadow-lg transition-all duration-300 flex items-center gap-5 group">
+                  <div className="relative">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 flex items-center justify-center font-black text-2xl shadow-sm border-2 border-white group-hover:scale-105 transition-transform">
+                      {assignedFaculty.classTeacher.name?.charAt(0)}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-0.5">Class Faculty</p>
-                    <h3 className="font-semibold text-gray-900 truncate">{assignedFaculty.classTeacher.name}</h3>
-                    <p className="text-sm text-gray-500 truncate">{assignedFaculty.classTeacher.department}</p>
+                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Class Faculty</p>
+                    <h3 className="font-bold text-gray-900 text-lg truncate group-hover:text-blue-600 transition-colors">{assignedFaculty.classTeacher.name}</h3>
+                    <p className="text-sm text-gray-500 truncate font-medium">{assignedFaculty.classTeacher.department}</p>
                   </div>
-                  <Link to={`/student/messages?userId=${assignedFaculty.classTeacher._id}`} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="Chat with Class Teacher">
+                  <Link to={`/student/messages?userId=${assignedFaculty.classTeacher._id}`} className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:shadow-md transition-all duration-300" title="Chat with Class Teacher">
                     <MessageSquare size={18} />
                   </Link>
                 </div>
               )}
               {assignedFaculty.proctor && (
-                <div className="bg-white rounded-xl border border-purple-100 p-4 shadow-sm flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xl flex-shrink-0">
-                    {assignedFaculty.proctor.name?.charAt(0)}
+                <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] hover:shadow-lg transition-all duration-300 flex items-center gap-5 group">
+                  <div className="relative">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 text-purple-700 flex items-center justify-center font-black text-2xl shadow-sm border-2 border-white group-hover:scale-105 transition-transform">
+                      {assignedFaculty.proctor.name?.charAt(0)}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-0.5">Proctor</p>
-                    <h3 className="font-semibold text-gray-900 truncate">{assignedFaculty.proctor.name}</h3>
-                    <p className="text-sm text-gray-500 truncate">{assignedFaculty.proctor.department}</p>
+                    <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-1">Proctor</p>
+                    <h3 className="font-bold text-gray-900 text-lg truncate group-hover:text-purple-600 transition-colors">{assignedFaculty.proctor.name}</h3>
+                    <p className="text-sm text-gray-500 truncate font-medium">{assignedFaculty.proctor.department}</p>
                   </div>
-                  <Link to={`/student/messages?userId=${assignedFaculty.proctor._id}`} className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors" title="Chat with Proctor">
+                  <Link to={`/student/messages?userId=${assignedFaculty.proctor._id}`} className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center hover:bg-purple-600 hover:text-white hover:shadow-md transition-all duration-300" title="Chat with Proctor">
                     <MessageSquare size={18} />
                   </Link>
                 </div>
@@ -240,50 +260,54 @@ const StudentDashboard = () => {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Announcements */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Megaphone size={14} className="text-blue-600" />
+          <div className="bg-white rounded-2xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden flex flex-col">
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-xl">
+                  <Megaphone size={18} className="text-blue-600" />
                 </div>
-                <h2 className="font-semibold text-gray-800">Recent Announcements</h2>
+                <h2 className="font-bold text-gray-900">Recent Announcements</h2>
               </div>
-              <Link to="/student/announcements" className="text-sm text-blue-600 hover:text-blue-700">
+              <Link to="/student/announcements" className="text-sm font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
                 See all
               </Link>
             </div>
             
-            <div className="divide-y divide-gray-100">
+            <div className="flex-1 divide-y divide-gray-50">
               {recentAnnouncements.length === 0 ? (
-                <div className="py-12 text-center">
-                  <Megaphone size={32} className="text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-400 text-sm">No announcements yet</p>
+                <div className="py-16 flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                    <Megaphone size={28} className="text-gray-300" />
+                  </div>
+                  <p className="text-gray-500 font-medium">No announcements yet</p>
                 </div>
               ) : (
                 recentAnnouncements.map((item) => (
                   <Link 
                     key={item._id} 
                     to={`/announcement/${item._id}`}
-                    className="block px-4 py-3 hover:bg-gray-50 transition-colors"
+                    className="block px-6 py-4 hover:bg-gray-50/80 transition-colors group"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="w-1 h-10 bg-blue-400 rounded-full flex-shrink-0 mt-1" />
+                    <div className="flex items-start gap-4">
+                      <div className="w-1 h-12 bg-blue-400 rounded-full flex-shrink-0 mt-1 opacity-50 group-hover:opacity-100 transition-opacity" />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-3 mb-1.5">
                           {item.priority && item.priority !== 'normal' && (
-                            <span className={`text-xs px-2 py-0.5 rounded-full border ${getPriorityClass(item.priority)}`}>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ${getPriorityClass(item.priority)}`}>
                               {item.priority}
                             </span>
                           )}
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
-                            <Clock size={10} />
+                          <span className="text-xs text-gray-400 flex items-center gap-1 font-medium">
+                            <Clock size={12} />
                             {new Date(item.createdAt).toLocaleDateString()}
                           </span>
                         </div>
-                        <h3 className="font-medium text-gray-800 mb-1">{item.title}</h3>
+                        <h3 className="font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">{item.title}</h3>
                         <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
                       </div>
-                      <ChevronRight size={16} className="text-gray-300 flex-shrink-0" />
+                      <div className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 group-hover:border-blue-200 group-hover:text-blue-600 group-hover:bg-blue-50 transition-all shadow-sm">
+                        <ChevronRight size={16} />
+                      </div>
                     </div>
                   </Link>
                 ))
@@ -292,47 +316,51 @@ const StudentDashboard = () => {
           </div>
 
           {/* Recent Resources */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center">
-                  <FileText size={14} className="text-green-600" />
+          <div className="bg-white rounded-2xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden flex flex-col">
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-50 rounded-xl">
+                  <FileText size={18} className="text-green-600" />
                 </div>
-                <h2 className="font-semibold text-gray-800">Recent Resources</h2>
+                <h2 className="font-bold text-gray-900">Recent Resources</h2>
               </div>
-              <Link to="/student/resources" className="text-sm text-green-600 hover:text-green-700">
+              <Link to="/student/resources" className="text-sm font-semibold text-green-600 hover:text-green-800 bg-green-50 px-3 py-1.5 rounded-lg transition-colors">
                 Browse all
               </Link>
             </div>
             
-            <div className="divide-y divide-gray-100">
+            <div className="flex-1 divide-y divide-gray-50">
               {recentResources.length === 0 ? (
-                <div className="py-12 text-center">
-                  <FileText size={32} className="text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-400 text-sm">No resources yet</p>
+                <div className="py-16 flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                    <FileText size={28} className="text-gray-300" />
+                  </div>
+                  <p className="text-gray-500 font-medium">No resources yet</p>
                 </div>
               ) : (
                 recentResources.map((item) => (
                   <Link 
                     key={item._id} 
                     to={`/resource/${item._id}`}
-                    className="block px-4 py-3 hover:bg-gray-50 transition-colors"
+                    className="block px-6 py-4 hover:bg-gray-50/80 transition-colors group"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <FileText size={16} className="text-gray-500" />
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center flex-shrink-0 shadow-inner border border-gray-200 group-hover:border-green-300 transition-colors">
+                        <FileText size={20} className="text-gray-500 group-hover:text-green-600 transition-colors" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs text-gray-500">{item.category}</span>
-                          <span className="text-xs text-gray-400">
+                        <div className="flex items-center gap-3 mb-1">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider bg-gray-100 text-gray-600">{item.category}</span>
+                          <span className="text-xs font-medium text-gray-400">
                             {item.downloads || 0} downloads
                           </span>
                         </div>
-                        <h3 className="font-medium text-gray-800 text-sm mb-1">{item.title}</h3>
+                        <h3 className="font-bold text-gray-900 text-sm mb-0.5 group-hover:text-green-600 transition-colors truncate">{item.title}</h3>
                         <p className="text-xs text-gray-500 line-clamp-1">{item.description}</p>
                       </div>
-                      <Download size={14} className="text-gray-300 flex-shrink-0" />
+                      <div className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 group-hover:border-green-200 group-hover:text-green-600 group-hover:bg-green-50 transition-all shadow-sm">
+                        <Download size={14} />
+                      </div>
                     </div>
                   </Link>
                 ))
@@ -343,42 +371,44 @@ const StudentDashboard = () => {
 
         {/* Upcoming Events Section */}
         {upcomingEvents.length > 0 && (
-          <div className="mt-6 bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Calendar size={14} className="text-purple-600" />
+          <div className="mt-8 bg-white rounded-2xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-50 rounded-xl">
+                  <Calendar size={18} className="text-purple-600" />
                 </div>
-                <h2 className="font-semibold text-gray-800">Upcoming Events</h2>
+                <h2 className="font-bold text-gray-900">Upcoming Events</h2>
               </div>
-              <Link to="/student/calendar" className="text-sm text-purple-600 hover:text-purple-700">
-                View all
+              <Link to="/student/calendar" className="text-sm font-semibold text-purple-600 hover:text-purple-800 bg-purple-50 px-3 py-1.5 rounded-lg transition-colors">
+                View Calendar
               </Link>
             </div>
             
-            <div className="p-4 md:p-5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {upcomingEvents.slice(0, 3).map((event) => (
                   <Link 
                     key={event._id} 
                     to={`/activity/${event._id}`}
-                    className="block p-3 md:p-4 rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all"
+                    className="block p-5 rounded-2xl border border-gray-100 hover:border-purple-200 hover:shadow-lg transition-all duration-300 group bg-white relative overflow-hidden"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="text-center min-w-[55px]">
-                        <div className="text-2xl font-bold text-gray-700">
-                          {new Date(event.startDate).getDate()}
-                        </div>
-                        <div className="text-xs text-gray-400 font-medium">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-bl-full opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+                    <div className="flex items-start gap-4">
+                      <div className="text-center min-w-[65px] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group-hover:border-purple-200 transition-colors">
+                        <div className="bg-purple-600 text-white text-[10px] font-bold uppercase tracking-widest py-1">
                           {new Date(event.startDate).toLocaleString('default', { month: 'short' })}
+                        </div>
+                        <div className="text-2xl font-black text-gray-800 py-2">
+                          {new Date(event.startDate).getDate()}
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 mb-2">
+                        <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 uppercase tracking-wider mb-2">
                           {event.type}
                         </span>
-                        <h3 className="font-medium text-gray-800 text-sm line-clamp-1">{event.title}</h3>
-                        <p className="text-xs text-gray-400 mt-1 line-clamp-1">
+                        <h3 className="font-bold text-gray-900 text-base line-clamp-1 group-hover:text-purple-700 transition-colors">{event.title}</h3>
+                        <p className="text-sm text-gray-500 mt-1 line-clamp-1 flex items-center gap-1.5 font-medium">
+                          <Star size={14} className="text-amber-400" />
                           {event.venue || 'Location TBA'}
                         </p>
                       </div>
@@ -389,9 +419,6 @@ const StudentDashboard = () => {
             </div>
           </div>
         )}
-
-        
-
       </div>
     </div>
   )

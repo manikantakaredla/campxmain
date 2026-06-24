@@ -95,138 +95,159 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 bg-gray-50/80 min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-8 bg-[#f8f9fa] min-h-screen font-sans">
       {/* Header */}
-      <div className="mb-6 sm:mb-8 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800 tracking-tight flex items-center gap-2">
-            <span className="text-indigo-500">Dashboard</span>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 flex items-center gap-2">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+              Dashboard
+            </span>
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5 flex items-center gap-1.5">
-            <Activity size={14} className="text-gray-300" />
-            Here's what's happening with your platform today.
+          <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5 font-medium">
+            <Activity size={16} className="text-indigo-400" />
+            Here's what's happening across the platform today.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm bg-white px-3 py-1.5 rounded-full border border-gray-100 shadow-sm">
-          <div className="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-medium text-xs">
+        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100/80">
+          <div className="w-8 h-8 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center text-indigo-700 font-bold text-sm shadow-inner">
             {user?.name?.charAt(0) || 'A'}
           </div>
-          <span className="font-medium text-gray-700 hidden sm:inline">{user?.name || 'Admin'}</span>
-          <ChevronDown size={14} className="text-gray-400" />
+          <div className="hidden sm:block">
+            <p className="text-sm font-semibold text-gray-800 leading-none">{user?.name || 'Admin'}</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">Administrator</p>
+          </div>
+          <ChevronDown size={16} className="text-gray-400 ml-1" />
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {statCards.map((item, idx) => {
           const colors = getColorClasses(item.color);
           return (
             <Link
               key={idx}
               to={item.link}
-              className="bg-white rounded-xl p-3 sm:p-4 border border-gray-100/80 hover:shadow-md transition-all duration-200 group"
+              className="bg-white rounded-2xl p-5 border border-gray-100/50 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden"
             >
-              <div className="flex items-center justify-between mb-2">
-                <div className={`w-8 h-8 sm:w-9 sm:h-9 ${colors.bg} rounded-lg flex items-center justify-center`}>
-                  <item.icon size={16} className={colors.text} />
+              <div className={`absolute top-0 right-0 w-16 h-16 ${colors.bg} rounded-bl-full opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500`}></div>
+              <div className="flex items-center justify-between mb-4">
+                <div className={`w-10 h-10 ${colors.bg} rounded-xl flex items-center justify-center shadow-sm`}>
+                  <item.icon size={18} className={colors.text} />
                 </div>
                 {item.change && (
-                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                  <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${
                     item.change === 'pending' 
-                      ? 'bg-amber-50 text-amber-600' 
-                      : 'bg-emerald-50 text-emerald-600'
+                      ? 'bg-amber-100/80 text-amber-700' 
+                      : 'bg-emerald-100/80 text-emerald-700'
                   }`}>
                     {item.change}
                   </span>
                 )}
               </div>
-              <p className="text-lg sm:text-xl font-bold text-gray-900">{item.value.toLocaleString()}</p>
-              <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">{item.label}</p>
+              <div>
+                <p className="text-2xl font-black text-gray-900 tracking-tight">{item.value.toLocaleString()}</p>
+                <p className="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wider">{item.label}</p>
+              </div>
             </Link>
           );
         })}
       </div>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Recent Users */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100/80 shadow-sm overflow-hidden">
-          <div className="px-4 sm:px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+        <div className="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col">
+          <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-sm">
             <div>
-              <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                <Users size={16} className="text-indigo-400" />
-                Recent users
+              <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <div className="p-1.5 bg-indigo-50 rounded-lg">
+                  <Users size={18} className="text-indigo-600" />
+                </div>
+                Recent Registrations
               </h2>
-              <p className="text-xs text-gray-400 mt-0.5">Latest registered users</p>
+              <p className="text-sm text-gray-500 mt-1">Latest users added to the platform</p>
             </div>
-            <Link to="/admin/users" className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition flex items-center gap-1">
-              View all <ArrowUpRight size={12} />
+            <Link to="/admin/users" className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100">
+              View all <ArrowUpRight size={14} />
             </Link>
           </div>
 
-          {recentUsers.length === 0 ? (
-            <div className="p-8 sm:p-12 text-center">
-              <Users size={40} className="text-gray-200 mx-auto mb-3" />
-              <p className="text-gray-400 text-sm">No users yet</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-50">
-              {recentUsers.slice(0, 5).map((u) => (
-                <div key={u._id} className="px-4 sm:px-5 py-3 flex items-center justify-between hover:bg-gray-50/60 transition">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-50 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm font-medium text-indigo-700">{u.name?.charAt(0) || 'U'}</span>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{u.name}</p>
-                      <p className="text-xs text-gray-400 truncate">{u.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                    <span className={`text-[10px] sm:text-xs px-2 py-0.5 rounded-full whitespace-nowrap ${
-                      u.role === 'admin' ? 'bg-purple-50 text-purple-700' :
-                      u.role === 'faculty' ? 'bg-blue-50 text-blue-700' :
-                      'bg-green-50 text-green-700'
-                    }`}>
-                      {u.role}
-                    </span>
-                    <Link to={`/admin/users/${u._id}`} className="text-gray-300 hover:text-indigo-600 transition">
-                      <Eye size={14} />
-                    </Link>
-                  </div>
+          <div className="flex-1 p-0">
+            {recentUsers.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center p-12">
+                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                  <Users size={28} className="text-gray-300" />
                 </div>
-              ))}
-            </div>
-          )}
+                <p className="text-gray-500 font-medium">No recent users</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-50">
+                {recentUsers.slice(0, 6).map((u) => (
+                  <div key={u._id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50/80 transition-colors group">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="relative">
+                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-blue-100 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm border border-white">
+                          <span className="text-sm font-bold text-indigo-700">{u.name?.charAt(0) || 'U'}</span>
+                        </div>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">{u.name}</p>
+                        <p className="text-xs text-gray-500 truncate mt-0.5">{u.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 flex-shrink-0">
+                      <span className={`text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider ${
+                        u.role === 'admin' ? 'bg-purple-100 text-purple-700' :
+                        u.role === 'faculty' ? 'bg-blue-100 text-blue-700' :
+                        'bg-green-100 text-green-700'
+                      }`}>
+                        {u.role}
+                      </span>
+                      <Link to={`/admin/users/${u._id}`} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all opacity-0 group-hover:opacity-100">
+                        <Eye size={16} />
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Sidebar */}
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Quick Actions */}
-          <div className="bg-white rounded-xl border border-gray-100/80 shadow-sm overflow-hidden">
-            <div className="px-4 sm:px-5 py-3 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                <Sparkles size={16} className="text-amber-400" />
-                Quick actions
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 bg-white/50 backdrop-blur-sm">
+              <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <div className="p-1.5 bg-amber-50 rounded-lg">
+                  <Sparkles size={16} className="text-amber-500" />
+                </div>
+                Quick Actions
               </h3>
             </div>
-            <div className="p-3 space-y-0.5">
+            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-2">
               {quickActions.map((action, idx) => {
                 const colors = getColorClasses(action.color);
                 return (
                   <Link
                     key={idx}
                     to={action.link}
-                    className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
+                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-all group"
                   >
-                    <div className={`w-8 h-8 ${colors.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                      <action.icon size={14} className={colors.text} />
+                    <div className={`w-10 h-10 ${colors.bg} rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform`}>
+                      <action.icon size={18} className={colors.text} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-700">{action.label}</p>
-                      <p className="text-xs text-gray-400">{action.desc}</p>
+                      <p className="text-sm font-bold text-gray-900">{action.label}</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">{action.desc}</p>
                     </div>
-                    <ArrowUpRight size={14} className="text-gray-300 group-hover:text-gray-500 transition" />
+                    <div className="w-6 h-6 rounded-full bg-white border border-gray-100 flex items-center justify-center group-hover:border-gray-300 transition-colors">
+                      <ArrowUpRight size={12} className="text-gray-400 group-hover:text-gray-600" />
+                    </div>
                   </Link>
                 );
               })}
@@ -234,26 +255,28 @@ const AdminDashboard = () => {
           </div>
 
           {/* Department Engagements */}
-          <div className="bg-white rounded-xl border border-gray-100/80 shadow-sm overflow-hidden">
-            <div className="px-4 sm:px-5 py-3 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                <Activity size={16} className="text-indigo-400" />
-                Student Engagements
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 bg-white/50 backdrop-blur-sm">
+              <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <div className="p-1.5 bg-indigo-50 rounded-lg">
+                  <Activity size={16} className="text-indigo-600" />
+                </div>
+                Department Distribution
               </h3>
             </div>
-            <div className="p-4 space-y-4">
+            <div className="p-6 space-y-5">
               {departmentData.map((item, idx) => {
                 const colors = getColorClasses(item.color);
                 const percentage = Math.min((item.count / 500) * 100, 100);
                 return (
-                  <div key={idx}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-700 font-medium">{item.dept}</span>
-                      <span className="font-semibold text-gray-900">{item.count}</span>
+                  <div key={idx} className="group">
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-700 font-semibold">{item.dept}</span>
+                      <span className="font-bold text-gray-900">{item.count}</span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-1.5">
+                    <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                       <div
-                        className={`${colors.bar} h-1.5 rounded-full transition-all duration-500`}
+                        className={`${colors.bar} h-full rounded-full transition-all duration-1000 ease-out group-hover:opacity-80`}
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -265,29 +288,34 @@ const AdminDashboard = () => {
 
           {/* Faculty Analytics */}
           {facultyStats && (
-            <div className="bg-white rounded-xl border border-gray-100/80 shadow-sm overflow-hidden">
-              <div className="px-4 sm:px-5 py-3 border-b border-gray-100">
-                <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                  <Briefcase size={16} className="text-purple-400" />
-                  Faculty Workload Overview
+            <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl shadow-lg overflow-hidden text-white relative">
+              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl"></div>
+              <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-32 h-32 bg-indigo-500 opacity-20 rounded-full blur-2xl"></div>
+              
+              <div className="px-6 py-5 border-b border-white/10 relative z-10">
+                <h3 className="text-base font-bold flex items-center gap-2 text-white">
+                  <div className="p-1.5 bg-white/10 rounded-lg">
+                    <Briefcase size={16} className="text-purple-200" />
+                  </div>
+                  Faculty Workload
                 </h3>
               </div>
-              <div className="p-4 space-y-3">
-                <div className="flex justify-between items-center bg-gray-50 p-2 rounded text-sm">
-                  <span className="text-gray-600">Total Faculty</span>
-                  <span className="font-semibold text-gray-800">{facultyStats.totalFaculty}</span>
+              <div className="p-6 space-y-4 relative z-10">
+                <div className="flex justify-between items-center bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <span className="text-sm font-medium text-indigo-100">Total Faculty</span>
+                  <span className="font-bold text-lg text-white">{facultyStats.totalFaculty}</span>
                 </div>
-                <div className="flex justify-between items-center bg-gray-50 p-2 rounded text-sm">
-                  <span className="text-gray-600">Subjects Assigned</span>
-                  <span className="font-semibold text-gray-800">{facultyStats.totalSubjectsAssigned}</span>
+                <div className="flex justify-between items-center bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <span className="text-sm font-medium text-indigo-100">Subjects Assigned</span>
+                  <span className="font-bold text-lg text-white">{facultyStats.totalSubjectsAssigned}</span>
                 </div>
-                <div className="flex justify-between items-center bg-gray-50 p-2 rounded text-sm">
-                  <span className="text-gray-600">Class Sections</span>
-                  <span className="font-semibold text-gray-800">{facultyStats.totalClassSectionsAssigned}</span>
+                <div className="flex justify-between items-center bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <span className="text-sm font-medium text-indigo-100">Class Sections</span>
+                  <span className="font-bold text-lg text-white">{facultyStats.totalClassSectionsAssigned}</span>
                 </div>
-                <div className="flex justify-between items-center bg-gray-50 p-2 rounded text-sm">
-                  <span className="text-gray-600">Proctor Students</span>
-                  <span className="font-semibold text-gray-800">{facultyStats.totalProctorStudentsAssigned}</span>
+                <div className="flex justify-between items-center bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <span className="text-sm font-medium text-indigo-100">Proctor Students</span>
+                  <span className="font-bold text-lg text-white">{facultyStats.totalProctorStudentsAssigned}</span>
                 </div>
               </div>
             </div>

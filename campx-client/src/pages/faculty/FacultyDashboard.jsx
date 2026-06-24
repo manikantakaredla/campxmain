@@ -195,35 +195,35 @@ const FacultyDashboard = () => {
   ]
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-5 py-6">
+    <div className="bg-[#f8f9fa] min-h-screen font-sans">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 flex items-center gap-2">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
                 Welcome back, {user?.name?.split(' ')[0]}
-              </h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Manage your class activities and resources
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Link 
-                to="/faculty/announcements/create"
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-              >
-                <Plus size={16} />
-                New Announcement
-              </Link>
-              <Link 
-                to="/faculty/resources/upload"
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-              >
-                <FileText size={16} />
-                Upload Resource
-              </Link>
-            </div>
+              </span>
+            </h1>
+            <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5 font-medium">
+              Manage your class activities and resources
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link 
+              to="/faculty/announcements/create"
+              className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-[0_2px_10px_-3px_rgba(37,99,235,0.4)] hover:shadow-[0_8px_20px_-3px_rgba(37,99,235,0.4)] hover:-translate-y-0.5 hover:bg-blue-700 transition-all duration-300"
+            >
+              <Plus size={16} />
+              New Announcement
+            </Link>
+            <Link 
+              to="/faculty/resources/upload"
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:bg-gray-50 transition-all duration-300"
+            >
+              <FileText size={16} />
+              Upload Resource
+            </Link>
           </div>
         </div>
 
@@ -232,18 +232,21 @@ const FacultyDashboard = () => {
           {statCards.map((card) => {
             const Icon = card.icon
             return (
-              <div key={card.label} className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`w-10 h-10 ${card.bg} rounded-lg flex items-center justify-center`}>
-                    <Icon size={18} className={card.text} />
+              <div key={card.label} className="bg-white rounded-2xl p-6 border border-gray-100/50 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+                <div className={`absolute top-0 right-0 w-20 h-20 ${card.bg} rounded-bl-full opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500`}></div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-12 h-12 ${card.bg} rounded-xl flex items-center justify-center shadow-sm`}>
+                    <Icon size={20} className={card.text} />
                   </div>
-                  <TrendingUp size={14} className="text-gray-300" />
+                  <TrendingUp size={16} className="text-green-500 hidden sm:block" />
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{card.value}</p>
-                <p className="text-sm text-gray-500 mt-1">{card.label}</p>
+                <div>
+                  <p className="text-3xl font-black text-gray-900 tracking-tight">{card.value}</p>
+                  <p className="text-xs font-bold text-gray-500 mt-1 uppercase tracking-wider">{card.label}</p>
+                </div>
                 <Link 
                   to={card.link} 
-                  className="inline-flex items-center gap-1 text-xs font-medium mt-3 text-gray-400 hover:text-gray-600 transition-colors"
+                  className={`inline-flex items-center gap-1 text-xs font-bold mt-4 ${card.text} hover:opacity-80 transition-opacity`}
                 >
                   View details
                   <ChevronRight size={12} />
@@ -255,29 +258,34 @@ const FacultyDashboard = () => {
 
         {/* Workload Summary */}
         {workloadSummary && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
-            <div className="p-5 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-purple-500" />
+          <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl shadow-lg border-none overflow-hidden mb-8 relative text-white">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-500 opacity-20 rounded-full blur-2xl -ml-10 -mb-10"></div>
+            
+            <div className="px-6 py-5 border-b border-white/10 relative z-10">
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                <div className="p-2 bg-white/10 rounded-lg">
+                  <Briefcase className="w-5 h-5 text-purple-200" />
+                </div>
                 My Workload Summary
               </h3>
             </div>
-            <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100 text-center hover:shadow-md transition-all">
-                <p className="text-sm font-medium text-blue-600 mb-1">Primary Subjects</p>
-                <p className="text-3xl font-bold text-blue-700">{workloadSummary.subjects?.primary?.length || 0}</p>
+            <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-6 relative z-10">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:bg-white/15 transition-all text-center">
+                <p className="text-sm font-semibold text-indigo-100 mb-2 uppercase tracking-widest">Primary Subjects</p>
+                <p className="text-4xl font-black text-white">{workloadSummary.subjects?.primary?.length || 0}</p>
               </div>
-              <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100 text-center hover:shadow-md transition-all">
-                <p className="text-sm font-medium text-indigo-600 mb-1">Secondary Subjects</p>
-                <p className="text-3xl font-bold text-indigo-700">{workloadSummary.subjects?.secondary?.length || 0}</p>
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:bg-white/15 transition-all text-center">
+                <p className="text-sm font-semibold text-purple-100 mb-2 uppercase tracking-widest">Secondary Subjects</p>
+                <p className="text-4xl font-black text-white">{workloadSummary.subjects?.secondary?.length || 0}</p>
               </div>
-              <div className="bg-green-50 rounded-xl p-4 border border-green-100 text-center hover:shadow-md transition-all">
-                <p className="text-sm font-medium text-green-600 mb-1">Class Sections</p>
-                <p className="text-3xl font-bold text-green-700">{workloadSummary.classAssignments?.length || 0}</p>
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:bg-white/15 transition-all text-center">
+                <p className="text-sm font-semibold text-emerald-100 mb-2 uppercase tracking-widest">Class Sections</p>
+                <p className="text-4xl font-black text-white">{workloadSummary.classAssignments?.length || 0}</p>
               </div>
-              <div className="bg-orange-50 rounded-xl p-4 border border-orange-100 text-center hover:shadow-md transition-all">
-                <p className="text-sm font-medium text-orange-600 mb-1">Proctor Students</p>
-                <p className="text-3xl font-bold text-orange-700">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:bg-white/15 transition-all text-center">
+                <p className="text-sm font-semibold text-orange-100 mb-2 uppercase tracking-widest">Proctor Students</p>
+                <p className="text-4xl font-black text-white">
                   {workloadSummary.proctorAssignments?.reduce((acc, curr) => acc + curr.studentCount, 0) || 0}
                 </p>
               </div>
@@ -287,42 +295,44 @@ const FacultyDashboard = () => {
 
         {/* My Subjects Resources */}
         {subjectResources.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
-            <div className="p-5 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-blue-500 animate-pulse" />
+          <div className="bg-white rounded-2xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden mb-8">
+            <div className="px-6 py-5 border-b border-gray-100 bg-white/50 backdrop-blur-sm flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <BookOpen className="w-5 h-5 text-blue-600 animate-pulse" />
+                </div>
                 My Subjects Resources
               </h3>
             </div>
-            <div className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {subjectResources.map(sub => (
-                <div key={sub._id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:border-blue-100 hover:shadow-md transition-all flex flex-col justify-between">
+                <div key={sub._id} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.02)] hover:border-blue-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
                   <div>
-                    <div className="flex justify-between items-start mb-2">
-                      <span className={`text-[10px] px-2 py-0.5 rounded font-semibold border ${sub.isPrimary ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200'}`}>
+                    <div className="flex justify-between items-start mb-3">
+                      <span className={`text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider ${sub.isPrimary ? 'bg-blue-50 text-blue-700' : 'bg-indigo-50 text-indigo-700'}`}>
                         {sub.isPrimary ? 'Primary' : 'Secondary'}
                       </span>
-                      <span className="text-xs text-gray-500 font-semibold uppercase">{sub.code}</span>
+                      <span className="text-[11px] text-gray-500 font-bold uppercase bg-gray-100 px-2 py-1 rounded-md">{sub.code}</span>
                     </div>
-                    <h4 className="text-gray-900 font-bold text-sm mb-2">{sub.name}</h4>
-                    <p className="text-xs text-gray-500 mb-4">{sub.department} • Semester {sub.semester}</p>
+                    <h4 className="text-gray-900 font-bold text-base mb-1 group-hover:text-blue-600 transition-colors">{sub.name}</h4>
+                    <p className="text-xs text-gray-500 mb-5 font-medium">{sub.department} • Semester {sub.semester}</p>
                   </div>
                   
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-50">
-                    <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded">
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                    <span className="text-xs font-bold text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
                       {sub.resourceCount} Resources
                     </span>
                     <div className="flex gap-2">
                       <Link 
                         to={`/faculty/resources?subjectId=${sub._id}`}
-                        className="p-1 px-2 border border-gray-200 text-xs font-semibold rounded text-gray-700 hover:bg-gray-50"
+                        className="px-3 py-1.5 border border-gray-200 text-xs font-bold rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                         title="View Resources"
                       >
                         View
                       </Link>
                       <Link 
                         to={`/faculty/resources/upload?subjectId=${sub._id}`}
-                        className="p-1 px-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded"
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors"
                         title="Quick Upload"
                       >
                         Upload
@@ -338,26 +348,31 @@ const FacultyDashboard = () => {
         {/* Class Assignments Summary Widget */}
         {classAssignmentsSummary && classAssignmentsSummary.totalSections > 0 && (
           <div className="mb-8">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">My Class Sections</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Users size={20} className="text-purple-600" />
+              My Class Sections
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {classAssignmentsSummary.sections.map((sec, idx) => (
-                <div key={idx} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-blue-200">
+                <div key={idx} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.02)] hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="bg-purple-50 text-purple-700 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md">
                       Section {sec.section}
                     </span>
-                    <span className="text-xs text-gray-500 font-medium">{sec.batch}</span>
+                    <span className="text-[11px] text-gray-500 font-bold bg-gray-100 px-2 py-1 rounded-md">{sec.batch}</span>
                   </div>
-                  <h3 className="text-gray-900 font-semibold mb-1">{sec.department} - Year {sec.year}</h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                    <Users size={14} className="text-gray-400" />
-                    <span>{sec.studentCount} Students</span>
+                  <h3 className="text-gray-900 font-bold text-lg mb-1">{sec.department} - Year {sec.year}</h3>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-5 font-medium">
+                    <div className="p-1.5 bg-gray-50 rounded-lg">
+                      <Users size={14} className="text-gray-500" />
+                    </div>
+                    <span>{sec.studentCount} Students Enrolled</span>
                   </div>
                   <Link 
                     to={`/faculty/students?branch=${sec.department}&year=${sec.year}&section=${sec.section}`}
-                    className="w-full inline-flex justify-center items-center gap-2 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="w-full inline-flex justify-center items-center gap-2 py-2.5 bg-gray-50 hover:bg-purple-50 border border-gray-100 hover:border-purple-200 rounded-xl text-sm font-bold text-gray-700 hover:text-purple-700 transition-colors"
                   >
-                    <Eye size={14} />
+                    <Eye size={16} />
                     View Students
                   </Link>
                 </div>
@@ -369,56 +384,58 @@ const FacultyDashboard = () => {
         {/* Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Announcements */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Megaphone size={14} className="text-blue-600" />
+          <div className="bg-white rounded-2xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden flex flex-col">
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-xl">
+                  <Megaphone size={18} className="text-blue-600" />
                 </div>
-                <h2 className="font-semibold text-gray-900">Recent Announcements</h2>
+                <h2 className="font-bold text-gray-900">Recent Announcements</h2>
               </div>
-              <Link to="/faculty/announcements" className="text-sm text-blue-600 hover:text-blue-700">
+              <Link to="/faculty/announcements" className="text-sm font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
                 View all
               </Link>
             </div>
             
-            <div className="divide-y divide-gray-100">
+            <div className="flex-1 divide-y divide-gray-50">
               {recentAnnouncements.length === 0 ? (
-                <div className="py-12 text-center">
-                  <Megaphone size={32} className="text-gray-300 mx-auto mb-2" />
-                  <p className="text-sm text-gray-400">No announcements yet</p>
-                  <Link to="/faculty/announcements/create" className="text-sm text-blue-600 mt-2 inline-block">
-                    Create one →
+                <div className="py-16 flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                    <Megaphone size={28} className="text-gray-300" />
+                  </div>
+                  <p className="text-sm text-gray-500 font-medium">No announcements yet</p>
+                  <Link to="/faculty/announcements/create" className="text-sm font-bold text-blue-600 mt-3 inline-block bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors">
+                    Create your first
                   </Link>
                 </div>
               ) : (
                 recentAnnouncements.map((item) => (
-                  <div key={item._id} className="px-5 py-3 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-start justify-between gap-3">
+                  <div key={item._id} className="px-6 py-4 hover:bg-gray-50/80 transition-colors group">
+                    <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${getPriorityColor(item.priority)}`}>
+                        <div className="flex items-center gap-3 mb-1.5">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ${getPriorityColor(item.priority)}`}>
                             {item.priority || 'normal'}
                           </span>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-400 font-medium">
                             {new Date(item.createdAt).toLocaleDateString()}
                           </span>
                         </div>
-                        <h3 className="font-medium text-gray-900 text-sm line-clamp-1">{item.title}</h3>
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-1">{item.description}</p>
+                        <h3 className="font-bold text-gray-900 text-sm line-clamp-1 group-hover:text-blue-600 transition-colors">{item.title}</h3>
+                        <p className="text-sm text-gray-500 mt-1 line-clamp-1">{item.description}</p>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white shadow-sm border border-gray-100 rounded-lg p-1">
                         <Link 
                           to={`/faculty/announcements/edit/${item._id}`} 
-                          className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                         >
-                          <Edit size={14} />
+                          <Edit size={16} />
                         </Link>
                         <button 
                           onClick={() => handleDeleteAnnouncement(item._id)} 
-                          className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </div>
@@ -429,61 +446,63 @@ const FacultyDashboard = () => {
           </div>
 
           {/* Recent Resources */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
-                  <FileText size={14} className="text-emerald-600" />
+          <div className="bg-white rounded-2xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden flex flex-col">
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-50 rounded-xl">
+                  <FileText size={18} className="text-emerald-600" />
                 </div>
-                <h2 className="font-semibold text-gray-900">Recent Resources</h2>
+                <h2 className="font-bold text-gray-900">Recent Resources</h2>
               </div>
-              <Link to="/faculty/resources" className="text-sm text-emerald-600 hover:text-emerald-700">
+              <Link to="/faculty/resources" className="text-sm font-semibold text-emerald-600 hover:text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors">
                 View all
               </Link>
             </div>
             
-            <div className="divide-y divide-gray-100">
+            <div className="flex-1 divide-y divide-gray-50">
               {recentResources.length === 0 ? (
-                <div className="py-12 text-center">
-                  <FileText size={32} className="text-gray-300 mx-auto mb-2" />
-                  <p className="text-sm text-gray-400">No resources yet</p>
-                  <Link to="/faculty/resources/upload" className="text-sm text-emerald-600 mt-2 inline-block">
-                    Upload one →
+                <div className="py-16 flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                    <FileText size={28} className="text-gray-300" />
+                  </div>
+                  <p className="text-sm text-gray-500 font-medium">No resources yet</p>
+                  <Link to="/faculty/resources/upload" className="text-sm font-bold text-emerald-600 mt-3 inline-block bg-emerald-50 px-4 py-2 rounded-lg hover:bg-emerald-100 transition-colors">
+                    Upload your first
                   </Link>
                 </div>
               ) : (
                 recentResources.map((item) => (
-                  <div key={item._id} className="px-5 py-3 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-start justify-between gap-3">
+                  <div key={item._id} className="px-6 py-4 hover:bg-gray-50/80 transition-colors group">
+                    <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600">
+                        <div className="flex items-center gap-3 mb-1.5">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider bg-emerald-50 text-emerald-700">
                             {item.category}
                           </span>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-400 font-medium">
                             {item.downloads || 0} downloads
                           </span>
                         </div>
-                        <h3 className="font-medium text-gray-900 text-sm line-clamp-1">{item.title}</h3>
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-1">{item.description}</p>
+                        <h3 className="font-bold text-gray-900 text-sm line-clamp-1 group-hover:text-emerald-600 transition-colors">{item.title}</h3>
+                        <p className="text-sm text-gray-500 mt-1 line-clamp-1">{item.description}</p>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white shadow-sm border border-gray-100 rounded-lg p-1">
                         <Link 
                           to={`/faculty/resources/${item._id}`} 
-                          className="p-1.5 text-gray-400 hover:text-emerald-600 transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
                         >
-                          <Eye size={14} />
+                          <Eye size={16} />
                         </Link>
                         {(item.uploadedBy === user?._id || item.uploadedBy?._id === user?._id) && (
                           <>
                             <Link 
                               to={`/faculty/resources/edit/${item._id}`} 
-                              className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                             >
-                              <Edit size={14} />
+                              <Edit size={16} />
                             </Link>
-                            <button className="p-1.5 text-gray-400 hover:text-red-600 transition-colors">
-                              <Trash2 size={14} />
+                            <button className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                              <Trash2 size={16} />
                             </button>
                           </>
                         )}
@@ -497,47 +516,53 @@ const FacultyDashboard = () => {
         </div>
 
         {/* Quick Actions Bar */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
           <Link 
             to="/faculty/announcements/create"
-            className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-xl hover:border-blue-200 hover:shadow-sm transition-all group"
+            className="flex items-center gap-4 p-5 bg-white border border-gray-100 shadow-sm rounded-2xl hover:border-blue-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group"
           >
-            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-              <Megaphone size={18} className="text-blue-600" />
+            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+              <Megaphone size={20} className="text-blue-600 group-hover:text-white" />
             </div>
             <div>
-              <p className="font-medium text-gray-900 text-sm">Create Announcement</p>
-              <p className="text-xs text-gray-400">Share updates with students</p>
+              <p className="font-bold text-gray-900 text-sm">Create Announcement</p>
+              <p className="text-[11px] font-medium text-gray-500 mt-0.5 uppercase tracking-wider">Share updates with students</p>
             </div>
-            <ChevronRight size={16} className="ml-auto text-gray-300 group-hover:text-blue-500" />
+            <div className="ml-auto w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+              <ChevronRight size={16} className="text-gray-400 group-hover:text-blue-600" />
+            </div>
           </Link>
 
           <Link 
             to="/faculty/resources/upload"
-            className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-xl hover:border-emerald-200 hover:shadow-sm transition-all group"
+            className="flex items-center gap-4 p-5 bg-white border border-gray-100 shadow-sm rounded-2xl hover:border-emerald-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group"
           >
-            <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
-              <FileText size={18} className="text-emerald-600" />
+            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+              <FileText size={20} className="text-emerald-600 group-hover:text-white" />
             </div>
             <div>
-              <p className="font-medium text-gray-900 text-sm">Upload Resource</p>
-              <p className="text-xs text-gray-400">Share study materials</p>
+              <p className="font-bold text-gray-900 text-sm">Upload Resource</p>
+              <p className="text-[11px] font-medium text-gray-500 mt-0.5 uppercase tracking-wider">Share study materials</p>
             </div>
-            <ChevronRight size={16} className="ml-auto text-gray-300 group-hover:text-emerald-500" />
+            <div className="ml-auto w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-emerald-50 transition-colors">
+              <ChevronRight size={16} className="text-gray-400 group-hover:text-emerald-600" />
+            </div>
           </Link>
 
           <Link 
             to="/faculty/students"
-            className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-xl hover:border-purple-200 hover:shadow-sm transition-all group"
+            className="flex items-center gap-4 p-5 bg-white border border-gray-100 shadow-sm rounded-2xl hover:border-purple-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group"
           >
-            <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center group-hover:bg-purple-100 transition-colors">
-              <Users size={18} className="text-purple-600" />
+            <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors">
+              <Users size={20} className="text-purple-600 group-hover:text-white" />
             </div>
             <div>
-              <p className="font-medium text-gray-900 text-sm">View Students</p>
-              <p className="text-xs text-gray-400">Class & proctor students</p>
+              <p className="font-bold text-gray-900 text-sm">View Students</p>
+              <p className="text-[11px] font-medium text-gray-500 mt-0.5 uppercase tracking-wider">Class & proctor students</p>
             </div>
-            <ChevronRight size={16} className="ml-auto text-gray-300 group-hover:text-purple-500" />
+            <div className="ml-auto w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-purple-50 transition-colors">
+              <ChevronRight size={16} className="text-gray-400 group-hover:text-purple-600" />
+            </div>
           </Link>
         </div>
       </div>

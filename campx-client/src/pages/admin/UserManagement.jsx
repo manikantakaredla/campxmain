@@ -381,6 +381,7 @@ const UserManagement = () => {
           <option value="">All Status</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
+          <option value="not_verified">Not Verified</option>
         </select>
 
         {viewState !== 'role_users' && (
@@ -559,12 +560,14 @@ const UserManagement = () => {
                           </td>
                           <td className="p-4">
                             <div className="flex flex-col gap-1 items-start">
-                              {userItem.isActive ? (
+                              {userItem.isRegistered === false ? (
+                                <span className="inline-flex text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full"><AlertCircle className="w-3 h-3 mr-1"/> Not Verified</span>
+                              ) : userItem.isActive ? (
                                 <span className="inline-flex text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full"><CheckCircle className="w-3 h-3 mr-1"/> Active</span>
                               ) : (
                                 <span className="inline-flex text-xs px-2 py-1 bg-red-100 text-red-700 rounded-full"><XCircle className="w-3 h-3 mr-1"/> Inactive</span>
                               )}
-                              {userItem.role !== 'admin' && (
+                              {userItem.role !== 'admin' && userItem.isRegistered !== false && (
                                 <button onClick={() => toggleUserStatus(userItem)} className="text-xs text-blue-600 hover:underline">
                                   {userItem.isActive ? 'Deactivate' : 'Activate'}
                                 </button>
@@ -573,21 +576,27 @@ const UserManagement = () => {
                           </td>
                           <td className="p-4">
                             <div className="flex gap-2">
-                              <Link to={`/admin/users/${userItem._id}`} className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors" title="View Details">
-                                <Eye className="w-4 h-4" />
-                              </Link>
-                              <button onClick={() => { setShowResetModal(userItem); }} className="p-1.5 text-gray-400 hover:text-orange-600 transition-colors" title="Reset Password">
-                                <RefreshCw className="w-4 h-4" />
-                              </button>
-                              {user?.role === 'admin' && (
+                              {userItem.isRegistered !== false ? (
                                 <>
-                                  <button onClick={() => { setNewRole(userItem.role); setShowRoleModal(userItem); }} className="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Change Role">
-                                    <Shield className="w-4 h-4" />
+                                  <Link to={`/admin/users/${userItem._id}`} className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors" title="View Details">
+                                    <Eye className="w-4 h-4" />
+                                  </Link>
+                                  <button onClick={() => { setShowResetModal(userItem); }} className="p-1.5 text-gray-400 hover:text-orange-600 transition-colors" title="Reset Password">
+                                    <RefreshCw className="w-4 h-4" />
                                   </button>
-                                  <button onClick={() => setShowDeleteModal(userItem)} className="p-1.5 text-gray-400 hover:text-red-600 transition-colors" title="Delete User">
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
+                                  {user?.role === 'admin' && (
+                                    <>
+                                      <button onClick={() => { setNewRole(userItem.role); setShowRoleModal(userItem); }} className="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Change Role">
+                                        <Shield className="w-4 h-4" />
+                                      </button>
+                                      <button onClick={() => setShowDeleteModal(userItem)} className="p-1.5 text-gray-400 hover:text-red-600 transition-colors" title="Delete User">
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    </>
+                                  )}
                                 </>
+                              ) : (
+                                <span className="text-xs text-gray-400 italic">No actions available</span>
                               )}
                               </div>
                             </td>
@@ -618,7 +627,9 @@ const UserManagement = () => {
                             </p>
                           </div>
                           <div>
-                            {userItem.isActive ? (
+                            {userItem.isRegistered === false ? (
+                              <span className="inline-flex text-[10px] px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full">Not Verified</span>
+                            ) : userItem.isActive ? (
                               <span className="inline-flex text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Active</span>
                             ) : (
                               <span className="inline-flex text-[10px] px-2 py-0.5 bg-red-100 text-red-700 rounded-full">Inactive</span>
@@ -627,21 +638,27 @@ const UserManagement = () => {
                         </div>
                         <div className="flex items-center justify-between mt-1">
                           <div className="flex gap-2">
-                            <Link to={`/admin/users/${userItem._id}`} className="p-2 bg-gray-100 text-gray-600 rounded-lg" title="View Details">
-                              <Eye className="w-4 h-4" />
-                            </Link>
-                            <button onClick={() => { setShowResetModal(userItem); }} className="p-2 bg-gray-100 text-orange-600 rounded-lg" title="Reset Password">
-                              <RefreshCw className="w-4 h-4" />
-                            </button>
-                            {user?.role === 'admin' && (
+                            {userItem.isRegistered !== false ? (
                               <>
-                                <button onClick={() => { setNewRole(userItem.role); setShowRoleModal(userItem); }} className="p-2 bg-gray-100 text-purple-600 rounded-lg" title="Change Role">
-                                  <Shield className="w-4 h-4" />
+                                <Link to={`/admin/users/${userItem._id}`} className="p-2 bg-gray-100 text-gray-600 rounded-lg" title="View Details">
+                                  <Eye className="w-4 h-4" />
+                                </Link>
+                                <button onClick={() => { setShowResetModal(userItem); }} className="p-2 bg-gray-100 text-orange-600 rounded-lg" title="Reset Password">
+                                  <RefreshCw className="w-4 h-4" />
                                 </button>
-                                <button onClick={() => setShowDeleteModal(userItem)} className="p-2 bg-red-50 text-red-600 rounded-lg" title="Delete User">
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                {user?.role === 'admin' && (
+                                  <>
+                                    <button onClick={() => { setNewRole(userItem.role); setShowRoleModal(userItem); }} className="p-2 bg-gray-100 text-purple-600 rounded-lg" title="Change Role">
+                                      <Shield className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => setShowDeleteModal(userItem)} className="p-2 bg-red-50 text-red-600 rounded-lg" title="Delete User">
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </>
+                                )}
                               </>
+                            ) : (
+                              <span className="text-xs text-gray-400 italic py-2">No actions available</span>
                             )}
                           </div>
                         </div>

@@ -20,11 +20,12 @@ exports.createResource = async (req, res) => {
       unitNumber,
       approvalStatus,
       visibility,
-      targetBranch,
-      targetYear,
       targetSection,
       status
     } = req.body;
+    
+    // Convert let variable so we can reassign it
+    let { targetBranch, visibility } = req.body;
 
     if (!req.file) {
       return res.status(400).json({
@@ -33,10 +34,12 @@ exports.createResource = async (req, res) => {
       });
     }
 
-    if (!subjectId) {
+    const isNotesCategory = (resourceType === 'Notes' || category === 'Notes');
+    
+    if (isNotesCategory && !subjectId) {
       return res.status(400).json({
         success: false,
-        message: "Subject is required"
+        message: "Subject is required for Notes"
       });
     }
 
@@ -47,12 +50,15 @@ exports.createResource = async (req, res) => {
       });
     }
 
-    const subject = await Subject.findById(subjectId);
-    if (!subject) {
-      return res.status(400).json({
-        success: false,
-        message: "Selected subject not found"
-      });
+    let subject = null;
+    if (subjectId) {
+      subject = await Subject.findById(subjectId);
+      if (!subject) {
+        return res.status(400).json({
+          success: false,
+          message: "Selected subject not found"
+        });
+      }
     }
 
     const currentUser = await User.findById(req.user.id);
@@ -65,15 +71,21 @@ exports.createResource = async (req, res) => {
 
     // Faculty verification: check if subject is assigned to them
     if (["faculty", "hod"].includes(currentUser.role)) {
-      const primaryIds = currentUser.facultySubjects?.primary?.map(id => id.toString()) || [];
-      const secondaryIds = currentUser.facultySubjects?.secondary?.map(id => id.toString()) || [];
-      
-      const isAssigned = primaryIds.includes(subjectId.toString()) || secondaryIds.includes(subjectId.toString());
-      if (!isAssigned) {
-        return res.status(403).json({
-          success: false,
-          message: "You can only upload resources for subjects assigned to you."
-        });
+      if (subjectId) {
+        const primaryIds = currentUser.facultySubjects?.primary?.map(id => id.toString()) || [];
+        const secondaryIds = currentUser.facultySubjects?.secondary?.map(id => id.toString()) || [];
+        
+        const isAssigned = primaryIds.includes(subjectId.toString()) || secondaryIds.includes(subjectId.toString());
+        if (!isAssigned) {
+          return res.status(403).json({
+            success: false,
+            message: "You can only upload resources for subjects assigned to you."
+          });
+        }
+      } else {
+        // If no subject is selected, enforce department boundary
+        targetBranch = currentUser.department;
+        visibility = "branch"; 
       }
     }
 
@@ -96,9 +108,9 @@ exports.createResource = async (req, res) => {
       .from("campx-files")
       .getPublicUrl(fileName);
 
-    // Target audience is derived directly from the subject
-    const finalTargetBranch = subject.department;
-    const finalTargetYear = Math.ceil(subject.semester / 2);
+    // Target audience is derived directly from the subject or from the body/currentUser
+    const finalTargetBranch = subject ? subject.department : (targetBranch || currentUser?.department);
+    const finalTargetYear = subject ? Math.ceil(subject.semester / 2) : (targetYear || undefined);
 
     const resourceStatus = status || "active";
     const resource = await Resource.create({
@@ -106,10 +118,10 @@ exports.createResource = async (req, res) => {
       description,
       category: resourceType || category || "Notes",
       resourceType: resourceType || "Notes",
-      subjectId,
-      subjectName: subject.name,
-      department: subject.department,
-      semester: subject.semester,
+      subjectId: subjectId || undefined,
+      subjectName: subject ? subject.name : undefined,
+      department: subject ? subject.department : finalTargetBranch,
+      semester: subject ? subject.semester : undefined,
       unitNumber: unitNumber ? parseInt(unitNumber) : undefined,
       approvalStatus: approvalStatus || "approved",
       fileUrl: publicUrl.publicUrl,

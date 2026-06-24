@@ -5,13 +5,9 @@ import { SearchBar } from '../../components/common/SearchBar'
 import { Pagination } from '../../components/common/Pagination'
 import { Loader } from '../../components/common/Loader'
 import { EmptyState } from '../../components/common/EmptyState'
-import {
-  Megaphone, Plus, Edit, Trash2, Eye,
-  MapPin, X
-} from 'lucide-react'
+import { Megaphone, Plus, Edit, Trash2, Eye } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import api from '../../services/api'
 
 const MyAnnouncements = () => {
   const [announcements, setAnnouncements] = useState([])
@@ -20,27 +16,6 @@ const MyAnnouncements = () => {
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 })
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('my')
-
-  // Modal states
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null)
-  const [submitting, setSubmitting] = useState(false)
-
-  // Form data
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    priority: 'medium',
-    audience: 'all',
-    location: '',
-    expiryDate: '',
-    contacts: [],
-    addToCalendar: false,
-    attachment: null
-  })
-
-  const [newContact, setNewContact] = useState({ role: '', name: '', phone: '' })
 
   useEffect(() => {
     fetchAnnouncements()
@@ -85,229 +60,110 @@ const MyAnnouncements = () => {
     }
   }
 
-  const handleCheckboxChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.checked })
-  }
-
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
-
-  const handleAddContact = () => {
-    if (newContact.name && newContact.phone) {
-      setFormData({
-        ...formData,
-        contacts: [...formData.contacts, { ...newContact, role: newContact.role || 'Contact' }]
-      })
-      setNewContact({ role: '', name: '', phone: '' })
-    } else {
-      toast.error('Please enter contact name and phone')
-    }
-  }
-
-  const handleRemoveContact = (index) => {
-    setFormData({
-      ...formData,
-      contacts: formData.contacts.filter((_, i) => i !== index)
-    })
-  }
-
-  const handleFileChange = (e) => {
-    setFormData({ ...formData, attachment: e.target.files[0] })
-  }
-
-  const handleCreateSubmit = async (e) => {
-    e.preventDefault()
-    if (!formData.title || !formData.description) {
-      toast.error('Please fill in title and description')
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      const submitData = new FormData()
-      submitData.append('title', formData.title)
-      submitData.append('description', formData.description)
-      submitData.append('priority', formData.priority)
-      submitData.append('audience', formData.audience)
-      submitData.append('location', formData.location || '')
-      submitData.append('expiryDate', formData.expiryDate || '')
-      submitData.append('contacts', JSON.stringify(formData.contacts))
-      submitData.append('addToCalendar', formData.addToCalendar)
-      if (formData.attachment) {
-        submitData.append('attachment', formData.attachment)
-      }
-
-      await api.post('/announcements', submitData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
-
-      toast.success('Announcement created successfully')
-      setShowCreateModal(false)
-      resetForm()
-      fetchAnnouncements()
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to create announcement')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault()
-    setSubmitting(true)
-    try {
-      await announcementService.update(selectedAnnouncement._id, {
-        title: formData.title,
-        description: formData.description,
-        priority: formData.priority,
-        audience: formData.audience,
-        location: formData.location,
-        expiryDate: formData.expiryDate,
-        contacts: formData.contacts
-      })
-      toast.success('Announcement updated successfully')
-      setShowEditModal(false)
-      resetForm()
-      fetchAnnouncements()
-    } catch (error) {
-      toast.error('Failed to update announcement')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const openEditModal = (announcement) => {
-    setSelectedAnnouncement(announcement)
-    setFormData({
-      title: announcement.title,
-      description: announcement.description,
-      priority: announcement.priority,
-      audience: announcement.audience,
-      location: announcement.location || '',
-      expiryDate: announcement.expiryDate?.split('T')[0] || '',
-      contacts: announcement.contacts || [],
-      attachment: null,
-      addToCalendar: false
-    })
-    setShowEditModal(true)
-  }
-
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      description: '',
-      priority: 'medium',
-      audience: 'all',
-      location: '',
-      expiryDate: '',
-      contacts: [],
-      addToCalendar: false,
-      attachment: null
-    })
-    setNewContact({ role: '', name: '', phone: '' })
-  }
-
   const paginatedAnnouncements = announcements.slice(
     (pagination.page - 1) * pagination.limit,
     pagination.page * pagination.limit
   )
 
   return (
-    <div className="p-6 h-screen flex flex-col">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Announcements</h1>
-        <p className="text-gray-500 mt-1">Manage and view announcements</p>
-      </div>
+    <div className="p-6 bg-[#f8f9fa] min-h-screen">
+      <div className="max-w-7xl mx-auto flex flex-col h-full">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Announcements</h1>
+            <p className="text-sm text-gray-500 mt-1 font-medium">Manage and view announcements</p>
+          </div>
+          <Link
+            to="/faculty/announcements/create"
+            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-[0_2px_10px_-3px_rgba(37,99,235,0.4)] hover:shadow-[0_8px_20px_-3px_rgba(37,99,235,0.4)] hover:-translate-y-0.5 hover:bg-blue-700 transition-all duration-300"
+          >
+            <Plus className="w-4 h-4" />
+            New Announcement
+          </Link>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
-        {/* Left Panel: Form */}
-
-
-        {/* Right Panel: List */}
-        <div className="lg:col-span-2 flex flex-col h-full overflow-hidden">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex-1 overflow-y-auto">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-              <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
-                <button
-                  onClick={() => setFilterType('all')}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${filterType === 'all' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
-                >
-                  All Announcements
-                </button>
-                <button
-                  onClick={() => setFilterType('my')}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${filterType === 'my' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
-                >
-                  My Announcements
-                </button>
-              </div>
-              <div className="w-full sm:w-64">
-                <SearchBar onSearch={setSearchTerm} placeholder="Search..." />
-              </div>
+        <div className="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.02)] border border-gray-100 p-6 flex-1 flex flex-col min-h-0">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+            <div className="flex gap-2 p-1 bg-gray-50 rounded-xl border border-gray-100">
+              <button
+                onClick={() => setFilterType('all')}
+                className={`px-5 py-2 text-sm font-bold rounded-lg transition-all duration-300 ${filterType === 'all' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
+              >
+                All Announcements
+              </button>
+              <button
+                onClick={() => setFilterType('my')}
+                className={`px-5 py-2 text-sm font-bold rounded-lg transition-all duration-300 ${filterType === 'my' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
+              >
+                My Announcements
+              </button>
             </div>
+            <div className="w-full sm:w-72">
+              <SearchBar onSearch={setSearchTerm} placeholder="Search announcements..." />
+            </div>
+          </div>
 
-            {loading ? (
-              <Loader />
-            ) : announcements.length === 0 ? (
-              <EmptyState
-                icon={<Megaphone className="w-12 h-12" />}
-                title="No announcements"
-                description={filterType === 'my' ? "You haven't created any announcements yet" : "No announcements found"}
-              />
-            ) : (
-              <div className="space-y-3">
-                {paginatedAnnouncements.map((announcement) => (
-                  <div key={announcement._id} className="p-4 rounded-lg border border-gray-100 hover:border-blue-100 hover:shadow-sm transition-all bg-gray-50/50">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex gap-2 mb-1">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-semibold ${announcement.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-                              announcement.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-                                announcement.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-green-100 text-green-700'
-                            }`}>
-                            {announcement.priority || 'NORMAL'}
-                          </span>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 uppercase font-semibold">
-                            {announcement.audience}
-                          </span>
-                        </div>
-                        <h3 className="font-semibold text-gray-800 text-sm mb-1 truncate">{announcement.title}</h3>
-                        <p className="text-xs text-gray-500 line-clamp-2">{announcement.description}</p>
+          {loading ? (
+            <Loader />
+          ) : announcements.length === 0 ? (
+            <EmptyState
+              icon={<Megaphone className="w-12 h-12 text-gray-300" />}
+              title="No announcements"
+              description={filterType === 'my' ? "You haven't created any announcements yet" : "No announcements found"}
+            />
+          ) : (
+            <div className="space-y-4 flex-1 overflow-y-auto pr-2">
+              {paginatedAnnouncements.map((announcement) => (
+                <div key={announcement._id} className="p-5 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-300 bg-white group">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <span className={`text-[10px] px-2.5 py-1 rounded-lg uppercase font-bold tracking-wider ${
+                            announcement.priority === 'urgent' ? 'bg-red-50 text-red-700' :
+                            announcement.priority === 'high' ? 'bg-orange-50 text-orange-700' :
+                            announcement.priority === 'medium' ? 'bg-yellow-50 text-yellow-700' :
+                            'bg-green-50 text-green-700'
+                          }`}>
+                          {announcement.priority || 'NORMAL'}
+                        </span>
+                        <span className="text-[10px] px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 uppercase font-bold tracking-wider">
+                          {announcement.audience}
+                        </span>
                       </div>
+                      <h3 className="font-bold text-gray-900 text-base mb-1.5 truncate group-hover:text-blue-600 transition-colors">{announcement.title}</h3>
+                      <p className="text-sm text-gray-500 line-clamp-2 font-medium">{announcement.description}</p>
+                    </div>
 
-                      <div className="flex items-center gap-1">
-                        <Link to={`/announcement/${announcement._id}`} className="p-1.5 text-gray-400 hover:text-blue-600">
-                          <Eye className="w-4 h-4" />
-                        </Link>
-                        {filterType === 'my' && (
-                          <>
-                            <button onClick={() => openEditModal(announcement)} className="p-1.5 text-gray-400 hover:text-green-600">
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => handleDelete(announcement._id)} className="p-1.5 text-gray-400 hover:text-red-600">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                      </div>
+                    <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-white sm:shadow-sm sm:border border-gray-100 rounded-lg p-1">
+                      <Link to={`/announcement/${announcement._id}`} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="View">
+                        <Eye className="w-4 h-4" />
+                      </Link>
+                      {filterType === 'my' && (
+                        <>
+                          <Link to={`/faculty/announcements/edit/${announcement._id}`} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors" title="Edit">
+                            <Edit className="w-4 h-4" />
+                          </Link>
+                          <button onClick={() => handleDelete(announcement._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Delete">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              ))}
+            </div>
+          )}
 
-            {pagination.pages > 1 && (
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <Pagination
-                  currentPage={pagination.page}
-                  totalPages={pagination.pages}
-                  onPageChange={(page) => setPagination(prev => ({ ...prev, page }))}
-                />
-              </div>
-            )}
-          </div>
+          {pagination.pages > 1 && (
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.pages}
+                onPageChange={(page) => setPagination(prev => ({ ...prev, page }))}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

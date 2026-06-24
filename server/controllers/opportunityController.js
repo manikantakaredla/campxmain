@@ -87,7 +87,16 @@ exports.getOpportunityById = async (req, res, next) => {
 
 exports.createOpportunity = async (req, res, next) => {
   try {
+    const currentUser = await User.findById(req.user.id);
     const newOp = { ...req.body, createdBy: req.user.id };
+    
+    // Enforce faculty/HOD restrictions
+    if (["faculty", "hod"].includes(currentUser.role) && currentUser.department) {
+      if (!newOp.eligibility) newOp.eligibility = {};
+      newOp.eligibility.departments = [currentUser.department];
+      newOp.eligibility.branches = [currentUser.department];
+    }
+    
     const opportunity = await Opportunity.create(newOp);
     
     // 1. Create Calendar Event
