@@ -14,10 +14,10 @@ router.get('/', opportunityController.getOpportunities);
 router.get('/:id', opportunityController.getOpportunityById);
 
 // Admin / Management / Coordinator specific routes
-router.post('/', authorizeRoles('admin', 'management', 'placement_coordinator'), validateOpportunity, validate, opportunityController.createOpportunity);
-router.put('/:id', authorizeRoles('admin', 'management', 'placement_coordinator'), validateOpportunity, validate, opportunityController.updateOpportunity);
-router.delete('/:id', authorizeRoles('admin', 'management', 'placement_coordinator'), opportunityController.deleteOpportunity); // Soft delete
-router.post('/:id/restore', authorizeRoles('admin', 'management', 'placement_coordinator'), opportunityController.restoreOpportunity);
+router.post('/', authorizeRoles('admin', 'management', 'placement_coordinator', 'faculty', 'hod'), validateOpportunity, validate, opportunityController.createOpportunity);
+router.put('/:id', authorizeRoles('admin', 'management', 'placement_coordinator', 'faculty', 'hod'), validateOpportunity, validate, opportunityController.updateOpportunity);
+router.delete('/:id', authorizeRoles('admin', 'management', 'placement_coordinator', 'faculty', 'hod'), opportunityController.deleteOpportunity); // Soft delete
+router.post('/:id/restore', authorizeRoles('admin', 'management', 'placement_coordinator', 'faculty', 'hod'), opportunityController.restoreOpportunity);
 
 // Admin Application Management
 router.patch('/applications/:appId/status', authorizeRoles('admin', 'management', 'placement_coordinator'), opportunityController.updateApplicationStatus);

@@ -310,7 +310,7 @@ exports.createAnnouncement = async (req, res) => {
       startDate,
       expiryDate,
       tags,
-      targetDepartment,
+      targetDepartment: _targetDepartment,
       targetYear,
       targetSection,
       feeAmount,
@@ -363,6 +363,7 @@ exports.createAnnouncement = async (req, res) => {
       attachmentType = req.file.mimetype.startsWith("image/") ? "image" : "pdf";
     }
 
+    let targetDepartment = _targetDepartment;
     let parsedContacts = contacts;
     if (typeof contacts === "string") {
       parsedContacts = JSON.parse(contacts);
