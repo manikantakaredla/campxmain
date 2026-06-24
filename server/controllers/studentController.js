@@ -259,7 +259,7 @@ if (
     }
     
     const recentAnnouncements = await Announcement.find({ status: "active" })
-      .sort({ priority: -1, createdAt: -1 })
+      .sort({ createdAt: -1 })
       .limit(5)
       .populate("createdBy", "name")
       .lean();

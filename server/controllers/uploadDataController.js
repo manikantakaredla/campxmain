@@ -99,12 +99,52 @@ exports.uploadFaculty = async (req, res) => {
       return res.status(400).json({ success: false, message: "No file uploaded" });
     }
     
+    // Parse the file. The buffer is read as UTF-8 by default in stream/csv-parser.
     const data = await parseFile(req.file.buffer, req.file.mimetype, req.file.originalname);
     const errors = [];
     let successCount = 0;
     
+    // 1 & 2. Helper to clean and sanitize string fields to fix encoding issues
+    const sanitizeString = (str) => {
+      if (typeof str !== 'string') return str;
+      // 3. Remove replacement character (), UTF-8 BOM, and zero-width spaces
+      let cleaned = str.replace(/[\uFFFD\uFEFF\u200B]/g, '');
+      // Remove invisible ASCII control characters (except tab, newline, carriage return)
+      cleaned = cleaned.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+      // 4. Trim leading and trailing whitespace
+      return cleaned.trim();
+    };
+    
     for (let i = 0; i < data.length; i++) {
-      const row = data[i];
+      let row = data[i];
+      let hasInvalidChars = false;
+      
+      // Clean all keys and values in the row
+      const cleanRow = {};
+      for (const [key, value] of Object.entries(row)) {
+        const cleanKey = sanitizeString(key);
+        if (typeof value === 'string' && value.includes('\uFFFD')) {
+          hasInvalidChars = true;
+        }
+        cleanRow[cleanKey] = sanitizeString(value);
+      }
+      row = cleanRow;
+
+      // 6. Log rows containing invalid characters for debugging
+      if (hasInvalidChars) {
+        console.warn(`[Encoding Warning] Row ${i + 2} contained invalid characters (like ). It has been sanitized.`, row);
+      }
+
+      // 5. Add validation for required fields
+      if (!row.empid || !row.name || !row.email || !row.dept || !row.designation) {
+        errors.push({
+          row: i + 2,
+          identifier: row.empid || 'Unknown',
+          message: "Missing required fields: empid, name, email, dept, or designation"
+        });
+        continue;
+      }
+      
       const rowErrors = validateFacultyRow(row, i);
       
       if (rowErrors.length > 0) {
@@ -113,24 +153,28 @@ exports.uploadFaculty = async (req, res) => {
       }
       
       try {
-        const existing = await FacultyData.findOne({ $or: [{ empid: row.empid }, { email: row.email }] });
+        // Sanitize specific fields again explicitly for safety
+        const empid = row.empid.toUpperCase();
+        const email = row.email.toLowerCase();
+        
+        const existing = await FacultyData.findOne({ $or: [{ empid: empid }, { email: email }] });
         
         if (existing) {
           errors.push({
             row: i + 2,
-            identifier: row.empid,
+            identifier: empid,
             message: "Duplicate employee ID or email"
           });
           continue;
         }
         
         await FacultyData.create({
-          empid: row.empid.toUpperCase(),
+          empid: empid,
           name: row.name,
-          email: row.email.toLowerCase(),
+          email: email,
           dept: row.dept,
           designation: row.designation,
-          staff_role: row.staff_role.toLowerCase(),
+          staff_role: (row.staff_role || 'faculty').toLowerCase(),
           uploadedBy: req.user.id
         });
         
@@ -138,7 +182,7 @@ exports.uploadFaculty = async (req, res) => {
       } catch (error) {
         errors.push({
           row: i + 2,
-          identifier: row.empid,
+          identifier: row.empid || 'Unknown',
           message: error.message
         });
       }

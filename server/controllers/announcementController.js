@@ -174,7 +174,7 @@ exports.getClassTeacherAnnouncements = async (req, res) => {
       status: "active"
     })
     .populate("createdBy", "name email role profilePicture")
-    .sort({ priority: -1, createdAt: -1 })
+    .sort({ createdAt: -1 })
     .limit(parseInt(req.query.limit) || 50)
     .lean();
     
@@ -210,7 +210,7 @@ exports.getProctorAnnouncements = async (req, res) => {
       status: "active"
     })
     .populate("createdBy", "name email role profilePicture")
-    .sort({ priority: -1, createdAt: -1 })
+    .sort({ createdAt: -1 })
     .limit(parseInt(req.query.limit) || 50)
     .lean();
     
@@ -611,7 +611,7 @@ if (forClass === "true" && req.user.role === "student") {
     
     const announcements = await Announcement.find(query)
       .populate("createdBy", "name email role profilePicture")
-      .sort({ priority: -1, createdAt: -1 })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
       .lean();

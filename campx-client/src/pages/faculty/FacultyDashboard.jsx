@@ -104,11 +104,11 @@ const FacultyDashboard = () => {
 
   const fetchClassStudents = async () => {
     try {
-      const res = await facultyService.getClassStudents();
-      // Only set if not already set by summary
-      if (stats.classStudents === 0) {
-        setStats(prev => ({ ...prev, classStudents: res.students?.length || 0 }));
-      }
+      const res = await facultyService.getClassStudents({ limit: 1 });
+      setStats(prev => ({ 
+        ...prev, 
+        classStudents: prev.classStudents > 0 ? prev.classStudents : (res.pagination?.total || 0) 
+      }));
     } catch (error) {
       console.error('Error fetching class students:', error);
     }
@@ -139,8 +139,8 @@ const FacultyDashboard = () => {
 
   const fetchProctorStudents = async () => {
     try {
-      const res = await facultyService.getProctorStudents();
-      setStats(prev => ({ ...prev, proctorStudents: res.students?.length || 0 }));
+      const res = await facultyService.getProctorStudents({ limit: 1 });
+      setStats(prev => ({ ...prev, proctorStudents: res.pagination?.total || 0 }));
     } catch (error) {
       console.error('Error fetching proctor students:', error);
     }
