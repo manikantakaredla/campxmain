@@ -100,7 +100,7 @@ const AdminDashboard = () => {
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 flex items-center gap-2">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+            <span className="bg-clip-text text-transparent">
               Dashboard
             </span>
           </h1>
@@ -137,11 +137,10 @@ const AdminDashboard = () => {
                   <item.icon size={18} className={colors.text} />
                 </div>
                 {item.change && (
-                  <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${
-                    item.change === 'pending' 
-                      ? 'bg-amber-100/80 text-amber-700' 
+                  <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${item.change === 'pending'
+                      ? 'bg-amber-100/80 text-amber-700'
                       : 'bg-emerald-100/80 text-emerald-700'
-                  }`}>
+                    }`}>
                     {item.change}
                   </span>
                 )}
@@ -199,11 +198,10 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-4 flex-shrink-0">
-                      <span className={`text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider ${
-                        u.role === 'admin' ? 'bg-purple-100 text-purple-700' :
-                        u.role === 'faculty' ? 'bg-blue-100 text-blue-700' :
-                        'bg-green-100 text-green-700'
-                      }`}>
+                      <span className={`text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' :
+                          u.role === 'faculty' ? 'bg-blue-100 text-blue-700' :
+                            'bg-green-100 text-green-700'
+                        }`}>
                         {u.role}
                       </span>
                       <Link to={`/admin/users/${u._id}`} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all opacity-0 group-hover:opacity-100">
@@ -291,7 +289,7 @@ const AdminDashboard = () => {
             <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl shadow-lg overflow-hidden text-white relative">
               <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl"></div>
               <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-32 h-32 bg-indigo-500 opacity-20 rounded-full blur-2xl"></div>
-              
+
               <div className="px-6 py-5 border-b border-white/10 relative z-10">
                 <h3 className="text-base font-bold flex items-center gap-2 text-white">
                   <div className="p-1.5 bg-white/10 rounded-lg">

@@ -8,6 +8,7 @@ import { encryptMessage, decryptMessage } from '../../utils/encryption';
 
 const Messages = () => {
   const { user } = useAuth();
+  const currentUserId = user?._id || user?.id;
   const [searchParams] = useSearchParams();
   const initialUserId = searchParams.get('userId');
 
@@ -106,7 +107,7 @@ const Messages = () => {
         setMessages(decryptedMessages);
         
         // Mark as read
-        const hasUnread = res.data.data.some(m => !m.readBy.includes(user._id));
+        const hasUnread = res.data.data.some(m => !m.readBy.includes(currentUserId));
         if (hasUnread) {
           await api.post('/chat/read', selectedChat.isGroup ? { groupId: selectedChat._id } : { userId: selectedChat._id });
           fetchConversations(); // Update unread count
@@ -139,7 +140,7 @@ const Messages = () => {
           
           if (isDirectMatch || isGroupMatch) {
             const isCurrentlyOpen = selectedChat && selectedChat._id === chat._id;
-            const shouldIncrementUnread = (newMsg.sender._id !== user._id) && !isCurrentlyOpen;
+            const shouldIncrementUnread = (newMsg.sender._id !== currentUserId) && !isCurrentlyOpen;
             
             return {
               ...chat,
@@ -171,7 +172,7 @@ const Messages = () => {
           });
           
           // Auto mark as read if it's not sent by me
-          if (newMsg.sender._id !== user._id) {
+          if (newMsg.sender._id !== currentUserId) {
              api.post('/chat/read', selectedChat.isGroup ? { groupId: selectedChat._id } : { userId: selectedChat._id });
           }
         }
@@ -219,7 +220,7 @@ const Messages = () => {
       socket.off('messageRead', handleMessageRead);
       socket.off('messageDeleted', handleMessageDeleted);
     };
-  }, [socket, selectedChat, user._id]);
+  }, [socket, selectedChat, currentUserId]);
 
   // Auto scroll
   useEffect(() => {
@@ -456,7 +457,7 @@ const Messages = () => {
                 </div>
 
                 {messages.map((msg, index) => {
-                  const isMine = msg.sender?._id === user._id;
+                  const isMine = msg.sender?._id === currentUserId;
                   const showSenderName = selectedChat.isGroup && !isMine && (index === 0 || messages[index-1].sender?._id !== msg.sender?._id);
 
                   return (
