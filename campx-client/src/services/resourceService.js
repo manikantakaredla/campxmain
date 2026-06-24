@@ -13,12 +13,15 @@ export const resourceService = {
   },
   
   create: async (data) => {
-    const formData = new FormData()
-    Object.keys(data).forEach(key => {
-      if (data[key] !== undefined && data[key] !== null) {
-        formData.append(key, data[key])
-      }
-    })
+    let formData = data;
+    if (!(data instanceof FormData)) {
+      formData = new FormData()
+      Object.keys(data).forEach(key => {
+        if (data[key] !== undefined && data[key] !== null) {
+          formData.append(key, data[key])
+        }
+      })
+    }
     const response = await api.post('/resources', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })

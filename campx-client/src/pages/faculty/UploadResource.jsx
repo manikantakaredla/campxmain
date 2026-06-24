@@ -13,7 +13,8 @@ const UploadResource = () => {
   const [loading, setLoading] = useState(false)
   const [submitStatus, setSubmitStatus] = useState('active')
   const user = authService.getStoredUser();
-  const isAdminOrHigher = user && ['admin', 'management', 'principal', 'dean'].includes(user.role);
+  const rawRole = localStorage.getItem('role') || (user ? user.role : null);
+  const isAdminOrHigher = ['admin', 'management', 'principal', 'dean'].includes(rawRole);
 
   const [formData, setFormData] = useState({
     title: '',
