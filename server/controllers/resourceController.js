@@ -19,7 +19,6 @@ exports.createResource = async (req, res) => {
       subjectId,
       unitNumber,
       approvalStatus,
-      visibility,
       targetSection,
       status
     } = req.body;
