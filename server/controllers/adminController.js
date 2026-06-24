@@ -141,15 +141,17 @@ exports.getAllUsers = async (req, res) => {
       const variations = [requestedBranch];
       
       const map = {
-        "CSE": ["COMPUTER SCIENCE AND ENGINEERING", "B.TECH COMPUTER SCIENCE AND ENGINEERING", "CS"],
-        "ECE": ["ELECTRONICS AND COMMUNICATION ENGINEERING", "B.TECH ELECTRONICS AND COMMUNICATION ENGINEERING", "EC"],
-        "EEE": ["ELECTRICAL AND ELECTRONICS ENGINEERING", "B.TECH ELECTRICAL AND ELECTRONICS ENGINEERING", "EE"],
-        "IT": ["INFORMATION TECHNOLOGY", "B.TECH INFORMATION TECHNOLOGY"],
-        "MECH": ["MECHANICAL ENGINEERING", "B.TECH MECHANICAL ENGINEERING", "ME"],
-        "CIVIL": ["CIVIL ENGINEERING", "B.TECH CIVIL ENGINEERING", "CE"],
-        "AIML": ["ARTIFICIAL INTELLIGENCE & MACHINE LEARNING", "ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING", "AI ML", "AI"],
-        "DS": ["DATA SCIENCE", "B.TECH DATA SCIENCE", "DATA"],
-        "AGRI": ["AGRICULTURAL ENGINEERING", "AGRICULTURAL", "AG"]
+        "CSE": ["COMPUTER SCIENCE AND ENGINEERING", "B.TECH COMPUTER SCIENCE AND ENGINEERING", "CS", "B.Tech. - Computer Science and Engineering"],
+        "ECE": ["ELECTRONICS AND COMMUNICATION ENGINEERING", "B.TECH ELECTRONICS AND COMMUNICATION ENGINEERING", "EC", "B.Tech. - Electronics and Communication Engineering"],
+        "EEE": ["ELECTRICAL AND ELECTRONICS ENGINEERING", "B.TECH ELECTRICAL AND ELECTRONICS ENGINEERING", "EE", "B.Tech. - Electrical and Electronics Engineering"],
+        "IT": ["INFORMATION TECHNOLOGY", "B.TECH INFORMATION TECHNOLOGY", "B.Tech. - Information Technology"],
+        "MECH": ["MECHANICAL ENGINEERING", "B.TECH MECHANICAL ENGINEERING", "ME", "B.Tech. - Mechanical Engineering"],
+        "CIVIL": ["CIVIL ENGINEERING", "B.TECH CIVIL ENGINEERING", "CE", "B.Tech. - Civil Engineering"],
+        "AIML": ["ARTIFICIAL INTELLIGENCE & MACHINE LEARNING", "ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING", "AI ML", "AI", "B.Tech. - Artificial Intelligence & Machine Learning (AI & ML)", "ARTIFICIAL INTELLIGENCE & MACHINE LEARNING (AI & ML)"],
+        "DS": ["DATA SCIENCE", "B.TECH DATA SCIENCE", "DATA", "B.Tech. - Computer Science and Engineering - Data Science", "COMPUTER SCIENCE AND ENGINEERING - DATA SCIENCE"],
+        "AGRI": ["AGRICULTURAL ENGINEERING", "AGRICULTURAL", "AG", "B.Tech. - Agricultural Engineering"],
+        "MINING": ["MINING ENGINEERING", "MINING", "B.Tech. - Mining Engineering"],
+        "PETRO": ["PETROLEUM TECHNOLOGY", "PETROLEUM", "B.Tech. - Petroleum Technology"]
       };
       
       if (map[branchInput]) {
@@ -162,7 +164,10 @@ exports.getAllUsers = async (req, res) => {
         }
       }
       
-      const branchRegexArray = variations.map(v => new RegExp(`^${v}$`, 'i'));
+      const branchRegexArray = variations.map(v => {
+        const escaped = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`^${escaped}$`, 'i');
+      });
       
       if (!role || role === 'student') {
         userQuery.branch = { $in: branchRegexArray };
@@ -204,7 +209,9 @@ exports.getAllUsers = async (req, res) => {
       if (!role || role === 'student') {
         const sdQuery = { isRegistered: false };
         if (studentBranchQuery) sdQuery.branch = studentBranchQuery;
-        if (req.query.section) sdQuery.section = req.query.section;
+        if (req.query.section) {
+          sdQuery.section = new RegExp(`^${req.query.section}$`, 'i');
+        }
         if (search) {
           sdQuery.$or = [
             { name: { $regex: search, $options: "i" } },
