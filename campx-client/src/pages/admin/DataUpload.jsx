@@ -3,7 +3,6 @@ import { useAuth } from '../../hooks/useAuth'
 import { Upload, Download, FileText, CheckCircle, XCircle, AlertCircle, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
-import ClassSectionAssignmentsTab from '../management/ClassSectionAssignmentsTab'
 
 const DataUpload = () => {
   const { user } = useAuth()

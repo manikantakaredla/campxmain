@@ -11,7 +11,7 @@ const resourceSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ["Notes", "PPT", "Assignment", "Lab", "Question Bank", "Previous Papers", "Other"],
+    enum: ["Notes", "PPT", "Assignment", "Lab", "Question Bank", "Previous Papers", "Previous Paper", "Lab Manual", "Syllabus", "Video Link", "Other"],
     default: "Notes"
   },
   subjectId: {
