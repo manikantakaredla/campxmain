@@ -284,11 +284,13 @@ exports.getResources = async (req, res) => {
       const classAssignment = await ClassStudentAssignment.findOne({ studentId: req.user.id }).select("facultyId");
       const proctorAssignment = await ProctorStudentAssignment.findOne({ studentId: req.user.id }).select("facultyId");
 
-      // Find subjects for student's branch and semester
-      const studentSubjects = await Subject.find({
-        department: user.branch,
-        semester: user.currentSemester || { $exists: true }
-      }).select("_id");
+      // Find subjects for student's branch
+      const subjectQuery = {};
+      if (user.branch) {
+        subjectQuery.department = user.branch;
+      }
+      
+      const studentSubjects = await Subject.find(subjectQuery).select("_id");
       const subjectIds = studentSubjects.map(s => s._id);
 
       const accessibilityQuery = [
