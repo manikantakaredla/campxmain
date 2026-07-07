@@ -265,17 +265,22 @@ const FacultyDetailsModal = ({ facultyId, onClose }) => {
                         checked={(faculty?.specialRoles || []).includes(role.id)}
                         onChange={async (e) => {
                           const isChecked = e.target.checked;
+                          const currentRoles = faculty?.specialRoles || [];
                           const newRoles = isChecked 
-                            ? [...(faculty?.specialRoles || []), role.id] 
-                            : (faculty?.specialRoles || []).filter(r => r !== role.id);
+                            ? [...currentRoles, role.id] 
+                            : currentRoles.filter(r => r !== role.id);
+                          
+                          // Optimistic update for instant feedback
+                          setFaculty(prev => ({ ...prev, specialRoles: newRoles }));
                           
                           try {
                             const res = await api.put(`/admin/users/${facultyId}`, { specialRoles: newRoles });
                             if (res.data.success) {
                               toast.success('Special roles updated');
-                              fetchFacultyDetails();
                             }
                           } catch (err) {
+                            // Revert on failure
+                            setFaculty(prev => ({ ...prev, specialRoles: currentRoles }));
                             toast.error('Failed to update special roles');
                           }
                         }}

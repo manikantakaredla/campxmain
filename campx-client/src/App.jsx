@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
+import { useSettings } from './hooks/useSettings'
 import Layout from './components/layout/Layout'
 import ErrorBoundary from './components/common/ErrorBoundary'
 
@@ -15,6 +16,7 @@ const LoadingSpinner = () => (
 import LandingPage from './pages/auth/LandingPage'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import ResetPassword from './pages/auth/ResetPassword'
+import MaintenancePage from './pages/common/MaintenancePage'
 
 // Lazy loaded pages
 const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'))
@@ -75,9 +77,10 @@ const RoleBasedRedirect = ({ role }) => {
 }
 
 function App() {
-  const { user, isAuthenticated, loading } = useAuth()
+  const { user, isAuthenticated, loading: authLoading } = useAuth()
+  const { settings, loading: settingsLoading } = useSettings()
 
-  if (loading) return <LoadingSpinner />
+  if (authLoading) return <LoadingSpinner />
 
   if (!isAuthenticated) {
     return (
@@ -90,6 +93,18 @@ function App() {
   }
 
   const role = user?.role
+
+  // Wait for settings to load before checking maintenance mode
+  if (settingsLoading) return <LoadingSpinner />
+
+  // Enforce Maintenance Mode (block everyone except Admin)
+  if (settings?.maintenanceMode && role !== 'admin') {
+    return (
+      <Routes>
+        <Route path="*" element={<MaintenancePage />} />
+      </Routes>
+    )
+  }
 
   const wrapSuspense = (Component) => (
     <Suspense fallback={<LoadingSpinner />}>
