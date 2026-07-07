@@ -50,9 +50,7 @@ const UserManagement = () => {
   useEffect(() => {
     // Lock department for HOD
     if (user?.role === 'hod' && user?.department) {
-      const normalizedDept = Object.keys(settings?.academicMaster || {}).find(
-        key => settings.academicMaster[key].name === user.department || key === user.department
-      ) || user.department;
+      const normalizedDept = user.department;
       setSelectedDept(normalizedDept);
       setViewState('sections');
     }

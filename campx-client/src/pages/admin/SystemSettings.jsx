@@ -104,6 +104,9 @@ const SystemSettings = () => {
     if (newSec && newSec.trim()) {
       setSettings(prev => {
         const newConfigs = [...prev.branchConfigs];
+        // Clone branch object
+        newConfigs[branchIndex] = { ...newConfigs[branchIndex] };
+        
         if (!newConfigs[branchIndex].years) newConfigs[branchIndex].years = {};
         const yearData = [...(newConfigs[branchIndex].years[year] || [])];
         if (!yearData.includes(newSec.trim())) {
@@ -499,6 +502,7 @@ const SystemSettings = () => {
                                                   if (newSec && newSec.trim()) {
                                                     setSettings(prev => {
                                                       const newConfigs = [...prev.branchConfigs];
+                                                      newConfigs[index] = { ...newConfigs[index] };
                                                       const yearData = [...(newConfigs[index].years[year] || [])];
                                                       yearData[secIndex] = newSec.trim();
                                                       newConfigs[index].years = {
@@ -519,6 +523,7 @@ const SystemSettings = () => {
                                                   if (window.confirm(`Delete Section ${section}?`)) {
                                                     setSettings(prev => {
                                                       const newConfigs = [...prev.branchConfigs];
+                                                      newConfigs[index] = { ...newConfigs[index] };
                                                       const yearData = [...(newConfigs[index].years[year] || [])];
                                                       yearData.splice(secIndex, 1);
                                                       newConfigs[index].years = {
