@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { X, BookOpen, Users, UserCheck, Activity, Briefcase, Plus, Trash2 } from 'lucide-react'
+import { X, BookOpen, Users, UserCheck, Activity, Briefcase, Plus, Trash2, Award } from 'lucide-react'
 import facultyManagementService from '../../services/facultyManagementService'
 import subjectService from '../../services/subjectService'
 import { Loader } from '../common/Loader'
 import toast from 'react-hot-toast'
+import api from '../../services/api'
 
 const FacultyDetailsModal = ({ facultyId, onClose }) => {
   const [faculty, setFaculty] = useState(null)
@@ -240,6 +241,49 @@ const FacultyDetailsModal = ({ facultyId, onClose }) => {
                     <p className="text-orange-600 text-sm font-medium mb-1">Proctor Students</p>
                     <p className="text-2xl font-bold text-orange-700">{faculty?.workload?.proctorStudentsCount || 0}</p>
                   </div>
+                </div>
+              </div>
+
+              {/* Special Roles Section */}
+              <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm md:col-span-2">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                    <Award className="w-5 h-5 text-indigo-500" /> Special Roles / Permissions
+                  </h3>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                  {[
+                    { id: 'exam_controller', label: 'Exam Controller' },
+                    { id: 'academics', label: 'Academics' },
+                    { id: 'event_coordinator', label: 'Event Coordinator' },
+                    { id: 'placement_coordinator', label: 'Placement Coordinator' },
+                    { id: 'sports_coordinator', label: 'Sports Coordinator' },
+                  ].map(role => (
+                    <label key={role.id} className="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={(faculty?.specialRoles || []).includes(role.id)}
+                        onChange={async (e) => {
+                          const isChecked = e.target.checked;
+                          const newRoles = isChecked 
+                            ? [...(faculty?.specialRoles || []), role.id] 
+                            : (faculty?.specialRoles || []).filter(r => r !== role.id);
+                          
+                          try {
+                            const res = await api.put(`/admin/users/${facultyId}`, { specialRoles: newRoles });
+                            if (res.data.success) {
+                              toast.success('Special roles updated');
+                              fetchFacultyDetails();
+                            }
+                          } catch (err) {
+                            toast.error('Failed to update special roles');
+                          }
+                        }}
+                        className="rounded text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                      />
+                      <span className="text-sm font-medium text-gray-700">{role.label}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
             </div>

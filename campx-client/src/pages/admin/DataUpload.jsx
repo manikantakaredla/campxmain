@@ -25,7 +25,19 @@ const DataUpload = () => {
       columns: ['empid', 'name', 'email', 'dept', 'designation', 'staff_role'],
       endpoint: '/admin/upload/faculty',
       template: 'faculty_template.csv',
-      sample: 'empid,name,email,dept,designation,staff_role\nFAC001,Dr. Rajesh Kumar,rajesh.k@adityauniversity.in,CSE,Professor,faculty\nFAC002,Dr. Anita Sharma,anita.s@adityauniversity.in,ECE,Associate Professor,hod\nFAC003,Prof. John Doe,john.d@adityauniversity.in,MECH,Assistant Professor,faculty\nFAC004,Dr. Sarah Lee,sarah.l@adityauniversity.in,CIVIL,Professor,dean\nFAC005,Prof. Amit Patel,amit.p@adityauniversity.in,AGRI,Assistant Professor,faculty' }
+      sample: 'empid,name,email,dept,designation,staff_role\nFAC001,Dr. Rajesh Kumar,rajesh.k@adityauniversity.in,CSE,Professor,faculty\nFAC002,Dr. Anita Sharma,anita.s@adityauniversity.in,ECE,Associate Professor,hod\nFAC003,Prof. John Doe,john.d@adityauniversity.in,MECH,Assistant Professor,faculty\nFAC004,Dr. Sarah Lee,sarah.l@adityauniversity.in,CIVIL,Professor,dean\nFAC005,Prof. Amit Patel,amit.p@adityauniversity.in,AGRI,Assistant Professor,faculty' },
+    { id: 'class_assignments', label: 'Class Assignments', 
+      description: 'Upload class assignments for faculty.',
+      columns: ['FacultyEmployeeID', 'RollNumber'],
+      endpoint: '/admin/upload/class-assignments',
+      template: 'class_assignments_template.csv',
+      sample: 'FacultyEmployeeID,RollNumber\nFAC001,24B11CS052\nFAC001,24B11CS053\nFAC002,24B11EC012' },
+    { id: 'proctor_assignments', label: 'Proctor Assignments', 
+      description: 'Upload proctor assignments for faculty.',
+      columns: ['FacultyEmployeeID', 'RollNumber'],
+      endpoint: '/admin/upload/proctor-assignments',
+      template: 'proctor_assignments_template.csv',
+      sample: 'FacultyEmployeeID,RollNumber\nFAC001,24B11CS052\nFAC001,24B11CS053\nFAC002,24B11EC012' }
   ]
 
   const currentTab = tabs.find(t => t.id === activeTab)
@@ -132,7 +144,7 @@ const DataUpload = () => {
         ))}
       </div>
 
-      {activeTab === 'students' || activeTab === 'faculty' ? (
+      {true ? (
         <>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Upload Card */}
