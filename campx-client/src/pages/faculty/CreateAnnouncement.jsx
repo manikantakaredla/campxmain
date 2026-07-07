@@ -4,11 +4,13 @@ import { ArrowLeft, Upload, X, Plus, Trash2, Search, Users, AlertCircle, Eye } f
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 import { useSettings } from '../../hooks/useSettings'
+import { useAuth } from '../../hooks/useAuth'
 
 const CreateAnnouncement = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { settings } = useSettings()
+  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const targetParam = new URLSearchParams(location.search).get('target')
 
@@ -205,15 +207,38 @@ const CreateAnnouncement = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                 <select name="type" value={formData.type} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
-                  <option value="general">General</option>
-                  <option value="academic">Academic</option>
-                  <option value="examination">Examination</option>
-                  <option value="internship">Internship</option>
-                  <option value="placement">Placement</option>
-                  <option value="hackathon">Hackathon</option>
-                  <option value="event">Event</option>
-                  <option value="holiday">Holiday</option>
-                  <option value="emergency">Emergency</option>
+                  {(() => {
+                    let types = ['general', 'academic', 'emergency'];
+                    if (['admin', 'dean', 'hod', 'principal'].includes(user?.role)) {
+                      types = ['general', 'academic', 'examination', 'internship', 'placement', 'hackathon', 'event', 'holiday', 'emergency', 'fee', 'workshop', 'crt', 'sports'];
+                    } else if (user?.role === 'faculty') {
+                      const roles = user?.specialRoles || [];
+                      if (roles.includes("exam_controller")) types.push("examination");
+                      if (roles.includes("academics")) types.push("fee", "examination", "holiday");
+                      if (roles.includes("event_coordinator")) types.push("event", "workshop", "hackathon");
+                      if (roles.includes("placement_coordinator")) types.push("placement", "internship", "crt");
+                      if (roles.includes("sports_coordinator")) types.push("sports");
+                    }
+                    const allowedTypes = [...new Set(types)];
+                    
+                    return (
+                      <>
+                        {allowedTypes.includes('general') && <option value="general">General</option>}
+                        {allowedTypes.includes('academic') && <option value="academic">Academic</option>}
+                        {allowedTypes.includes('fee') && <option value="fee">Fee</option>}
+                        {allowedTypes.includes('examination') && <option value="examination">Examination</option>}
+                        {allowedTypes.includes('internship') && <option value="internship">Internship</option>}
+                        {allowedTypes.includes('placement') && <option value="placement">Placement</option>}
+                        {allowedTypes.includes('hackathon') && <option value="hackathon">Hackathon</option>}
+                        {allowedTypes.includes('event') && <option value="event">Event</option>}
+                        {allowedTypes.includes('workshop') && <option value="workshop">Workshop</option>}
+                        {allowedTypes.includes('crt') && <option value="crt">CRT</option>}
+                        {allowedTypes.includes('sports') && <option value="sports">Sports</option>}
+                        {allowedTypes.includes('holiday') && <option value="holiday">Holiday</option>}
+                        {allowedTypes.includes('emergency') && <option value="emergency">Emergency</option>}
+                      </>
+                    );
+                  })()}
                 </select>
               </div>
               <div>

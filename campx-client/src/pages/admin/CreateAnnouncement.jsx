@@ -4,10 +4,12 @@ import { ArrowLeft, Upload, X, Plus, Trash2, Search, Users, AlertCircle, Eye } f
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 import { useSettings } from '../../hooks/useSettings'
+import { useAuth } from '../../hooks/useAuth'
 
 const CreateAnnouncement = () => {
   const navigate = useNavigate()
   const { settings } = useSettings()
+  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewData, setPreviewData] = useState(null)
@@ -18,7 +20,7 @@ const CreateAnnouncement = () => {
     description: '',
     type: 'general',
     priority: 'medium',
-    audienceType: 'all',
+    audienceType: user?.role === 'admin' ? 'all' : 'branch_wise',
     addToCalendar: false,
     sendNotification: true,
     isPinned: false,
@@ -298,6 +300,10 @@ const CreateAnnouncement = () => {
                   <option value="placement">Placement</option>
                   <option value="hackathon">Hackathon</option>
                   <option value="event">Event</option>
+                  <option value="workshop">Workshop</option>
+                  <option value="fee">Fee</option>
+                  <option value="crt">CRT</option>
+                  <option value="sports">Sports</option>
                   <option value="holiday">Holiday</option>
                   <option value="emergency">Emergency</option>
                 </select>
@@ -323,7 +329,7 @@ const CreateAnnouncement = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Audience Scope</label>
               <select name="audienceType" value={formData.audienceType} onChange={handleChange} className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg bg-white">
-                <option value="all">Entire University</option>
+                {user?.role === 'admin' && <option value="all">Entire University</option>}
                 <option value="branch_wise">Branch Wise</option>
                 <option value="section_wise">Section Wise</option>
                 <option value="individual">Individual Students</option>
@@ -334,7 +340,12 @@ const CreateAnnouncement = () => {
               <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
                 <label className="block text-sm font-medium text-blue-900 mb-2">Select Branches (Multi-select)</label>
                 <select multiple name="targetBranches" value={formData.targetBranches} onChange={handleChange} className="w-full px-4 py-2 border border-blue-200 rounded-lg bg-white h-32 focus:ring-blue-500">
-                  {settings?.branches?.map(b => (
+                  {settings?.branches?.filter(b => {
+                    if (user?.role === 'admin') return true;
+                    if (user?.role === 'dean' && user?.managedBranches?.length > 0) return user.managedBranches.includes(b);
+                    if (user?.department) return b === user.department;
+                    return false;
+                  }).map(b => (
                     <option key={b} value={b} className="p-2 hover:bg-blue-50">{b}</option>
                   ))}
                 </select>

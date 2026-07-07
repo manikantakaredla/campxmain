@@ -354,6 +354,7 @@ exports.updateUser = async (req, res) => {
     if (department && user.role !== "student") user.department = department;
     if (designation && user.role !== "student") user.designation = designation;
     if (typeof isActive === "boolean") user.isActive = isActive;
+    if (req.body.specialRoles && user.role !== "student") user.specialRoles = req.body.specialRoles;
     
     await user.save();
     

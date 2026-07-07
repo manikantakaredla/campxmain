@@ -99,7 +99,12 @@ const userSchema = new mongoose.Schema({
   facultySubjects: {
     primary: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }],
     secondary: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }]
-  }
+  },
+
+  specialRoles: [{
+    type: String,
+    enum: ["exam_controller", "academics", "event_coordinator", "placement_coordinator", "sports_coordinator"]
+  }]
 
 }, { 
   timestamps: true 

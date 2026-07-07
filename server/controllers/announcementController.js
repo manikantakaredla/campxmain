@@ -371,12 +371,32 @@ exports.createAnnouncement = async (req, res) => {
 
     const currentUser = await User.findById(req.user.id);
 
-    // Permission Check: Prevent faculty from making university-wide announcements
+    // Permission Check: Prevent non-admins from making university-wide announcements
     if (audience === "all" && !["admin", "management"].includes(currentUser.role)) {
       return res.status(403).json({
         success: false,
         message: "You are not authorized to create university-wide announcements."
       });
+    }
+
+    // Role-based Type Enforcement
+    if (currentUser.role === "faculty") {
+      const allowedTypes = ["general", "academic", "emergency"];
+      const roles = currentUser.specialRoles || [];
+      
+      if (roles.includes("exam_controller")) allowedTypes.push("examination");
+      if (roles.includes("academics")) allowedTypes.push("fee", "examination", "holiday");
+      if (roles.includes("event_coordinator")) allowedTypes.push("event", "workshop", "hackathon");
+      if (roles.includes("placement_coordinator")) allowedTypes.push("placement", "internship", "crt");
+      if (roles.includes("sports_coordinator")) allowedTypes.push("sports");
+      
+      const requestedType = type || "general";
+      if (!allowedTypes.includes(requestedType)) {
+        return res.status(403).json({
+          success: false,
+          message: `You do not have permission to create '${requestedType}' announcements.`
+        });
+      }
     }
 
     // Parse targeting arrays
@@ -406,10 +426,12 @@ exports.createAnnouncement = async (req, res) => {
         parsedTargetSections = typeof targetSections === 'string' ? JSON.parse(targetSections) : targetSections;
       } catch(e) { parsedTargetSections = []; }
     }
-    
-    // Enforcement: Faculty & HOD are restricted to their own department
-    if (["faculty", "hod"].includes(currentUser.role)) {
-      if (currentUser.department) {
+
+    // Enforcement: Faculty, HOD, and Dean are restricted to their own department/branches
+    if (["faculty", "hod", "dean"].includes(currentUser.role)) {
+      if (currentUser.role === "dean" && currentUser.managedBranches && currentUser.managedBranches.length > 0) {
+        parsedTargetBranches = [...currentUser.managedBranches];
+      } else if (currentUser.department) {
         parsedTargetBranches = [currentUser.department];
         targetDepartment = currentUser.department;
       }

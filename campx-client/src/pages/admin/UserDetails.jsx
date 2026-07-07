@@ -57,7 +57,8 @@ const UserDetails = () => {
         }),
         ...(user.role !== 'student' && { 
           department: formData.department, 
-          designation: formData.designation 
+          designation: formData.designation,
+          specialRoles: formData.specialRoles
         })
       })
       toast.success('User updated successfully')
@@ -228,6 +229,39 @@ const UserDetails = () => {
                 </div>
               )}
 
+              {user.role === 'faculty' && (
+                <div className="mt-4 border-t pt-4 border-gray-100">
+                  <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <Award className="w-4 h-4 text-indigo-500" />
+                    Special Roles / Permissions
+                  </label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {[
+                      { id: 'exam_controller', label: 'Exam Controller' },
+                      { id: 'academics', label: 'Academics' },
+                      { id: 'event_coordinator', label: 'Event Coordinator' },
+                      { id: 'placement_coordinator', label: 'Placement Coordinator' },
+                      { id: 'sports_coordinator', label: 'Sports Coordinator' },
+                    ].map(role => (
+                      <label key={role.id} className="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={(formData.specialRoles || []).includes(role.id)}
+                          onChange={(e) => {
+                            const newRoles = e.target.checked 
+                              ? [...(formData.specialRoles || []), role.id] 
+                              : (formData.specialRoles || []).filter(r => r !== role.id);
+                            setFormData(prev => ({ ...prev, specialRoles: newRoles }));
+                          }}
+                          className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                        />
+                        <span className="text-sm font-medium text-gray-700">{role.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <button onClick={() => setIsEditing(false)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
                 <button onClick={handleUpdateUser} disabled={updating} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
@@ -326,6 +360,22 @@ const UserDetails = () => {
                       <Briefcase size={14} /> Designation
                     </p>
                     <p className="text-gray-800 font-medium">{user.designation || 'N/A'}</p>
+                  </div>
+                </div>
+              )}
+
+              {user.role === 'faculty' && user.specialRoles && user.specialRoles.length > 0 && (
+                <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl mt-4">
+                  <h3 className="text-sm font-semibold text-indigo-800 mb-3 flex items-center gap-2">
+                    <Award className="w-4 h-4" />
+                    Assigned Special Roles
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {user.specialRoles.map(role => (
+                      <span key={role} className="px-3 py-1 bg-white border border-indigo-200 text-indigo-700 text-xs font-medium rounded-full uppercase tracking-wide">
+                        {role.replace('_', ' ')}
+                      </span>
+                    ))}
                   </div>
                 </div>
               )}

@@ -70,6 +70,14 @@ const SystemSettings = () => {
     }
   };
 
+  const autoSave = async (newSettings) => {
+    try {
+      await api.put('/settings', newSettings);
+    } catch (error) {
+      toast.error('Failed to auto-save changes');
+    }
+  };
+
   const toggleBranch = (index) => {
     setExpandedBranches(prev => ({
       ...prev,
@@ -80,16 +88,20 @@ const SystemSettings = () => {
   const addBranch = () => {
     const newBranch = prompt('Enter new branch name (e.g. B.Tech. - Computer Science and Engineering):');
     if (newBranch && newBranch.trim()) {
-      setSettings(prev => ({
-        ...prev,
-        branchConfigs: [
-          ...(prev.branchConfigs || []),
-          {
-            branch: newBranch.trim(),
-            years: { '1': ['A', 'B'], '2': ['A', 'B'], '3': ['A', 'B'], '4': ['A', 'B'] }
-          }
-        ]
-      }));
+      setSettings(prev => {
+        const newSettings = {
+          ...prev,
+          branchConfigs: [
+            ...(prev.branchConfigs || []),
+            {
+              branch: newBranch.trim(),
+              years: { '1': ['A', 'B'], '2': ['A', 'B'], '3': ['A', 'B'], '4': ['A', 'B'] }
+            }
+          ]
+        };
+        autoSave(newSettings);
+        return newSettings;
+      });
       // Expand the new branch
       setExpandedBranches(prev => ({
         ...prev,
@@ -115,10 +127,13 @@ const SystemSettings = () => {
             ...newConfigs[branchIndex].years,
             [year]: yearData.sort()
           };
+          const newSettings = { ...prev, branchConfigs: newConfigs };
+          autoSave(newSettings);
+          return newSettings;
         } else {
           toast.error('Section already exists');
+          return prev;
         }
-        return { ...prev, branchConfigs: newConfigs };
       });
     }
   };
@@ -434,7 +449,9 @@ const SystemSettings = () => {
                                   setSettings(prev => {
                                     const newConfigs = [...prev.branchConfigs];
                                     newConfigs[index] = { ...newConfigs[index], branch: newName.trim() };
-                                    return { ...prev, branchConfigs: newConfigs };
+                                    const newSettings = { ...prev, branchConfigs: newConfigs };
+                                    autoSave(newSettings);
+                                    return newSettings;
                                   });
                                   toast.success('Branch renamed');
                                 }
@@ -446,10 +463,14 @@ const SystemSettings = () => {
                             <button
                               onClick={() => {
                                 if (window.confirm(`Are you sure you want to remove "${config.branch}" entirely?`)) {
-                                  setSettings(prev => ({
-                                    ...prev,
-                                    branchConfigs: prev.branchConfigs.filter((_, i) => i !== index)
-                                  }));
+                                  setSettings(prev => {
+                                    const newSettings = {
+                                      ...prev,
+                                      branchConfigs: prev.branchConfigs.filter((_, i) => i !== index)
+                                    };
+                                    autoSave(newSettings);
+                                    return newSettings;
+                                  });
                                   toast.success('Branch removed');
                                 }
                               }}
@@ -509,7 +530,9 @@ const SystemSettings = () => {
                                                         ...newConfigs[index].years,
                                                         [year]: yearData
                                                       };
-                                                      return { ...prev, branchConfigs: newConfigs };
+                                                      const newSettings = { ...prev, branchConfigs: newConfigs };
+                                                      autoSave(newSettings);
+                                                      return newSettings;
                                                     });
                                                     toast.success('Section renamed');
                                                   }
@@ -530,7 +553,9 @@ const SystemSettings = () => {
                                                         ...newConfigs[index].years,
                                                         [year]: yearData
                                                       };
-                                                      return { ...prev, branchConfigs: newConfigs };
+                                                      const newSettings = { ...prev, branchConfigs: newConfigs };
+                                                      autoSave(newSettings);
+                                                      return newSettings;
                                                     });
                                                     toast.success('Section deleted');
                                                   }
