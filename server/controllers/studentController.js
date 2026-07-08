@@ -260,31 +260,30 @@ if (
       return res.status(404).json({ success: false, message: "User not found" });
     }
     
-    const recentAnnouncements = await Announcement.find({ status: "active" })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .populate("createdBy", "name")
-      .lean();
-    
-    const recentResources = await Resource.find({ status: "active" })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .populate("uploadedBy", "name")
-      .lean();
-    
-    const upcomingActivities = await AcademicActivity.find({
-      status: { $in: ["upcoming", "ongoing"] },
-      startDate: { $gte: new Date() }
-    })
-      .sort({ startDate: 1 })
-      .limit(5)
-      .lean();
-    
-    const unreadNotifications = await Notification.countDocuments({
-      targetUsers: user._id,
-      isRead: false
-    });
-    
+    const [recentAnnouncements, recentResources, upcomingActivities, unreadNotifications] = await Promise.all([
+      Announcement.find({ status: "active" })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate("createdBy", "name")
+        .lean(),
+      Resource.find({ status: "active" })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate("uploadedBy", "name")
+        .lean(),
+      AcademicActivity.find({
+        status: { $in: ["upcoming", "ongoing"] },
+        startDate: { $gte: new Date() }
+      })
+        .sort({ startDate: 1 })
+        .limit(5)
+        .lean(),
+      Notification.countDocuments({
+        targetUsers: user._id,
+        isRead: false
+      })
+    ]);
+
     res.status(200).json({
       success: true,
       dashboard: {

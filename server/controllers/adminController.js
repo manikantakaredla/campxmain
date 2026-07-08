@@ -68,28 +68,29 @@ exports.getDashboardStats = async (req, res) => {
       return res.status(200).json(adminStatsCache.data);
     }
 
-    const totalStudents = await User.countDocuments({ role: "student" }).lean();
-    const totalFaculty = await User.countDocuments({ 
-      role: { $in: ["faculty", "hod", "dean", "principal"] }
-    }).lean();
-    const totalAnnouncements = await Announcement.countDocuments().lean();
-    const totalResources = await Resource.countDocuments().lean();
-    const activeUsers = await User.countDocuments({ isActive: true }).lean();
-    const pendingRegistrations = await StudentData.countDocuments({ isRegistered: false }).lean() +
-                                  await FacultyData.countDocuments({ isRegistered: false }).lean();
+    const [
+      totalStudents,
+      totalFaculty,
+      totalAnnouncements,
+      totalResources,
+      activeUsers,
+      pendingRegistrationsStudents,
+      pendingRegistrationsFaculty,
+      recentAnnouncements,
+      recentUsers
+    ] = await Promise.all([
+      User.countDocuments({ role: "student" }).lean(),
+      User.countDocuments({ role: { $in: ["faculty", "hod", "dean", "principal"] } }).lean(),
+      Announcement.countDocuments().lean(),
+      Resource.countDocuments().lean(),
+      User.countDocuments({ isActive: true }).lean(),
+      StudentData.countDocuments({ isRegistered: false }).lean(),
+      FacultyData.countDocuments({ isRegistered: false }).lean(),
+      Announcement.find().sort({ createdAt: -1 }).limit(5).populate("createdBy", "name").lean(),
+      User.find().sort({ createdAt: -1 }).limit(5).select("-password").lean()
+    ]);
 
-    // Recent activities
-    const recentAnnouncements = await Announcement.find()
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .populate("createdBy", "name")
-      .lean();
-
-    const recentUsers = await User.find()
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .select("-password")
-      .lean();
+    const pendingRegistrations = pendingRegistrationsStudents + pendingRegistrationsFaculty;
 
     const responseData = {
       success: true,
