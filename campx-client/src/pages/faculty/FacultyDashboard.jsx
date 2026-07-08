@@ -50,20 +50,12 @@ const FacultyDashboard = () => {
   const fetchSubjectResourceCounts = async () => {
     try {
       const subRes = await resourceService.getFacultySubjects()
-      const resRes = await resourceService.getAll({ limit: 1000 })
-      if (subRes.success && resRes.success) {
+      if (subRes.success) {
         const allAssigned = [
           ...(subRes.primary || []).map(s => ({ ...s, isPrimary: true })),
           ...(subRes.secondary || []).map(s => ({ ...s, isPrimary: false }))
         ]
-        const counts = allAssigned.map(sub => {
-          const count = (resRes.resources || []).filter(r => r.subjectId === sub._id).length
-          return {
-            ...sub,
-            resourceCount: count
-          }
-        })
-        setSubjectResources(counts)
+        setSubjectResources(allAssigned)
       }
     } catch (error) {
       console.error('Error fetching subject resource counts:', error)

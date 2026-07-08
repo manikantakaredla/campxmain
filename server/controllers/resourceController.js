@@ -276,13 +276,15 @@ exports.getResources = async (req, res) => {
     
     // Filter by user's branch and year for students
     if (req.user.role === "student") {
-      const user = await User.findById(req.user.id);
+      const [user, classAssignment, proctorAssignment] = await Promise.all([
+        User.findById(req.user.id),
+        ClassStudentAssignment.findOne({ studentId: req.user.id }).select("facultyId"),
+        ProctorStudentAssignment.findOne({ studentId: req.user.id }).select("facultyId")
+      ]);
+
       if (!user) {
         return res.status(404).json({ success: false, message: "User not found" });
       }
-
-      const classAssignment = await ClassStudentAssignment.findOne({ studentId: req.user.id }).select("facultyId");
-      const proctorAssignment = await ProctorStudentAssignment.findOne({ studentId: req.user.id }).select("facultyId");
 
       // Find subjects for student's branch
       const subjectQuery = {};
@@ -577,10 +579,20 @@ exports.getFacultySubjects = async (req, res) => {
     const primary = user.facultySubjects?.primary || [];
     const secondary = user.facultySubjects?.secondary || [];
 
+    const getCount = async (sub) => {
+       const count = await Resource.countDocuments({ subjectId: sub._id, status: { $in: ["active", "draft"] }});
+       return { ...sub, resourceCount: count };
+    };
+
+    const [primaryWithCounts, secondaryWithCounts] = await Promise.all([
+      Promise.all(primary.map(getCount)),
+      Promise.all(secondary.map(getCount))
+    ]);
+
     res.status(200).json({
       success: true,
-      primary,
-      secondary
+      primary: primaryWithCounts,
+      secondary: secondaryWithCounts
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
