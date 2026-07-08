@@ -98,6 +98,7 @@ resourceSchema.index({ department: 1, semester: 1 });
 resourceSchema.index({ uploadedBy: 1 });
 resourceSchema.index({ status: 1, downloads: -1 });
 resourceSchema.index({ visibility: 1, targetBranch: 1, targetYear: 1, targetSection: 1 });
+resourceSchema.index({ status: 1, createdAt: -1 });
 resourceSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model("Resource", resourceSchema);

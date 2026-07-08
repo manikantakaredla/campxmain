@@ -249,11 +249,17 @@ if (
     user.rollNumber
   );
 
-  user.currentYear = academicInfo.currentYear;
-  user.currentSemester = academicInfo.currentSemester;
-  user.batch = academicInfo.batch;
+  if (
+    user.currentYear !== academicInfo.currentYear || 
+    user.currentSemester !== academicInfo.currentSemester || 
+    user.batch !== academicInfo.batch
+  ) {
+    user.currentYear = academicInfo.currentYear;
+    user.currentSemester = academicInfo.currentSemester;
+    user.batch = academicInfo.batch;
 
-  await user.save();
+    await user.save();
+  }
 }
     
     if (!user) {

@@ -61,12 +61,6 @@ let adminStatsCache = {
 
 exports.getDashboardStats = async (req, res) => {
   try {
-    const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-    
-    // Return cached data if valid
-    if (adminStatsCache.data && adminStatsCache.timestamp && (Date.now() - adminStatsCache.timestamp < CACHE_TTL)) {
-      return res.status(200).json(adminStatsCache.data);
-    }
 
     const [
       totalStudents,
@@ -108,9 +102,7 @@ exports.getDashboardStats = async (req, res) => {
       }
     };
 
-    // Update cache
-    adminStatsCache.data = responseData;
-    adminStatsCache.timestamp = Date.now();
+
 
     res.status(200).json(responseData);
   } catch (error) {
