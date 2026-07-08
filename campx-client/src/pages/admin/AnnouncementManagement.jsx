@@ -18,6 +18,7 @@ const AnnouncementManagement = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('')
   const [audienceFilter, setAudienceFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
@@ -27,7 +28,7 @@ const AnnouncementManagement = () => {
 
   useEffect(() => {
     fetchAnnouncements()
-  }, [currentPage, searchTerm, priorityFilter, audienceFilter])
+  }, [currentPage, searchTerm, priorityFilter, audienceFilter, statusFilter])
 
   const fetchAnnouncements = async () => {
     setLoading(true)
@@ -38,6 +39,7 @@ const AnnouncementManagement = () => {
       if (searchTerm) params.search = searchTerm
       if (priorityFilter) params.priority = priorityFilter
       if (audienceFilter) params.audience = audienceFilter
+      if (statusFilter) params.status = statusFilter
       params.page = currentPage
       params.limit = itemsPerPage
       
@@ -118,6 +120,7 @@ const AnnouncementManagement = () => {
     setSearchTerm('')
     setPriorityFilter('')
     setAudienceFilter('')
+    setStatusFilter('all')
     setCurrentPage(1)
   }
 
@@ -216,8 +219,18 @@ const AnnouncementManagement = () => {
             <option value="students">Students</option>
             <option value="faculty">Faculty</option>
           </select>
+          
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="draft">Drafts</option>
+          </select>
 
-          {(searchTerm || priorityFilter || audienceFilter) && (
+          {(searchTerm || priorityFilter || audienceFilter || statusFilter !== 'all') && (
             <button
               onClick={clearFilters}
               className="px-3 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors text-sm whitespace-nowrap"
@@ -235,11 +248,11 @@ const AnnouncementManagement = () => {
             <Megaphone className="w-16 h-16 text-gray-300 mx-auto mb-3" />
             <h3 className="text-lg font-medium text-gray-900 mb-1">No announcements found</h3>
             <p className="text-gray-500 mb-4">
-              {searchTerm || priorityFilter || audienceFilter 
+              {searchTerm || priorityFilter || audienceFilter || statusFilter !== 'all'
                 ? "Try adjusting your filters" 
                 : "Get started by creating your first announcement"}
             </p>
-            {(searchTerm || priorityFilter || audienceFilter) ? (
+            {(searchTerm || priorityFilter || audienceFilter || statusFilter !== 'all') ? (
               <button
                 onClick={clearFilters}
                 className="px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50"
@@ -301,13 +314,18 @@ const AnnouncementManagement = () => {
                           {new Date(announcement.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-4 py-3">
-                          {isActive ? (
-                            <span className="inline-flex items-center gap-1 text-xs text-green-700">
+                          {announcement.status === 'draft' ? (
+                            <span className="inline-flex items-center gap-1 text-xs text-yellow-700 bg-yellow-100 px-2 py-1 rounded-full">
+                              <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
+                              Draft
+                            </span>
+                          ) : isActive ? (
+                            <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-100 px-2 py-1 rounded-full">
                               <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                               Active
                             </span>
                           ) : (
-                            <span className="text-xs text-gray-500">Expired</span>
+                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">Expired</span>
                           )}
                         </td>
                         <td className="px-4 py-3">

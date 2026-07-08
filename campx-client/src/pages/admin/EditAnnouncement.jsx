@@ -17,7 +17,8 @@ const EditAnnouncement = () => {
     audience: 'all',
     location: '',
     expiryDate: '',
-    contacts: []
+    contacts: [],
+    status: 'active'
   })
   const [newContact, setNewContact] = useState({ role: '', name: '', phone: '' })
 
@@ -37,7 +38,8 @@ const EditAnnouncement = () => {
         audience: data.audience || 'all',
         location: data.location || '',
         expiryDate: data.expiryDate ? data.expiryDate.split('T')[0] : '',
-        contacts: data.contacts || []
+        contacts: data.contacts || [],
+        status: data.status || 'active'
       })
     } catch (error) {
       toast.error('Failed to load announcement')
@@ -155,6 +157,13 @@ const EditAnnouncement = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
               <input type="date" name="expiryDate" value={formData.expiryDate} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <select name="status" value={formData.status} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                <option value="active">Active (Published)</option>
+                <option value="draft">Draft</option>
+              </select>
             </div>
           </div>
           

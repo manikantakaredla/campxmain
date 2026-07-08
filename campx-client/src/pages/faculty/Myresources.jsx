@@ -6,7 +6,7 @@ import { SearchBar } from '../../components/common/SearchBar'
 import { Pagination } from '../../components/common/Pagination'
 import { Loader } from '../../components/common/Loader'
 import { EmptyState } from '../../components/common/EmptyState'
-import { FileText, Plus, Edit, Trash2, Eye, Download, X, Upload, EyeOff, UploadCloud } from 'lucide-react'
+import { FileText, Plus, Edit, Trash2, Eye, Download, X, Upload, EyeOff, UploadCloud, Layers, ArrowLeft, File, FileSpreadsheet, FileArchive } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
@@ -18,10 +18,25 @@ const MyResources = () => {
   const [loading, setLoading] = useState(true)
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 })
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [activeView, setActiveView] = useState('categories')
+
+  const categoryCards = [
+    { id: 'all', title: 'All Resources', icon: <Layers className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-blue-50', borderColor: 'border-blue-100', hoverBorder: 'hover:border-blue-300', value: '' },
+    { id: 'notes', title: 'Notes', icon: <FileText className="w-8 h-8 text-indigo-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-indigo-50', borderColor: 'border-indigo-100', hoverBorder: 'hover:border-indigo-300', value: 'Notes' },
+    { id: 'ppt', title: 'Presentations', icon: <File className="w-8 h-8 text-orange-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-orange-50', borderColor: 'border-orange-100', hoverBorder: 'hover:border-orange-300', value: 'PPT' },
+    { id: 'assignment', title: 'Assignments', icon: <FileSpreadsheet className="w-8 h-8 text-emerald-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-emerald-50', borderColor: 'border-emerald-100', hoverBorder: 'hover:border-emerald-300', value: 'Assignment' },
+    { id: 'lab', title: 'Lab Manuals', icon: <FileArchive className="w-8 h-8 text-teal-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-teal-50', borderColor: 'border-teal-100', hoverBorder: 'hover:border-teal-300', value: 'Lab' },
+    { id: 'qb', title: 'Question Banks', icon: <FileText className="w-8 h-8 text-red-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-red-50', borderColor: 'border-red-100', hoverBorder: 'hover:border-red-300', value: 'Question Bank' },
+    { id: 'papers', title: 'Previous Papers', icon: <FileArchive className="w-8 h-8 text-purple-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-purple-50', borderColor: 'border-purple-100', hoverBorder: 'hover:border-purple-300', value: 'Previous Papers' },
+    { id: 'other', title: 'Other Materials', icon: <File className="w-8 h-8 text-gray-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-gray-50', borderColor: 'border-gray-200', hoverBorder: 'hover:border-gray-400', value: 'Other' }
+  ]
 
   useEffect(() => {
-    fetchResources()
-  }, [pagination.page, searchTerm])
+    if (activeView === 'resources') {
+      fetchResources()
+    }
+  }, [pagination.page, searchTerm, selectedCategory, activeView])
 
   const fetchResources = async () => {
     setLoading(true)
@@ -29,7 +44,8 @@ const MyResources = () => {
       const response = await resourceService.getAll({ 
         page: pagination.page, 
         limit: pagination.limit,
-        search: searchTerm 
+        search: searchTerm,
+        resourceType: selectedCategory
       })
       setResources(response.resources || [])
       setPagination(prev => ({
@@ -89,6 +105,12 @@ const MyResources = () => {
     return '📁'
   }
 
+  const handleCategoryClick = (categoryValue) => {
+    setSelectedCategory(categoryValue)
+    setPagination(prev => ({ ...prev, page: 1 }))
+    setActiveView('resources')
+  }
+
   return (
     <div className="p-6 bg-[#f8f9fa] min-h-screen">
       <div className="max-w-7xl mx-auto">
@@ -106,10 +128,38 @@ const MyResources = () => {
           </Link>
         </div>
 
-        {/* Search */}
-        <div className="mb-6 max-w-md">
-          <SearchBar onSearch={setSearchTerm} placeholder="Search your resources..." />
-        </div>
+        {activeView === 'categories' ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {categoryCards.map((card) => (
+              <button
+                key={card.id}
+                onClick={() => handleCategoryClick(card.value)}
+                className={`flex flex-col items-center justify-center p-8 rounded-2xl border ${card.borderColor} ${card.bgColor} ${card.hoverBorder} transition-all duration-300 hover:shadow-lg group text-center cursor-pointer h-full`}
+              >
+                {card.icon}
+                <h3 className="font-bold text-gray-800 text-lg group-hover:text-blue-700 transition-colors">{card.title}</h3>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <>
+            {/* Header for resources view */}
+            <div className="flex items-center gap-3 mb-6">
+              <button
+                onClick={() => setActiveView('categories')}
+                className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2 text-sm font-medium border border-gray-200 bg-white"
+              >
+                <ArrowLeft className="w-4 h-4" /> Back to Categories
+              </button>
+              <h2 className="text-xl font-bold text-gray-800">
+                {selectedCategory === '' ? 'All Resources' : selectedCategory}
+              </h2>
+            </div>
+
+            {/* Search */}
+            <div className="mb-6 max-w-md">
+              <SearchBar onSearch={setSearchTerm} placeholder="Search your resources..." />
+            </div>
 
         {/* Resources Grid */}
         {loading ? (
@@ -191,6 +241,8 @@ const MyResources = () => {
               onPageChange={(page) => setPagination(prev => ({ ...prev, page }))}
             />
           </div>
+        )}
+          </>
         )}
       </div>
     </div>

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { 
   FileText, Eye, Trash2, Search, Download, 
   ChevronLeft, ChevronRight, AlertCircle,
-  Image, File, FileSpreadsheet, FileArchive, EyeOff, UploadCloud
+  Image, File, FileSpreadsheet, FileArchive, EyeOff, UploadCloud, Layers, ArrowLeft
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
@@ -16,17 +16,31 @@ const ResourceManagement = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [activeView, setActiveView] = useState('categories')
   const [totalPages, setTotalPages] = useState(1)
   const [showDeleteModal, setShowDeleteModal] = useState(null)
   const [analytics, setAnalytics] = useState(null)
   const [fetchingAnalytics, setFetchingAnalytics] = useState(true)
   const itemsPerPage = 12
 
+  const categoryCards = [
+    { id: 'all', title: 'All Resources', icon: <Layers className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-blue-50', borderColor: 'border-blue-100', hoverBorder: 'hover:border-blue-300', value: '' },
+    { id: 'notes', title: 'Notes', icon: <FileText className="w-8 h-8 text-indigo-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-indigo-50', borderColor: 'border-indigo-100', hoverBorder: 'hover:border-indigo-300', value: 'Notes' },
+    { id: 'ppt', title: 'Presentations', icon: <File className="w-8 h-8 text-orange-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-orange-50', borderColor: 'border-orange-100', hoverBorder: 'hover:border-orange-300', value: 'PPT' },
+    { id: 'assignment', title: 'Assignments', icon: <FileSpreadsheet className="w-8 h-8 text-emerald-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-emerald-50', borderColor: 'border-emerald-100', hoverBorder: 'hover:border-emerald-300', value: 'Assignment' },
+    { id: 'lab', title: 'Lab Manuals', icon: <FileArchive className="w-8 h-8 text-teal-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-teal-50', borderColor: 'border-teal-100', hoverBorder: 'hover:border-teal-300', value: 'Lab' },
+    { id: 'qb', title: 'Question Banks', icon: <FileText className="w-8 h-8 text-red-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-red-50', borderColor: 'border-red-100', hoverBorder: 'hover:border-red-300', value: 'Question Bank' },
+    { id: 'papers', title: 'Previous Papers', icon: <FileArchive className="w-8 h-8 text-purple-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-purple-50', borderColor: 'border-purple-100', hoverBorder: 'hover:border-purple-300', value: 'Previous Papers' },
+    { id: 'other', title: 'Other Materials', icon: <File className="w-8 h-8 text-gray-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-gray-50', borderColor: 'border-gray-200', hoverBorder: 'hover:border-gray-400', value: 'Other' }
+  ]
+
   const categories = ['All', 'Notes', 'PPT', 'Assignment', 'Lab', 'Question Bank', 'Previous Papers', 'Other']
 
   useEffect(() => {
-    fetchResources()
-  }, [currentPage, searchTerm, categoryFilter])
+    if (activeView === 'resources') {
+      fetchResources()
+    }
+  }, [currentPage, searchTerm, categoryFilter, activeView])
 
   useEffect(() => {
     fetchAnalytics()
@@ -114,6 +128,12 @@ const ResourceManagement = () => {
     setCurrentPage(1)
   }
 
+  const handleCategoryClick = (categoryValue) => {
+    setCategoryFilter(categoryValue)
+    setCurrentPage(1)
+    setActiveView('resources')
+  }
+
   if (loading && resources.length === 0) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -167,8 +187,36 @@ const ResourceManagement = () => {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+      {activeView === 'categories' ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {categoryCards.map((card) => (
+            <button
+              key={card.id}
+              onClick={() => handleCategoryClick(card.value)}
+              className={`flex flex-col items-center justify-center p-8 rounded-2xl border ${card.borderColor} ${card.bgColor} ${card.hoverBorder} transition-all duration-300 hover:shadow-lg group text-center cursor-pointer h-full`}
+            >
+              {card.icon}
+              <h3 className="font-bold text-gray-800 text-lg group-hover:text-blue-700 transition-colors">{card.title}</h3>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* Header for resources view */}
+          <div className="flex items-center gap-3 mb-6">
+            <button
+              onClick={() => setActiveView('categories')}
+              className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2 text-sm font-medium border border-gray-200 bg-white"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back to Categories
+            </button>
+            <h2 className="text-xl font-bold text-gray-800">
+              {categoryFilter === '' ? 'All Resources' : categoryFilter}
+            </h2>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -291,6 +339,8 @@ const ResourceManagement = () => {
             </button>
           </div>
         </div>
+      )}
+        </>
       )}
 
       {/* Delete Confirmation Modal */}

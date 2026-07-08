@@ -129,6 +129,11 @@ const MyAnnouncements = () => {
                         <span className="text-[10px] px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 uppercase font-bold tracking-wider">
                           {announcement.audience}
                         </span>
+                        {announcement.status === 'draft' && (
+                          <span className="text-[10px] px-2.5 py-1 rounded-lg bg-yellow-100 text-yellow-800 uppercase font-bold tracking-wider border border-yellow-200">
+                            DRAFT
+                          </span>
+                        )}
                       </div>
                       <h3 className="font-bold text-gray-900 text-base mb-1.5 truncate group-hover:text-blue-600 transition-colors">{announcement.title}</h3>
                       <p className="text-sm text-gray-500 line-clamp-2 font-medium">{announcement.description}</p>

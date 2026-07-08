@@ -3,7 +3,7 @@ import { resourceService } from '../../services/resourceService'
 import { SearchBar } from '../../components/common/SearchBar'
 import { Loader } from '../../components/common/Loader'
 import { EmptyState } from '../../components/common/EmptyState'
-import { FileText, Download, Eye, Clock, User, Filter, BookOpen, Layers, Calendar } from 'lucide-react'
+import { FileText, Download, Eye, Clock, User, Filter, BookOpen, Layers, Calendar, ArrowLeft, File, FileSpreadsheet, FileArchive } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
@@ -11,6 +11,20 @@ const StudentResources = () => {
   const [resources, setResources] = useState([])
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({ search: '', resourceType: '', semester: '', sortBy: 'latest' })
+  const [activeView, setActiveView] = useState('categories')
+
+  const categoryCards = [
+    { id: 'all', title: 'All Resources', icon: <Layers className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-blue-50', borderColor: 'border-blue-100', hoverBorder: 'hover:border-blue-300', value: '' },
+    { id: 'notes', title: 'Notes', icon: <FileText className="w-8 h-8 text-indigo-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-indigo-50', borderColor: 'border-indigo-100', hoverBorder: 'hover:border-indigo-300', value: 'Notes' },
+    { id: 'ppt', title: 'Presentations', icon: <File className="w-8 h-8 text-orange-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-orange-50', borderColor: 'border-orange-100', hoverBorder: 'hover:border-orange-300', value: 'PPT' },
+    { id: 'assignment', title: 'Assignments', icon: <FileSpreadsheet className="w-8 h-8 text-emerald-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-emerald-50', borderColor: 'border-emerald-100', hoverBorder: 'hover:border-emerald-300', value: 'Assignment' },
+    { id: 'qb', title: 'Question Banks', icon: <FileText className="w-8 h-8 text-red-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-red-50', borderColor: 'border-red-100', hoverBorder: 'hover:border-red-300', value: 'Question Bank' },
+    { id: 'papers', title: 'Previous Papers', icon: <FileArchive className="w-8 h-8 text-purple-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-purple-50', borderColor: 'border-purple-100', hoverBorder: 'hover:border-purple-300', value: 'Previous Paper' },
+    { id: 'lab', title: 'Lab Manuals', icon: <FileArchive className="w-8 h-8 text-teal-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-teal-50', borderColor: 'border-teal-100', hoverBorder: 'hover:border-teal-300', value: 'Lab Manual' },
+    { id: 'syllabus', title: 'Syllabus', icon: <BookOpen className="w-8 h-8 text-cyan-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-cyan-50', borderColor: 'border-cyan-100', hoverBorder: 'hover:border-cyan-300', value: 'Syllabus' },
+    { id: 'video', title: 'Video Links', icon: <File className="w-8 h-8 text-pink-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-pink-50', borderColor: 'border-pink-100', hoverBorder: 'hover:border-pink-300', value: 'Video Link' },
+    { id: 'other', title: 'Other Materials', icon: <File className="w-8 h-8 text-gray-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-gray-50', borderColor: 'border-gray-200', hoverBorder: 'hover:border-gray-400', value: 'Other' }
+  ]
 
   const resourceTypes = [
     'All', 'Notes', 'PPT', 'Assignment', 'Question Bank', 'Previous Paper', 'Lab Manual', 'Syllabus', 'Video Link', 'Other'
@@ -19,8 +33,10 @@ const StudentResources = () => {
   const semesters = ['All', '1', '2', '3', '4', '5', '6', '7', '8']
 
   useEffect(() => {
-    fetchResources()
-  }, [filters])
+    if (activeView === 'resources') {
+      fetchResources()
+    }
+  }, [filters, activeView])
 
   const fetchResources = async () => {
     setLoading(true)
@@ -98,6 +114,11 @@ const StudentResources = () => {
     return a.localeCompare(b);
   });
 
+  const handleCategoryClick = (categoryValue) => {
+    setFilters(prev => ({ ...prev, resourceType: categoryValue }))
+    setActiveView('resources')
+  }
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Header */}
@@ -110,8 +131,36 @@ const StudentResources = () => {
         </div>
       </div>
 
-      {/* Filters Bar */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+      {activeView === 'categories' ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          {categoryCards.map((card) => (
+            <button
+              key={card.id}
+              onClick={() => handleCategoryClick(card.value)}
+              className={`flex flex-col items-center justify-center p-6 rounded-2xl border ${card.borderColor} ${card.bgColor} ${card.hoverBorder} transition-all duration-300 hover:shadow-lg group text-center cursor-pointer h-full`}
+            >
+              {card.icon}
+              <h3 className="font-bold text-gray-800 text-sm group-hover:text-blue-700 transition-colors">{card.title}</h3>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* Header for resources view */}
+          <div className="flex items-center gap-3 mb-2">
+            <button
+              onClick={() => setActiveView('categories')}
+              className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2 text-sm font-medium border border-gray-200 bg-white"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back to Categories
+            </button>
+            <h2 className="text-xl font-bold text-gray-800">
+              {filters.resourceType === '' ? 'All Resources' : filters.resourceType}
+            </h2>
+          </div>
+
+          {/* Filters Bar */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2">
             <SearchBar 
@@ -238,6 +287,8 @@ const StudentResources = () => {
             </div>
           ))}
         </div>
+      )}
+        </>
       )}
     </div>
   )

@@ -515,7 +515,10 @@ exports.getAnnouncements = async (req, res) => {
   try {
     const { page = 1, limit = 10, priority, search, status = "active", type, forClass } = req.query;
     
-    let query = { status };
+    let query = {};
+    if (status !== "all") {
+      query.status = status;
+    }
     
     if (priority && priority !== "all") {
       query.priority = priority;
