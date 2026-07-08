@@ -48,7 +48,7 @@ router.post("/users", authorizeRoles("admin"), createUser);
 router.post("/users/bulk", authorizeRoles("admin"), csvUpload.single("file"), bulkCreateUsers);
 
 router.get("/users/:id", authorizeRoles("admin", "hod", "dean", "principal"), getUserById);
-router.put("/users/:id", authorizeRoles("admin"), updateUser);
+router.put("/users/:id", authorizeRoles("admin", "hod", "dean", "principal"), updateUser);
 router.delete("/users/:id", authorizeRoles("admin"), deleteUser);
 router.put("/users/:id/reset-password", authorizeRoles("admin"), resetUserPassword);
 router.put("/users/:id/role", authorizeRoles("admin"), updateUserRole);

@@ -64,7 +64,6 @@ const AdminDashboard = () => {
     { label: 'Announcements', value: stats.totalAnnouncements, icon: Megaphone, change: '+8%', color: 'orange', link: '/admin/announcements' },
     { label: 'Resources', value: stats.totalResources, icon: FileText, change: '+15%', color: 'green', link: '/admin/resources' },
     { label: 'Active Users', value: stats.activeUsers, icon: Users, change: '+3%', color: 'teal', link: '/admin/users' },
-    { label: 'Pending Faculty', value: stats.pendingFaculty, icon: UserPlus, change: 'pending', color: 'gray', link: '/admin/users' },
   ];
 
   const quickActions = [
@@ -284,40 +283,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Faculty Analytics */}
-          {facultyStats && (
-            <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl shadow-lg overflow-hidden text-white relative">
-              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl"></div>
-              <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-32 h-32 bg-indigo-500 opacity-20 rounded-full blur-2xl"></div>
 
-              <div className="px-6 py-5 border-b border-white/10 relative z-10">
-                <h3 className="text-base font-bold flex items-center gap-2 text-white">
-                  <div className="p-1.5 bg-white/10 rounded-lg">
-                    <Briefcase size={16} className="text-purple-200" />
-                  </div>
-                  Faculty Workload
-                </h3>
-              </div>
-              <div className="p-6 space-y-4 relative z-10">
-                <div className="flex justify-between items-center bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <span className="text-sm font-medium text-indigo-100">Total Faculty</span>
-                  <span className="font-bold text-lg text-white">{facultyStats.totalFaculty}</span>
-                </div>
-                <div className="flex justify-between items-center bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <span className="text-sm font-medium text-indigo-100">Subjects Assigned</span>
-                  <span className="font-bold text-lg text-white">{facultyStats.totalSubjectsAssigned}</span>
-                </div>
-                <div className="flex justify-between items-center bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <span className="text-sm font-medium text-indigo-100">Class Sections</span>
-                  <span className="font-bold text-lg text-white">{facultyStats.totalClassSectionsAssigned}</span>
-                </div>
-                <div className="flex justify-between items-center bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <span className="text-sm font-medium text-indigo-100">Proctor Students</span>
-                  <span className="font-bold text-lg text-white">{facultyStats.totalProctorStudentsAssigned}</span>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

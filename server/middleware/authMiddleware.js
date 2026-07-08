@@ -37,6 +37,9 @@ const protect = async (req, res, next) => {
       });
     }
 
+    req.user.department = user.department;
+    req.user.branch = user.branch;
+    
     next();
   } catch (error) {
     console.error("Auth error:", error.message);

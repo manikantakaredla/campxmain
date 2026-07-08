@@ -24,8 +24,10 @@ exports.getProfile = async (req, res) => {
     }
     
     const { resolveClassFaculty, resolveProctorFaculty } = require("../utils/assignmentResolver");
-    const classResult = await resolveClassFaculty(user);
-    const proctorResult = await resolveProctorFaculty(user);
+    const [classResult, proctorResult] = await Promise.all([
+      resolveClassFaculty(user),
+      resolveProctorFaculty(user)
+    ]);
     
     res.status(200).json({
       success: true,
@@ -315,10 +317,6 @@ exports.getAssignedFaculty = async (req, res) => {
 
     const { resolveClassFaculty, resolveProctorFaculty } = require("../utils/assignmentResolver");
 
-    const classResult = await resolveClassFaculty(student);
-    const proctorResult = await resolveProctorFaculty(student);
-
-    // Handle branch name aliases (CSE vs B.Tech. - Computer Science and Engineering)
     const branchAliases = [student.branch];
     if (student.branch === 'CSE' || student.branch === 'Computer Science') {
       branchAliases.push('B.Tech. - Computer Science and Engineering', 'CSE', 'Computer Science');
@@ -326,16 +324,19 @@ exports.getAssignedFaculty = async (req, res) => {
       branchAliases.push('CSE', 'Computer Science');
     }
 
-    // Fetch teaching faculty from SubjectSectionAssignment
-    const teachingFaculty = await SubjectSectionAssignment.find({
-      department: { $in: branchAliases },
-      year: student.currentYear,
-      section: student.section,
-      isActive: true
-    })
-    .populate("subjectId", "name code")
-    .populate("facultyId", "name employeeId department profilePicture")
-    .lean();
+    const [classResult, proctorResult, teachingFaculty] = await Promise.all([
+      resolveClassFaculty(student),
+      resolveProctorFaculty(student),
+      SubjectSectionAssignment.find({
+        department: { $in: branchAliases },
+        year: student.currentYear,
+        section: student.section,
+        isActive: true
+      })
+      .populate("subjectId", "name code")
+      .populate("facultyId", "name employeeId department profilePicture")
+      .lean()
+    ]);
 
     res.status(200).json({
       success: true,

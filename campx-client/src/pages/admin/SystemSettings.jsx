@@ -26,7 +26,7 @@ const SystemSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [expandedBranches, setExpandedBranches] = useState({});
-  const [activeTab, setActiveTab] = useState(user?.role === 'admin' ? 'general' : 'academic');
+  const [activeTab, setActiveTab] = useState(user?.role === 'admin' ? 'general' : 'subjects');
 
   useEffect(() => {
     fetchSettings();
@@ -151,7 +151,7 @@ const SystemSettings = () => {
 
   const tabs = [
     ...(user?.role === 'admin' ? [{ id: 'general', label: 'General', icon: Settings }] : []),
-    { id: 'academic', label: 'Academic Master', icon: Layers },
+    ...(user?.role === 'admin' ? [{ id: 'academic', label: 'Academic Master', icon: Layers }] : []),
     { id: 'subjects', label: 'Subjects Master', icon: BookOpen },
   ];
 

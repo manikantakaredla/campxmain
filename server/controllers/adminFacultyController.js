@@ -25,7 +25,7 @@ exports.getFacultyList = async (req, res) => {
     if (status && status !== "all") query.isActive = status === "active";
 
     if (req.user.role === 'hod') {
-      query.department = req.user.branch;
+      query.department = req.user.department;
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -169,7 +169,7 @@ exports.getFacultyAnalytics = async (req, res) => {
   try {
     let query = { role: { $in: ["faculty", "hod", "dean"] }, isActive: true };
     if (req.user.role === 'hod') {
-      query.department = req.user.branch;
+      query.department = req.user.department;
     }
     const totalFaculty = await User.countDocuments(query);
     
@@ -182,7 +182,7 @@ exports.getFacultyAnalytics = async (req, res) => {
       ]
     };
     if (req.user.role === 'hod') {
-      facultyQuery.department = req.user.branch;
+      facultyQuery.department = req.user.department;
     }
     const facultyWithSubjects = await User.find(facultyQuery).select('facultySubjects');
 
@@ -198,7 +198,7 @@ exports.getFacultyAnalytics = async (req, res) => {
     // Department Breakdown
     let deptMatch = { role: { $in: ["faculty", "hod", "dean"] }, isActive: true };
     if (req.user.role === 'hod') {
-      deptMatch.department = req.user.branch;
+      deptMatch.department = req.user.department;
     }
     const deptBreakdown = await User.aggregate([
       { $match: deptMatch },
