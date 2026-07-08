@@ -16,7 +16,7 @@ const upload = require("../middleware/uploadMiddleware");
 
 // All authenticated users can view
 router.get("/", protect, getResources);
-router.get("/analytics", protect, authorizeRoles("admin", "management", "principal", "dean"), getResourceAnalytics);
+router.get("/analytics", protect, authorizeRoles("admin", "hod", "principal", "dean"), getResourceAnalytics);
 router.get("/faculty-subjects", protect, authorizeRoles("faculty", "hod"), getFacultySubjects);
 router.get("/:id", protect, getResourceById);
 router.put("/download/:id", protect, downloadResource);

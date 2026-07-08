@@ -19,7 +19,7 @@ router.use(protect);
 router.get("/", getSubjects);
 
 // Admin / Management only
-router.use(authorizeRoles("admin", "management"));
+router.use(authorizeRoles("admin", "hod", "dean", "principal"));
 
 router.post("/", createSubject);
 router.put("/:id", updateSubject);

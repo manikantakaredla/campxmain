@@ -41,23 +41,23 @@ const {
 router.use(protect);
 
 // ==================== ADMIN ONLY ROUTES ====================
-router.get("/dashboard/stats", authorizeRoles("admin"), getDashboardStats);
-router.get("/users", authorizeRoles("admin"), getAllUsers);
+router.get("/dashboard/stats", authorizeRoles("admin", "hod", "dean", "principal"), getDashboardStats);
+router.get("/users", authorizeRoles("admin", "hod", "dean", "principal"), getAllUsers);
 
 router.post("/users", authorizeRoles("admin"), createUser);
 router.post("/users/bulk", authorizeRoles("admin"), csvUpload.single("file"), bulkCreateUsers);
 
-router.get("/users/:id", authorizeRoles("admin"), getUserById);
+router.get("/users/:id", authorizeRoles("admin", "hod", "dean", "principal"), getUserById);
 router.put("/users/:id", authorizeRoles("admin"), updateUser);
 router.delete("/users/:id", authorizeRoles("admin"), deleteUser);
 router.put("/users/:id/reset-password", authorizeRoles("admin"), resetUserPassword);
 router.put("/users/:id/role", authorizeRoles("admin"), updateUserRole);
 
 // ==================== FACULTY MANAGEMENT (Admin) ====================
-router.get("/faculty/analytics", authorizeRoles("admin", "management"), getFacultyAnalytics);
-router.get("/faculty", authorizeRoles("admin", "management"), getFacultyList);
-router.get("/faculty/:id", authorizeRoles("admin", "management"), getFacultyDetails);
-router.put("/faculty/:id/subjects", authorizeRoles("admin"), updateFacultySubjects);
+router.get("/faculty/analytics", authorizeRoles("admin", "hod", "dean", "principal"), getFacultyAnalytics);
+router.get("/faculty", authorizeRoles("admin", "hod", "dean", "principal"), getFacultyList);
+router.get("/faculty/:id", authorizeRoles("admin", "hod", "dean", "principal"), getFacultyDetails);
+router.put("/faculty/:id/subjects", authorizeRoles("admin", "hod", "dean", "principal"), updateFacultySubjects);
 
 // ==================== SUBJECT ASSIGNMENT (Admin) ====================
 router.get("/sections/:department/:year/:section/subjects", authorizeRoles("admin", "hod", "dean", "principal"), getSectionSubjects);
