@@ -12,7 +12,7 @@ import { useAuth } from '../../hooks/useAuth'
 const ResourceManagement = () => {
   const { user } = useAuth()
   const [resources, setResources] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)

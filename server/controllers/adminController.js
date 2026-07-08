@@ -73,13 +73,13 @@ exports.getDashboardStats = async (req, res) => {
       recentAnnouncements,
       recentUsers
     ] = await Promise.all([
-      User.countDocuments({ role: "student" }).lean(),
-      User.countDocuments({ role: { $in: ["faculty", "hod", "dean", "principal"] } }).lean(),
-      Announcement.countDocuments().lean(),
-      Resource.countDocuments().lean(),
-      User.countDocuments({ isActive: true }).lean(),
-      StudentData.countDocuments({ isRegistered: false }).lean(),
-      FacultyData.countDocuments({ isRegistered: false }).lean(),
+      User.countDocuments({ role: "student" }),
+      User.countDocuments({ role: { $in: ["faculty", "hod", "dean", "principal"] } }),
+      Announcement.countDocuments(),
+      Resource.countDocuments(),
+      User.countDocuments({ isActive: true }),
+      StudentData.countDocuments({ isRegistered: false }),
+      FacultyData.countDocuments({ isRegistered: false }),
       Announcement.find().sort({ createdAt: -1 }).limit(5).populate("createdBy", "name").lean(),
       User.find().sort({ createdAt: -1 }).limit(5).select("-password").lean()
     ]);
