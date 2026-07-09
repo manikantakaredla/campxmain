@@ -156,6 +156,27 @@ exports.getConversations = async (req, res) => {
           name: `Class Group (${branch} - ${user.currentYear} Yr - Sec ${user.section})`,
           type: 'class'
         });
+        
+        // Add Subject Groups
+        const studentSubjectAssignments = await SubjectSectionAssignment.find({
+          department: new RegExp(branch, 'i'), 
+          year: user.currentYear, 
+          section: user.section, 
+          isActive: true
+        }).populate('subjectId facultyId');
+        
+        studentSubjectAssignments.forEach(sa => {
+          if (sa.subjectId && sa.facultyId) {
+            const id = `subjectGroup_${sa.facultyId._id}_${sa.subjectId._id}_${sa.year}`;
+            if (!groups.find(g => g._id === id)) {
+              groups.push({
+                _id: id,
+                name: `${sa.year} Yr ${sa.subjectId.name} (${sa.facultyId.name})`,
+                type: 'class'
+              });
+            }
+          }
+        });
       }
       if (proctorResult?.faculty) {
         groups.push({
@@ -177,16 +198,17 @@ exports.getConversations = async (req, res) => {
         });
       });
 
-      const subjectAssignments = await SubjectSectionAssignment.find({ facultyId: user._id, isActive: true });
+      const subjectAssignments = await SubjectSectionAssignment.find({ facultyId: user._id, isActive: true }).populate('subjectId');
       subjectAssignments.forEach(sa => {
-        const dept = getShortBranch(sa.department);
-        const id = `class_${dept}_${sa.year}_${sa.section}`;
-        if (!groups.find(g => g._id === id)) {
-          groups.push({
-            _id: id,
-            name: `Class Group (${dept} - ${sa.year} Yr - Sec ${sa.section})`,
-            type: 'class'
-          });
+        if (sa.subjectId) {
+          const id = `subjectGroup_${user._id}_${sa.subjectId._id}_${sa.year}`;
+          if (!groups.find(g => g._id === id)) {
+            groups.push({
+              _id: id,
+              name: `${sa.year} Yr ${sa.subjectId.name}`,
+              type: 'class'
+            });
+          }
         }
       });
 
@@ -511,7 +533,16 @@ exports.getUserGroupIds = async (userId) => {
     const groupIds = [];
     if (user.role === 'student') {
       if (user.branch && user.currentYear && user.section) {
-         groupIds.push(`class_${getShortBranch(user.branch)}_${user.currentYear}_${user.section}`);
+         const branch = getShortBranch(user.branch);
+         groupIds.push(`class_${branch}_${user.currentYear}_${user.section}`);
+         
+         const sa = await SubjectSectionAssignment.find({
+            department: new RegExp(branch, 'i'),
+            year: user.currentYear,
+            section: user.section,
+            isActive: true
+         });
+         sa.forEach(a => groupIds.push(`subjectGroup_${a.facultyId}_${a.subjectId}_${a.year}`));
       }
       const proctorResult = await resolveProctorFaculty(user);
       if (proctorResult?.faculty) groupIds.push(`proctor_${proctorResult.faculty._id}`);
@@ -520,7 +551,9 @@ exports.getUserGroupIds = async (userId) => {
       classAssignments.forEach(ca => groupIds.push(`class_${getShortBranch(ca.department)}_${ca.year}_${ca.section}`));
       
       const subjectAssignments = await SubjectSectionAssignment.find({ facultyId: user._id, isActive: true });
-      subjectAssignments.forEach(sa => groupIds.push(`class_${getShortBranch(sa.department)}_${sa.year}_${sa.section}`));
+      subjectAssignments.forEach(sa => {
+         groupIds.push(`subjectGroup_${user._id}_${sa.subjectId}_${sa.year}`);
+      });
       
       groupIds.push(`proctor_${user._id}`);
     }
@@ -625,6 +658,35 @@ exports.getPollStats = async (req, res) => {
           
           // Basic branch matching
           targetUsers = targetUsers.filter(u => getShortBranch(u.branch) === dept);
+        }
+      } else if (message.groupId.startsWith('subjectGroup_')) {
+        // subjectGroup_facultyId_subjectId_year
+        const parts = message.groupId.split('_');
+        if (parts.length === 4) {
+          const facId = parts[1];
+          const subId = parts[2];
+          const yr = parseInt(parts[3]);
+          
+          const assignments = await SubjectSectionAssignment.find({
+            facultyId: facId,
+            subjectId: subId,
+            year: yr,
+            isActive: true
+          });
+          
+          const validDepts = [...new Set(assignments.map(a => a.department.toUpperCase()))];
+          const validSecs = [...new Set(assignments.map(a => a.section.toUpperCase()))];
+          
+          targetUsers = await User.find({
+            role: 'student',
+            currentYear: yr,
+            isActive: true
+          }).select('_id name profilePicture rollNumber email branch section');
+          
+          targetUsers = targetUsers.filter(u => {
+             const uBranch = getShortBranch(u.branch).toUpperCase();
+             return validDepts.some(d => getShortBranch(d).toUpperCase() === uBranch) && validSecs.includes(u.section.toUpperCase());
+          });
         }
       } else if (message.groupId.startsWith('proctor_')) {
         const facultyId = message.groupId.replace('proctor_', '');
