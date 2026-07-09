@@ -26,6 +26,11 @@ const AnnouncementDetails = () => {
       const response = await announcementService.getById(id)
       if (response.success) {
         setAnnouncement(response.announcement)
+        try {
+          await announcementService.markViewed(id);
+        } catch (e) {
+          console.error('Failed to mark as viewed:', e);
+        }
       } else {
         toast.error('Announcement not found')
         navigate(-1)

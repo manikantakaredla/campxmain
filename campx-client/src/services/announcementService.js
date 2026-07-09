@@ -81,6 +81,12 @@ export const announcementService = {
     return response.data
   },
 
+  // Mark as viewed (analytics)
+  markViewed: async (id) => {
+    const response = await api.post(`/announcements/${id}/view`)
+    return response.data
+  },
+
   // Announcement types
   getTypes: async () => {
     const response = await api.get('/announcements/types')

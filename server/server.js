@@ -34,6 +34,7 @@ const interviewRoutes = require("./routes/interviewRoutes");
 const successStoryRoutes = require("./routes/successStoryRoutes");
 const subjectRoutes = require("./routes/subjectRoutes");
 const chatRoutes = require("./routes/chatRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 const startOpportunityCron = require("./scripts/opportunityCron");
 
 const app = express();
@@ -133,6 +134,7 @@ app.use("/api/interviews", interviewRoutes);
 app.use("/api/success-stories", successStoryRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 app.get("/test-brevo", async (req, res) => {
   try {

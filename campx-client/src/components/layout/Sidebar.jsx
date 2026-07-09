@@ -85,6 +85,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         { path: '/students', icon: <Users size={20} />, label: 'Students' },
         { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
         { path: '/resources', icon: <FileText size={20} />, label: ' Resources' },
+        { path: '/analytics', icon: <TrendingUp size={20} />, label: 'Analytics' },
         { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
         { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
         { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' },
@@ -99,6 +100,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         { path: '/faculty-management', icon: <Briefcase size={20} />, label: 'Faculty Management' },
         { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
         { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
+        { path: '/analytics', icon: <TrendingUp size={20} />, label: 'Analytics' },
         { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
         { path: '/opportunities', icon: <Briefcase size={20} />, label: 'Opportunities' }
       ]

@@ -12,7 +12,8 @@ const {
   getClassTeacherAnnouncements,
   getProctorAnnouncements,
   searchStudents,
-  previewRecipients
+  previewRecipients,
+  markViewed
 } = require("../controllers/announcementController");
 
 const protect = require("../middleware/authMiddleware");
@@ -43,6 +44,9 @@ router.get("/search-students", protect, searchStudents);
 
 // Preview recipients
 router.post("/preview-recipients", protect, previewRecipients);
+
+// Mark as viewed
+router.post("/:id/view", protect, markViewed);
 
 // Get announcement by ID
 // IMPORTANT: Keep this AFTER all specific routes

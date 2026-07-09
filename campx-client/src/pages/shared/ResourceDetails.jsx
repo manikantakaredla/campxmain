@@ -20,6 +20,11 @@ const ResourceDetails = () => {
       const response = await resourceService.getById(id)
       if (response.success) {
         setResource(response.resource)
+        try {
+          await resourceService.markViewed(id);
+        } catch (e) {
+          console.error('Failed to mark as viewed:', e);
+        }
       } else {
         toast.error('Resource not found')
         navigate(-1)

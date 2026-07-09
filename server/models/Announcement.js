@@ -80,6 +80,7 @@ const announcementSchema = new mongoose.Schema({
   tags: [{ type: String }],
   status: { type: String, enum: ["active", "expired", "draft"], default: "active" },
   calendarEventCreated: { type: Boolean, default: false },
+  viewedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
 }, { timestamps: true });
 

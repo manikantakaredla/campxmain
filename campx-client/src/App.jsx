@@ -32,6 +32,7 @@ const AnnouncementDetails = lazy(() => import('./pages/shared/AnnouncementDetail
 const ResourceDetails = lazy(() => import('./pages/shared/ResourceDetails'))
 const ActivityDetails = lazy(() => import('./pages/shared/ActivityDetails'))
 const Messages = lazy(() => import('./pages/shared/Messages'))
+const AnalyticsDashboard = lazy(() => import('./pages/shared/AnalyticsDashboard'))
 
 const FacultyDashboard = lazy(() => import('./pages/faculty/FacultyDashboard'))
 const MyStudents = lazy(() => import('./pages/faculty/MyStudents'))
@@ -160,6 +161,7 @@ function App() {
           <Route path="/faculty/profile" element={wrapSuspense(FacultyProfile)} />
           <Route path="/faculty/notifications" element={wrapSuspense(FacultyNotifications)} />
           <Route path="/faculty/messages" element={wrapSuspense(Messages)} />
+          <Route path="/faculty/analytics" element={wrapSuspense(AnalyticsDashboard)} />
           
           <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
           <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
@@ -193,6 +195,7 @@ function App() {
           <Route path="/admin/placements/upload" element={wrapSuspense(PlacementUpload)} />
           <Route path="/admin/placements/analytics" element={wrapSuspense(PlacementAnalytics)} />
           <Route path="/admin/faculty-management" element={wrapSuspense(AdminFacultyManagement)} />
+          <Route path="/admin/analytics" element={wrapSuspense(AnalyticsDashboard)} />
           
           <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
           <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />

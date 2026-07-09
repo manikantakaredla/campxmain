@@ -61,5 +61,10 @@ export const resourceService = {
   getCompletionStatus: async (id) => {
     const response = await api.get(`/resources/${id}/completion-status`)
     return response.data
+  },
+
+  markViewed: async (id) => {
+    const response = await api.post(`/resources/${id}/view`)
+    return response.data
   }
 }

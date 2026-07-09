@@ -85,6 +85,10 @@ const resourceSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
+  viewedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   uploadedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

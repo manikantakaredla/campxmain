@@ -739,3 +739,25 @@ exports.getCompletionStatus = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// ==================== MARK RESOURCE AS VIEWED ====================
+exports.markViewed = async (req, res) => {
+  try {
+    const resource = await Resource.findById(req.params.id);
+    
+    if (!resource) {
+      return res.status(404).json({ success: false, message: "Resource not found" });
+    }
+    
+    if (req.user && req.user.role === 'student') {
+      if (!resource.viewedBy.includes(req.user.id)) {
+        resource.viewedBy.push(req.user.id);
+        await resource.save();
+      }
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

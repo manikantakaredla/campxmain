@@ -897,3 +897,26 @@ exports.getAnnouncementTypes = async (req, res) => {
     });
   }
 };
+
+// ==================== MARK ANNOUNCEMENT AS VIEWED ====================
+exports.markViewed = async (req, res) => {
+  try {
+    const announcement = await Announcement.findById(req.params.id);
+    
+    if (!announcement) {
+      return res.status(404).json({ success: false, message: "Announcement not found" });
+    }
+    
+    if (req.user && req.user.role === 'student') {
+      if (!announcement.viewedBy.includes(req.user.id)) {
+        announcement.viewedBy.push(req.user.id);
+        announcement.viewCount = (announcement.viewCount || 0) + 1;
+        await announcement.save();
+      }
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
