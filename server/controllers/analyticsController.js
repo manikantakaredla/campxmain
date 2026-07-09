@@ -11,12 +11,14 @@ exports.getAnalyticsItems = async (req, res) => {
     let announcementQuery = {};
     let resourceQuery = {};
 
+    const userId = req.userId || req.user.id || req.user._id;
+
     if (userRole === "faculty") {
-      announcementQuery.createdBy = req.user.id;
-      resourceQuery.uploadedBy = req.user.id;
+      announcementQuery.createdBy = userId;
+      resourceQuery.uploadedBy = userId;
     } else if (userRole === "hod") {
       const deptFaculty = await User.find({ department: req.user.department }).select("_id");
-      const validIds = [...deptFaculty.map(f => f._id), req.user.id];
+      const validIds = [...deptFaculty.map(f => f._id), userId];
       announcementQuery.createdBy = { $in: validIds };
       resourceQuery.uploadedBy = { $in: validIds };
     } 
