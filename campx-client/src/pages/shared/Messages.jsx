@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../../api/axios';
 import { useSearchParams } from 'react-router-dom';
-import { Send, Search, Check, CheckCheck, Users, UserCircle, MessageSquare, Trash2, Reply, X, ArrowLeft } from 'lucide-react';
+import { Send, Search, Check, CheckCheck, Users, UserCircle, MessageSquare, Trash2, Reply, X, ArrowLeft, BarChart2, Plus, Minus, PieChart } from 'lucide-react';
 import { useSocket } from '../../hooks/useSocket';
 import { useAuth } from '../../hooks/useAuth';
 import { encryptMessage, decryptMessage } from '../../utils/encryption';
@@ -20,6 +20,12 @@ const Messages = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
   const [isSending, setIsSending] = useState(false);
+  const [isCreatingPoll, setIsCreatingPoll] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState([{ text: '' }, { text: '' }]);
+  const [showPollStatsModal, setShowPollStatsModal] = useState(false);
+  const [pollStatsData, setPollStatsData] = useState(null);
+
   
   const messagesEndRef = useRef(null);
   const socket = useSocket();
@@ -101,7 +107,7 @@ const Messages = () => {
       if (res.data.success) {
         const decryptedMessages = res.data.data.map(m => ({
           ...m,
-          content: m.isDeleted ? m.content : decryptMessage(m.content),
+          content: m.isDeleted ? m.content : (m.isPoll ? m.content : decryptMessage(m.content)),
           replyTo: m.replyTo ? { ...m.replyTo, content: m.replyTo.isDeleted ? m.replyTo.content : decryptMessage(m.replyTo.content) } : null
         }));
         setMessages(decryptedMessages);
@@ -127,7 +133,7 @@ const Messages = () => {
     if (!socket) return;
 
     const handleNewMessage = (newMsg) => {
-      newMsg.content = newMsg.isDeleted ? newMsg.content : decryptMessage(newMsg.content);
+      newMsg.content = newMsg.isDeleted ? newMsg.content : (newMsg.isPoll ? newMsg.content : decryptMessage(newMsg.content));
       if (newMsg.replyTo) {
          newMsg.replyTo.content = newMsg.replyTo.isDeleted ? newMsg.replyTo.content : decryptMessage(newMsg.replyTo.content);
       }
@@ -212,11 +218,16 @@ const Messages = () => {
     };
 
     socket.on('newMessage', handleNewMessage);
+    socket.on('messageUpdated', (updatedMsg) => {
+      updatedMsg.content = updatedMsg.isDeleted ? updatedMsg.content : (updatedMsg.isPoll ? updatedMsg.content : decryptMessage(updatedMsg.content));
+      setMessages(prev => prev.map(m => m._id === updatedMsg._id ? updatedMsg : m));
+    });
     socket.on('messageRead', handleMessageRead);
     socket.on('messageDeleted', handleMessageDeleted);
 
     return () => {
       socket.off('newMessage', handleNewMessage);
+      socket.off('messageUpdated');
       socket.off('messageRead', handleMessageRead);
       socket.off('messageDeleted', handleMessageDeleted);
     };
@@ -229,14 +240,23 @@ const Messages = () => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !selectedChat || isSending) return;
+    
+    const isPoll = isCreatingPoll;
+    if (!isPoll && !newMessage.trim()) return;
+    if (isPoll && !pollQuestion.trim()) return;
+    if (isPoll && pollOptions.some(o => !o.text.trim())) return;
+    if (!selectedChat || isSending) return;
 
     setIsSending(true);
     try {
       const payload = {
-        content: encryptMessage(newMessage),
-        replyTo: replyingTo ? replyingTo._id : undefined
+        content: isPoll ? 'Poll' : encryptMessage(newMessage),
+        replyTo: replyingTo ? replyingTo._id : undefined,
+        isPoll,
+        pollQuestion: isPoll ? pollQuestion : undefined,
+        pollOptions: isPoll ? pollOptions.map(o => ({ text: o.text })) : undefined
       };
+
       if (selectedChat.isGroup) {
         payload.groupId = selectedChat._id;
       } else {
@@ -246,7 +266,7 @@ const Messages = () => {
       const res = await api.post('/chat/messages', payload);
       if (res.data.success) {
         const sentMsg = res.data.data;
-        sentMsg.content = sentMsg.isDeleted ? sentMsg.content : decryptMessage(sentMsg.content);
+        sentMsg.content = sentMsg.isDeleted ? sentMsg.content : (sentMsg.isPoll ? sentMsg.content : decryptMessage(sentMsg.content));
         if (sentMsg.replyTo && sentMsg.replyTo.content) {
             sentMsg.replyTo.content = sentMsg.replyTo.isDeleted ? sentMsg.replyTo.content : decryptMessage(sentMsg.replyTo.content);
         }
@@ -256,6 +276,9 @@ const Messages = () => {
         });
         setNewMessage('');
         setReplyingTo(null);
+        setIsCreatingPoll(false);
+        setPollQuestion('');
+        setPollOptions([{text:''}, {text:''}]);
         fetchConversations(); // Update last message in list
       }
     } catch (error) {
@@ -292,6 +315,30 @@ const Messages = () => {
     } catch (error) {
       console.error('Error deleting chat:', error);
       alert('Cannot delete this chat or an error occurred.');
+    }
+  };
+
+  
+  const handleVote = async (messageId, optionIndex) => {
+    try {
+      const res = await api.post(`/chat/messages/${messageId}/vote`, { optionIndex });
+      if (res.data.success) {
+        // Will be updated via socket
+      }
+    } catch (error) {
+      console.error('Error voting:', error);
+    }
+  };
+
+  const handleViewStats = async (messageId) => {
+    try {
+      const res = await api.get(`/chat/messages/${messageId}/poll-stats`);
+      if (res.data.success) {
+        setPollStatsData(res.data.data);
+        setShowPollStatsModal(true);
+      }
+    } catch (error) {
+      console.error('Error fetching poll stats:', error);
     }
   };
 
@@ -486,7 +533,53 @@ const Messages = () => {
                               </div>
                             )}
                             
-                            <p className="whitespace-pre-wrap text-[14px] leading-relaxed break-words">{msg.content}</p>
+                            
+                            {msg.isPoll ? (
+                              <div className="min-w-[250px]">
+                                <div className="flex items-start gap-2 mb-3">
+                                  <BarChart2 size={18} className={isMine ? 'text-indigo-200' : 'text-indigo-500'} />
+                                  <p className="font-semibold text-[15px] break-words flex-1">{msg.pollQuestion}</p>
+                                </div>
+                                <div className="space-y-2">
+                                  {msg.pollOptions.map((opt, oIdx) => {
+                                    const totalVotes = msg.pollOptions.reduce((acc, curr) => acc + (curr.votes?.length || 0), 0);
+                                    const optVotes = opt.votes?.length || 0;
+                                    const percent = totalVotes > 0 ? Math.round((optVotes / totalVotes) * 100) : 0;
+                                    const hasVotedThis = opt.votes?.includes(currentUserId);
+                                    
+                                    return (
+                                      <div 
+                                        key={oIdx} 
+                                        onClick={() => !isMine && handleVote(msg._id, oIdx)}
+                                        className={`relative overflow-hidden rounded-lg border ${isMine ? 'border-indigo-400' : 'border-gray-200'} ${!isMine ? 'cursor-pointer hover:border-indigo-400' : ''} p-2 flex items-center justify-between z-10 bg-black/5`}
+                                      >
+                                        <div 
+                                          className={`absolute left-0 top-0 bottom-0 z-[-1] transition-all duration-500 ${isMine ? 'bg-indigo-500' : 'bg-indigo-100'}`} 
+                                          style={{ width: `${percent}%` }}
+                                        />
+                                        <div className="flex items-center gap-2">
+                                          {!isMine && (
+                                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${hasVotedThis ? (isMine ? 'border-white bg-white text-indigo-600' : 'border-indigo-600 bg-indigo-600 text-white') : (isMine ? 'border-indigo-200' : 'border-gray-300')}`}>
+                                              {hasVotedThis && <Check size={10} />}
+                                            </div>
+                                          )}
+                                          <span className="text-[14px]">{opt.text}</span>
+                                        </div>
+                                        <span className="text-[12px] font-medium opacity-90">{percent}%</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                {['faculty', 'admin', 'hod', 'dean'].includes(user?.role) && isMine && (
+                                  <button onClick={() => handleViewStats(msg._id)} className="mt-3 w-full py-1.5 bg-indigo-700/50 hover:bg-indigo-700/70 text-[12px] font-medium rounded transition-colors flex items-center justify-center gap-1">
+                                    <PieChart size={14} /> View Analytics
+                                  </button>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="whitespace-pre-wrap text-[14px] leading-relaxed break-words">{msg.content}</p>
+                            )}
+
                             
                             {/* Timestamp & Status inside bubble */}
                             <div className={`flex items-center justify-end gap-1 mt-1 -mr-1 text-[10px] ${isMine ? 'text-indigo-200' : 'text-gray-400'}`}>
@@ -539,24 +632,83 @@ const Messages = () => {
                   </div>
                 )}
                 
-                <form onSubmit={handleSendMessage} className="flex items-end gap-2 md:gap-3 relative">
-                  <div className="flex-1 bg-gray-100 rounded-2xl flex items-center border border-transparent focus-within:border-indigo-300 focus-within:bg-white focus-within:shadow-sm transition-all relative">
-                    <input
-                      type="text"
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Type a message..."
-                      disabled={isSending}
-                      className="w-full bg-transparent px-5 py-3 md:py-3.5 focus:outline-none text-[15px] disabled:opacity-50"
-                    />
+                <form onSubmit={handleSendMessage} className="flex flex-col gap-2 relative">
+                  {isCreatingPoll ? (
+                    <div className="bg-white rounded-xl border border-indigo-100 p-4 shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-gray-800 text-sm flex items-center gap-2"><BarChart2 size={16} className="text-indigo-600" /> Create a Poll</h4>
+                        <button type="button" onClick={() => setIsCreatingPoll(false)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
+                      </div>
+                      <input 
+                        type="text" 
+                        placeholder="Ask a question..." 
+                        value={pollQuestion}
+                        onChange={e => setPollQuestion(e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm mb-3 focus:outline-none focus:border-indigo-300 focus:bg-white"
+                      />
+                      <div className="space-y-2 mb-3">
+                        {pollOptions.map((opt, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <input 
+                              type="text" 
+                              placeholder={`Option ${idx + 1}`} 
+                              value={opt.text}
+                              onChange={e => {
+                                const newOpts = [...pollOptions];
+                                newOpts[idx].text = e.target.value;
+                                setPollOptions(newOpts);
+                              }}
+                              className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-300 focus:bg-white"
+                            />
+                            {pollOptions.length > 2 && (
+                              <button type="button" onClick={() => setPollOptions(pollOptions.filter((_, i) => i !== idx))} className="p-1.5 text-gray-400 hover:text-red-500 bg-gray-50 rounded-lg hover:bg-red-50">
+                                <Minus size={14} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {pollOptions.length < 6 && (
+                        <button type="button" onClick={() => setPollOptions([...pollOptions, {text:''}])} className="text-indigo-600 text-[13px] font-medium flex items-center gap-1 hover:text-indigo-800">
+                          <Plus size={14} /> Add Option
+                        </button>
+                      )}
+                    </div>
+                  ) : null}
+
+                  <div className="flex items-end gap-2 md:gap-3 relative">
+                    {!isCreatingPoll && selectedChat?.isGroup && ['faculty', 'admin', 'hod', 'dean'].includes(user?.role) && (
+                      <button
+                        type="button"
+                        onClick={() => setIsCreatingPoll(true)}
+                        className="p-3.5 text-gray-400 hover:text-indigo-600 bg-gray-100 hover:bg-indigo-50 rounded-full transition-colors flex-shrink-0 flex items-center justify-center h-[52px] w-[52px]"
+                        title="Create Poll"
+                      >
+                        <BarChart2 size={20} />
+                      </button>
+                    )}
+                    
+                    {!isCreatingPoll && (
+                      <div className="flex-1 bg-gray-100 rounded-2xl flex items-center border border-transparent focus-within:border-indigo-300 focus-within:bg-white focus-within:shadow-sm transition-all relative">
+                        <input
+                          type="text"
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          placeholder="Type a message..."
+                          disabled={isSending}
+                          className="w-full bg-transparent px-5 py-3 md:py-3.5 focus:outline-none text-[15px] disabled:opacity-50"
+                        />
+                      </div>
+                    )}
+                    
+                    <button
+                      type="submit"
+                      disabled={(isCreatingPoll ? (!pollQuestion.trim() || pollOptions.some(o => !o.text.trim())) : !newMessage.trim()) || isSending}
+                      className="bg-indigo-600 text-white p-3.5 rounded-full hover:bg-indigo-700 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 active:scale-95 flex items-center justify-center h-[52px] w-[52px]"
+                    >
+                      <Send size={20} className="ml-1" />
+                    </button>
                   </div>
-                  <button
-                    type="submit"
-                    disabled={!newMessage.trim() || isSending}
-                    className="bg-indigo-600 text-white p-3.5 rounded-full hover:bg-indigo-700 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 active:scale-95 flex items-center justify-center h-[52px] w-[52px]"
-                  >
-                    <Send size={20} className="ml-1" />
-                  </button>
                 </form>
               </div>
             </>
@@ -573,6 +725,78 @@ const Messages = () => {
             </div>
           )}
         </div>
+      
+      {/* Poll Stats Modal */}
+      {showPollStatsModal && pollStatsData && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+              <h2 className="font-bold text-gray-900 text-lg flex items-center gap-2"><PieChart size={20} className="text-indigo-600" /> Poll Analytics</h2>
+              <button onClick={() => setShowPollStatsModal(false)} className="p-1.5 text-gray-400 hover:bg-gray-200 rounded-full">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-5 overflow-y-auto flex-1">
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-800 mb-2">{pollStatsData.message.pollQuestion}</h3>
+                <div className="space-y-3 mt-4">
+                  {pollStatsData.message.pollOptions.map((opt, i) => (
+                    <div key={i} className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium text-sm text-gray-700">{opt.text}</span>
+                        <span className="text-xs font-bold text-indigo-600">{opt.votes?.length || 0} votes</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {opt.votes?.map(v => (
+                          <div key={v._id} className="text-[10px] bg-white border border-gray-200 px-2 py-1 rounded shadow-sm flex items-center gap-1" title={v.name}>
+                            {v.profilePicture ? (
+                              <img src={v.profilePicture} className="w-3 h-3 rounded-full object-cover" />
+                            ) : (
+                              <div className="w-3 h-3 rounded-full bg-indigo-100 text-indigo-600 flex flex-col justify-center items-center font-bold text-[8px]">{v.name.charAt(0)}</div>
+                            )}
+                            <span className="truncate max-w-[60px]">{v.name.split(' ')[0]}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-3 flex items-center justify-between">
+                  Pending Students
+                  <span className="bg-red-50 text-red-600 text-xs px-2 py-0.5 rounded-full font-bold">{pollStatsData.pendingUsers.length}</span>
+                </h3>
+                {pollStatsData.pendingUsers.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    {pollStatsData.pendingUsers.map(u => (
+                      <div key={u._id} className="flex items-center gap-2 p-2 rounded-lg border border-gray-100 bg-white">
+                        {u.profilePicture ? (
+                          <img src={u.profilePicture} className="w-6 h-6 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold text-[10px]">{u.name.charAt(0)}</div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-medium text-gray-800 truncate">{u.name}</p>
+                          <p className="text-[9px] text-gray-500 truncate">{u.rollNumber}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 bg-green-50 rounded-xl border border-green-100 text-green-700 text-sm font-medium">
+                    <CheckCheck size={20} className="mx-auto mb-1 text-green-500" />
+                    Everyone has voted!
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       </div>
     </div>
   );

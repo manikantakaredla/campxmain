@@ -13,4 +13,8 @@ router.delete('/messages/:id', chatController.deleteMessage);
 router.delete('/conversations/:id', chatController.deleteConversation);
 router.delete('/conversations/group/:id', chatController.deleteGroupConversation);
 
+// Poll routes
+router.post('/messages/:id/vote', chatController.votePoll);
+router.get('/messages/:id/poll-stats', chatController.getPollStats);
+
 module.exports = router;

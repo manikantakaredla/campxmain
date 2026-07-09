@@ -304,10 +304,10 @@ exports.getMessages = async (req, res) => {
 // ==================== SEND MESSAGE ====================
 exports.sendMessage = async (req, res) => {
   try {
-    const { receiverId, groupId, content, replyTo } = req.body;
+    const { receiverId, groupId, content, replyTo, isPoll, pollQuestion, pollOptions } = req.body;
     
-    if (!content) {
-      return res.status(400).json({ success: false, message: 'Message content is required' });
+    if (!content && !isPoll) {
+      return res.status(400).json({ success: false, message: 'Message content or poll is required' });
     }
 
     if (!receiverId && !groupId) {
@@ -318,9 +318,12 @@ exports.sendMessage = async (req, res) => {
       sender: req.user.id,
       receiver: receiverId || undefined,
       groupId: groupId || undefined,
-      content,
+      content: content || "Poll",
       replyTo: replyTo || undefined,
-      readBy: [req.user.id] // sender has read it
+      readBy: [req.user.id], // sender has read it
+      isPoll: isPoll || false,
+      pollQuestion: pollQuestion || undefined,
+      pollOptions: pollOptions || []
     });
 
     await newMessage.save();
@@ -527,3 +530,133 @@ exports.getUserGroupIds = async (userId) => {
     return [];
   }
 };
+
+// ==================== VOTE ON POLL ====================
+exports.votePoll = async (req, res) => {
+  try {
+    const messageId = req.params.id;
+    const { optionIndex } = req.body;
+    const userId = req.user.id;
+
+    const message = await Message.findById(messageId);
+    if (!message || !message.isPoll) {
+      return res.status(404).json({ success: false, message: 'Poll not found' });
+    }
+
+    if (optionIndex < 0 || optionIndex >= message.pollOptions.length) {
+      return res.status(400).json({ success: false, message: 'Invalid option index' });
+    }
+
+    // Remove user's previous vote from all options
+    message.pollOptions.forEach(opt => {
+      opt.votes = opt.votes.filter(v => v.toString() !== userId.toString());
+    });
+
+    // Add vote to the new option
+    message.pollOptions[optionIndex].votes.push(userId);
+
+    await message.save();
+    
+    await message.populate('sender', 'name profilePicture role');
+    if (message.replyTo) {
+      await message.populate({
+        path: 'replyTo',
+        select: 'content sender isDeleted',
+        populate: { path: 'sender', select: 'name' }
+      });
+    }
+
+    // Emit socket event to update clients with the new poll state
+    try {
+      const io = getIO();
+      if (message.groupId) {
+        io.to(message.groupId).emit('messageUpdated', message);
+      } else {
+        if (message.receiver) {
+          io.to(message.receiver.toString()).emit('messageUpdated', message);
+        }
+        io.to(userId).emit('messageUpdated', message);
+      }
+    } catch (err) {
+      console.error('Socket emit failed:', err.message);
+    }
+
+    res.status(200).json({ success: true, data: message });
+  } catch (error) {
+    console.error('votePoll error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ==================== GET POLL STATS ====================
+exports.getPollStats = async (req, res) => {
+  try {
+    const messageId = req.params.id;
+    const message = await Message.findById(messageId).populate('pollOptions.votes', 'name profilePicture rollNumber email');
+    
+    if (!message || !message.isPoll) {
+      return res.status(404).json({ success: false, message: 'Poll not found' });
+    }
+
+    // Collect all users who have voted
+    let votedUsers = [];
+    message.pollOptions.forEach(opt => {
+      opt.votes.forEach(v => {
+        votedUsers.push(v);
+      });
+    });
+
+    // Resolve users in the group to find pending
+    let targetUsers = [];
+    if (message.groupId) {
+      if (message.groupId.startsWith('class_')) {
+        // e.g., class_CSE_2_A
+        const parts = message.groupId.split('_');
+        if (parts.length === 4) {
+          const dept = parts[1];
+          const year = parseInt(parts[2]);
+          const sec = parts[3];
+          targetUsers = await User.find({ 
+            role: 'student', 
+            currentYear: year,
+            section: sec,
+            isActive: true 
+          }).select('_id name profilePicture rollNumber email');
+          
+          // Basic branch matching
+          targetUsers = targetUsers.filter(u => getShortBranch(u.branch) === dept);
+        }
+      } else if (message.groupId.startsWith('proctor_')) {
+        const facultyId = message.groupId.replace('proctor_', '');
+        const ProctorStudentAssignment = require('../models/ProctorStudentAssignment');
+        const assignments = await ProctorStudentAssignment.find({ facultyId }).populate('studentId', 'name profilePicture rollNumber email');
+        targetUsers = assignments.map(a => a.studentId).filter(s => s);
+      }
+    }
+
+    const votedIds = votedUsers.map(u => u._id.toString());
+    const uniqueTargetUsers = [];
+    const seenMap = new Map();
+    for (const u of targetUsers) {
+      if (u && !seenMap.has(u._id.toString())) {
+        seenMap.set(u._id.toString(), true);
+        uniqueTargetUsers.push(u);
+      }
+    }
+
+    const pendingUsers = uniqueTargetUsers.filter(u => !votedIds.includes(u._id.toString()));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        message,
+        votedUsers,
+        pendingUsers
+      }
+    });
+  } catch (error) {
+    console.error('getPollStats error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+

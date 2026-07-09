@@ -18,9 +18,23 @@ const messageSchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: true,
+    // No longer required strictly if it's a poll, we will handle validation in controller
     trim: true
   },
+  isPoll: {
+    type: Boolean,
+    default: false
+  },
+  pollQuestion: {
+    type: String
+  },
+  pollOptions: [{
+    text: String,
+    votes: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }]
+  }],
   isDeleted: {
     type: Boolean,
     default: false
