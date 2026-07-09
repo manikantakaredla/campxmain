@@ -9,5 +9,10 @@ export const analyticsService = {
   getItemAnalytics: async (type, id) => {
     const response = await api.get(`/analytics/item/${type}/${id}`)
     return response.data
+  },
+
+  sendReminder: async (type, id) => {
+    const response = await api.post(`/analytics/item/${type}/${id}/remind`)
+    return response.data
   }
 }

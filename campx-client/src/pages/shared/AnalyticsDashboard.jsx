@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { analyticsService } from '../../services/analyticsService'
 import { 
   BarChart2, Users, Eye, EyeOff, LayoutDashboard,
-  Calendar, FileText, Filter, Search, ArrowLeft, Loader2
+  Calendar, FileText, Filter, Search, ArrowLeft, Loader2, Bell
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -62,6 +62,23 @@ const AnalyticsDashboard = () => {
     setSearchTerm('')
     setDepartmentFilter('all')
     setSectionFilter('all')
+  }
+
+  const [sendingReminder, setSendingReminder] = useState(false)
+
+  const handleSendReminder = async () => {
+    if (!selectedItem) return
+    setSendingReminder(true)
+    try {
+      const response = await analyticsService.sendReminder(selectedItem.itemType, selectedItem._id)
+      if (response.success) {
+        toast.success(response.message || 'Reminder sent successfully')
+      }
+    } catch (error) {
+      toast.error('Failed to send reminder')
+    } finally {
+      setSendingReminder(false)
+    }
   }
 
   const renderItemCard = (item) => {
@@ -156,10 +173,20 @@ const AnalyticsDashboard = () => {
           >
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900">{selectedItem.title}</h1>
             <p className="text-gray-500 mt-1 capitalize">{selectedItem.itemType} Reach Analytics</p>
           </div>
+          {pendingCount > 0 && (
+            <button
+              onClick={handleSendReminder}
+              disabled={sendingReminder}
+              className="flex items-center gap-2 px-4 py-2 bg-fitbit-primary text-white rounded-lg hover:bg-fitbit-primary/90 transition-colors disabled:opacity-50"
+            >
+              {sendingReminder ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4" />}
+              Send Reminder
+            </button>
+          )}
         </div>
 
         {/* Stats Grid */}
