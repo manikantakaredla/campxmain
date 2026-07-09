@@ -8,7 +8,9 @@ const {
   deleteResource,
   downloadResource,
   getFacultySubjects,
-  getResourceAnalytics
+  getResourceAnalytics,
+  markCompleted,
+  getCompletionStatus
 } = require("../controllers/resourceController");
 const protect = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
@@ -20,6 +22,8 @@ router.get("/analytics", protect, authorizeRoles("admin", "hod", "principal", "d
 router.get("/faculty-subjects", protect, authorizeRoles("faculty", "hod"), getFacultySubjects);
 router.get("/:id", protect, getResourceById);
 router.put("/download/:id", protect, downloadResource);
+router.post("/:id/complete", protect, authorizeRoles("student"), markCompleted);
+router.get("/:id/completion-status", protect, authorizeRoles("faculty", "hod", "dean", "principal", "admin"), getCompletionStatus);
 
 // Faculty and above can create/update/delete
 router.post("/", protect, authorizeRoles("faculty", "hod", "dean", "principal", "admin"), upload.single("file"), createResource);

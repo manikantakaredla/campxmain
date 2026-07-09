@@ -81,6 +81,10 @@ const resourceSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  completedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   uploadedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

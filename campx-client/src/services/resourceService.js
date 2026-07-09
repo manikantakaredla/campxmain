@@ -51,5 +51,15 @@ export const resourceService = {
   getAnalytics: async () => {
     const response = await api.get('/resources/analytics')
     return response.data
+  },
+
+  markCompleted: async (id) => {
+    const response = await api.post(`/resources/${id}/complete`)
+    return response.data
+  },
+
+  getCompletionStatus: async (id) => {
+    const response = await api.get(`/resources/${id}/completion-status`)
+    return response.data
   }
 }

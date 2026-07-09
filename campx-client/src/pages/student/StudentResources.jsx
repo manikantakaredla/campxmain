@@ -3,11 +3,13 @@ import { resourceService } from '../../services/resourceService'
 import { SearchBar } from '../../components/common/SearchBar'
 import { Loader } from '../../components/common/Loader'
 import { EmptyState } from '../../components/common/EmptyState'
-import { FileText, Download, Eye, Clock, User, Filter, BookOpen, Layers, Calendar, ArrowLeft, File, FileSpreadsheet, FileArchive } from 'lucide-react'
+import { FileText, Download, Eye, Clock, User, Filter, BookOpen, Layers, Calendar, ArrowLeft, File, FileSpreadsheet, FileArchive, CheckCircle } from 'lucide-react'
+import { useAuth } from '../../hooks/useAuth'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
 const StudentResources = () => {
+  const { user } = useAuth()
   const [resources, setResources] = useState([])
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({ search: '', resourceType: '', semester: '', sortBy: 'latest' })
@@ -77,6 +79,22 @@ const StudentResources = () => {
       toast.error('Download failed')
     }
   }
+
+  const handleMarkCompleted = async (resourceId) => {
+    try {
+      const response = await resourceService.markCompleted(resourceId);
+      if (response.success) {
+        toast.success('Assignment marked as completed');
+        setResources(prev => prev.map(res => 
+          res._id === resourceId 
+            ? { ...res, completedBy: [...(res.completedBy || []), user._id] }
+            : res
+        ));
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to mark as completed');
+    }
+  };
 
   const getFileIcon = (fileType, fileName) => {
     const ext = fileName?.split('.').pop()?.toLowerCase()
@@ -264,19 +282,35 @@ const StudentResources = () => {
                             </div>
                           </div>
 
-                          <div className="flex md:flex-col items-center justify-end gap-2 md:w-32 flex-shrink-0">
-                            <Link
-                              to={`/resource/${resource._id}`}
-                              className="w-full text-center px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center justify-center gap-1"
-                            >
-                              <Eye size={12} /> View Details
-                            </Link>
-                            <button
-                              onClick={() => handleDownload(resource._id)}
-                              className="w-full px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
-                            >
-                              <Download size={12} /> Download
-                            </button>
+                          <div className="flex flex-col md:flex-col items-center justify-end gap-2 md:w-36 flex-shrink-0">
+                            {(resource.category === 'Assignment' || resource.resourceType === 'Assignment') && (
+                              <button
+                                onClick={() => handleMarkCompleted(resource._id)}
+                                disabled={resource.completedBy?.includes(user._id)}
+                                className={`w-full px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-colors ${
+                                  resource.completedBy?.includes(user._id)
+                                    ? 'bg-green-100 text-green-700 cursor-not-allowed border border-green-200'
+                                    : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                                }`}
+                              >
+                                <CheckCircle size={12} /> 
+                                {resource.completedBy?.includes(user._id) ? 'Completed' : 'Mark Completed'}
+                              </button>
+                            )}
+                            <div className="flex gap-2 w-full">
+                              <Link
+                                to={`/resource/${resource._id}`}
+                                className="w-full text-center px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center justify-center gap-1"
+                              >
+                                <Eye size={12} /> View
+                              </Link>
+                              <button
+                                onClick={() => handleDownload(resource._id)}
+                                className="w-full px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
+                              >
+                                <Download size={12} /> DL
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ))}

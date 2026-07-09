@@ -6,7 +6,7 @@ import { SearchBar } from '../../components/common/SearchBar'
 import { Pagination } from '../../components/common/Pagination'
 import { Loader } from '../../components/common/Loader'
 import { EmptyState } from '../../components/common/EmptyState'
-import { FileText, Plus, Edit, Trash2, Eye, Download, X, Upload, EyeOff, UploadCloud, Layers, ArrowLeft, File, FileSpreadsheet, FileArchive } from 'lucide-react'
+import { FileText, Plus, Edit, Trash2, Eye, Download, X, Upload, EyeOff, UploadCloud, Layers, ArrowLeft, File, FileSpreadsheet, FileArchive, Activity, CheckCircle, Clock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
@@ -20,6 +20,7 @@ const MyResources = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [activeView, setActiveView] = useState('categories')
+  const [trackingModal, setTrackingModal] = useState({ isOpen: false, resource: null, data: null, loading: false })
 
   const categoryCards = [
     { id: 'all', title: 'All Resources', icon: <Layers className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-blue-50', borderColor: 'border-blue-100', hoverBorder: 'hover:border-blue-300', value: '' },
@@ -110,6 +111,19 @@ const MyResources = () => {
     setPagination(prev => ({ ...prev, page: 1 }))
     setActiveView('resources')
   }
+
+  const handleTrack = async (resource) => {
+    setTrackingModal({ isOpen: true, resource, data: null, loading: true });
+    try {
+      const response = await resourceService.getCompletionStatus(resource._id);
+      if (response.success) {
+        setTrackingModal(prev => ({ ...prev, data: { completed: response.completed, pending: response.pending }, loading: false }));
+      }
+    } catch (error) {
+      toast.error('Failed to load tracking data');
+      setTrackingModal(prev => ({ ...prev, loading: false }));
+    }
+  };
 
   return (
     <div className="p-6 bg-[#f8f9fa] min-h-screen">
@@ -226,6 +240,17 @@ const MyResources = () => {
                       {new Date(resource.createdAt).toLocaleDateString()}
                     </span>
                   </div>
+                  
+                  {(resource.category === 'Assignment' || resource.resourceType === 'Assignment') && (
+                    <div className="mt-3">
+                      <button 
+                        onClick={() => handleTrack(resource)}
+                        className="w-full py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Activity className="w-4 h-4" /> Track Completion
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -245,6 +270,111 @@ const MyResources = () => {
           </>
         )}
       </div>
+
+      {/* Tracking Modal */}
+      {trackingModal.isOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-white">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Track Assignment</h3>
+                <p className="text-sm text-gray-500 mt-1 line-clamp-1">{trackingModal.resource?.title}</p>
+              </div>
+              <button 
+                onClick={() => setTrackingModal({ isOpen: false, resource: null, data: null, loading: false })}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              {trackingModal.loading ? (
+                <div className="flex justify-center items-center py-12">
+                  <Loader />
+                </div>
+              ) : trackingModal.data ? (
+                <div className="space-y-8">
+                  {/* Stats Overview */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100 flex items-center gap-4">
+                      <div className="p-3 bg-emerald-100 rounded-lg text-emerald-600">
+                        <CheckCircle className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-emerald-700 font-medium">Completed</p>
+                        <p className="text-2xl font-bold text-emerald-800">{trackingModal.data.completed.length}</p>
+                      </div>
+                    </div>
+                    <div className="bg-orange-50 rounded-xl p-4 border border-orange-100 flex items-center gap-4">
+                      <div className="p-3 bg-orange-100 rounded-lg text-orange-600">
+                        <Clock className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-orange-700 font-medium">Pending</p>
+                        <p className="text-2xl font-bold text-orange-800">{trackingModal.data.pending.length}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lists */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Completed List */}
+                    <div>
+                      <h4 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        Completed Students
+                      </h4>
+                      {trackingModal.data.completed.length === 0 ? (
+                        <p className="text-sm text-gray-500 italic bg-gray-50 p-4 rounded-xl text-center">No students have completed yet</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {trackingModal.data.completed.map(student => (
+                            <div key={student._id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-white hover:border-emerald-200 transition-colors">
+                              <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">
+                                {student.name?.charAt(0)}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-gray-900 truncate">{student.name}</p>
+                                <p className="text-xs text-gray-500 uppercase font-medium truncate">{student.rollNumber || 'N/A'}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Pending List */}
+                    <div>
+                      <h4 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                        Pending Students
+                      </h4>
+                      {trackingModal.data.pending.length === 0 ? (
+                        <p className="text-sm text-gray-500 italic bg-gray-50 p-4 rounded-xl text-center">All targeted students completed!</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {trackingModal.data.pending.map(student => (
+                            <div key={student._id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-white hover:border-orange-200 transition-colors">
+                              <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-sm shrink-0">
+                                {student.name?.charAt(0)}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-gray-900 truncate">{student.name}</p>
+                                <p className="text-xs text-gray-500 uppercase font-medium truncate">{student.rollNumber || 'N/A'}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -658,3 +658,84 @@ exports.getResourceAnalytics = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// ==================== MARK RESOURCE COMPLETED ====================
+exports.markCompleted = async (req, res) => {
+  try {
+    const resource = await Resource.findById(req.params.id);
+    
+    if (!resource) {
+      return res.status(404).json({ success: false, message: "Resource not found" });
+    }
+    
+    if (resource.category !== "Assignment" && resource.resourceType !== "Assignment") {
+      return res.status(400).json({ success: false, message: "Only assignments can be marked as completed" });
+    }
+
+    if (!resource.completedBy.includes(req.user.id)) {
+      resource.completedBy.push(req.user.id);
+      await resource.save();
+    }
+
+    res.status(200).json({ success: true, message: "Assignment marked as completed", resource });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ==================== GET COMPLETION STATUS ====================
+exports.getCompletionStatus = async (req, res) => {
+  try {
+    const resource = await Resource.findById(req.params.id).populate("completedBy", "name rollNumber email profilePicture section branch currentYear");
+    
+    if (!resource) {
+      return res.status(404).json({ success: false, message: "Resource not found" });
+    }
+
+    let targetUsers = [];
+
+    if (resource.visibility === "all") {
+      targetUsers = await User.find({ role: "student", isActive: true }).select("name rollNumber email profilePicture section branch currentYear");
+    } else if (resource.visibility === "branch" && resource.targetBranch) {
+      targetUsers = await User.find({ 
+        role: "student", 
+        branch: resource.targetBranch,
+        isActive: true 
+      }).select("name rollNumber email profilePicture section branch currentYear");
+    } else if (resource.visibility === "year" && resource.targetYear) {
+      targetUsers = await User.find({ 
+        role: "student", 
+        branch: resource.targetBranch,
+        currentYear: resource.targetYear,
+        isActive: true 
+      }).select("name rollNumber email profilePicture section branch currentYear");
+    } else if (resource.visibility === "section" && resource.targetSection) {
+      targetUsers = await User.find({ 
+        role: "student", 
+        branch: resource.targetBranch,
+        currentYear: resource.targetYear,
+        section: resource.targetSection,
+        isActive: true 
+      }).select("name rollNumber email profilePicture section branch currentYear");
+    } else if (resource.visibility === "class") {
+      const assignments = await ClassStudentAssignment.find({ facultyId: resource.uploadedBy }).populate("studentId", "name rollNumber email profilePicture section branch currentYear");
+      targetUsers = assignments.map(a => a.studentId).filter(s => s);
+    } else if (resource.visibility === "proctor") {
+      const assignments = await ProctorStudentAssignment.find({ facultyId: resource.uploadedBy }).populate("studentId", "name rollNumber email profilePicture section branch currentYear");
+      targetUsers = assignments.map(a => a.studentId).filter(s => s);
+    }
+
+    const completedIds = resource.completedBy.map(u => u._id.toString());
+    
+    const completed = resource.completedBy;
+    const pending = targetUsers.filter(u => !completedIds.includes(u._id.toString()));
+
+    res.status(200).json({
+      success: true,
+      completed,
+      pending
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
