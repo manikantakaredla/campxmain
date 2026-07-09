@@ -5,7 +5,6 @@ import {
   Calendar, FileText, Filter, Search, ArrowLeft, Loader2
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import moment from 'moment'
 
 const AnalyticsDashboard = () => {
   const [activeTab, setActiveTab] = useState('announcements')
@@ -79,7 +78,7 @@ const AnalyticsDashboard = () => {
             </h3>
             <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              {moment(item.createdAt).format('MMM D, YYYY')}
+              {new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </p>
           </div>
           <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
@@ -177,7 +176,7 @@ const AnalyticsDashboard = () => {
             <div className="mt-4 w-full bg-gray-100 rounded-full h-2">
               <div 
                 className="bg-fitbit-primary h-2 rounded-full transition-all duration-1000"
-                style={{ width: \`\${viewedPercentage}%\` }}
+                style={{ width: `${viewedPercentage}%` }}
               />
             </div>
           </div>
@@ -270,7 +269,7 @@ const AnalyticsDashboard = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <img 
-                            src={user.profilePicture || \`https://ui-avatars.com/api/?name=\${user.name}&background=random\`} 
+                            src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.name}&background=random`} 
                             alt={user.name} 
                             className="w-8 h-8 rounded-full border border-gray-200 object-cover"
                           />
@@ -287,11 +286,11 @@ const AnalyticsDashboard = () => {
                         {user.section || '-'}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={\`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium \${
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
                           user.status === 'viewed' 
                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' 
                             : 'bg-rose-50 text-rose-700 border border-rose-100'
-                        }\`}>
+                        }`}>
                           {user.status === 'viewed' ? (
                             <><Eye className="w-3 h-3" /> Viewed</>
                           ) : (
@@ -326,11 +325,11 @@ const AnalyticsDashboard = () => {
       <div className="flex items-center gap-4 border-b border-gray-200 mb-6">
         <button
           onClick={() => setActiveTab('announcements')}
-          className={\`pb-3 px-1 border-b-2 text-sm font-medium transition-colors \${
+          className={`pb-3 px-1 border-b-2 text-sm font-medium transition-colors ${
             activeTab === 'announcements' 
               ? 'border-fitbit-primary text-fitbit-primary' 
               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-          }\`}
+          }`}
         >
           <span className="flex items-center gap-2">
             <FileText className="w-4 h-4" />
@@ -339,11 +338,11 @@ const AnalyticsDashboard = () => {
         </button>
         <button
           onClick={() => setActiveTab('resources')}
-          className={\`pb-3 px-1 border-b-2 text-sm font-medium transition-colors \${
+          className={`pb-3 px-1 border-b-2 text-sm font-medium transition-colors ${
             activeTab === 'resources' 
               ? 'border-fitbit-primary text-fitbit-primary' 
               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-          }\`}
+          }`}
         >
           <span className="flex items-center gap-2">
             <BarChart2 className="w-4 h-4" />
