@@ -10,7 +10,7 @@ const helmet = require("helmet");
 const compression = require("compression");
 const morgan = require("morgan");
 const http = require("http");
-
+//db
 const connectDB = require("./config/db");
 const { initSocket } = require("./config/socket");
 const errorHandler = require("./middleware/errorMiddleware");
@@ -57,8 +57,8 @@ app.use(helmet({
 
 app.use(cors({
   origin: [
-    "http://localhost:5173", 
-    "https://mycampx.vercel.app", 
+    "http://localhost:5173",
+    "https://mycampx.vercel.app",
     process.env.CLIENT_URL
   ].filter(Boolean),
   credentials: true,
