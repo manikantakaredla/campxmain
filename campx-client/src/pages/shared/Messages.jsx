@@ -411,7 +411,7 @@ const Messages = () => {
                     
                     <div className="flex-1 min-w-0 text-left py-1">
                       <div className="flex justify-between items-center mb-0.5">
-                        <h3 className="font-semibold text-gray-900 truncate pr-2 text-[15px]">{chat.name}</h3>
+                        <h3 className="font-semibold text-gray-900 truncate pr-2 text-[15px]">{chat.name}{chat.rollNumber ? ` (${chat.rollNumber})` : ''}</h3>
                         {chat.lastMessageTime && (
                           <span className={`text-[11px] whitespace-nowrap ${chat.unreadCount > 0 ? 'text-indigo-600 font-bold' : 'text-gray-400'}`}>
                             {formatTime(chat.lastMessageTime)}
@@ -476,7 +476,7 @@ const Messages = () => {
                   </div>
                   
                   <div className="min-w-0">
-                    <h3 className="font-bold text-gray-900 truncate text-[15px] leading-tight">{selectedChat.name}</h3>
+                    <h3 className="font-bold text-gray-900 truncate text-[15px] leading-tight">{selectedChat.name}{selectedChat.rollNumber ? ` (${selectedChat.rollNumber})` : ''}</h3>
                     <p className="text-[12px] text-gray-500 truncate mt-0.5">
                       {selectedChat.isGroup ? 'Group members can see messages' : selectedChat.department || (selectedChat.role?.charAt(0).toUpperCase() + selectedChat.role?.slice(1))}
                     </p>
@@ -511,7 +511,9 @@ const Messages = () => {
                     <div key={msg._id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} group animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                       <div className={`flex flex-col ${isMine ? 'items-end' : 'items-start'} max-w-[75%] md:max-w-[65%]`}>
                         {showSenderName && (
-                          <span className="text-[11px] font-semibold text-gray-500 mb-1 ml-3">{msg.sender?.name || 'Deleted User'}</span>
+                          <span className="text-[11px] font-semibold text-gray-500 mb-1 ml-3">
+                            {msg.sender?.name ? `${msg.sender.name}${msg.sender.rollNumber ? ` (${msg.sender.rollNumber})` : ''}` : 'Deleted User'}
+                          </span>
                         )}
                         
                         <div className="flex items-end gap-2 relative">
@@ -527,7 +529,7 @@ const Messages = () => {
                                 isMine ? 'bg-indigo-700/30 border-indigo-300 text-indigo-50' : 'bg-gray-50 border-indigo-400 text-gray-600'
                               }`}>
                                 <span className={`font-semibold block text-[11px] ${isMine ? 'text-indigo-200' : 'text-indigo-600'}`}>
-                                  {msg.replyTo.sender?.name || 'Unknown'}
+                                  {msg.replyTo.sender?.name ? `${msg.replyTo.sender.name}${msg.replyTo.sender.rollNumber ? ` (${msg.replyTo.sender.rollNumber})` : ''}` : 'Unknown'}
                                 </span>
                                 <span className="opacity-90">{msg.replyTo.content}</span>
                               </div>
@@ -623,7 +625,7 @@ const Messages = () => {
                 {replyingTo && (
                   <div className="mb-3 px-4 py-3 bg-gray-50 border-l-4 border-indigo-500 rounded-r-xl flex items-center justify-between relative shadow-sm animate-in slide-in-from-bottom-2">
                     <div className="flex flex-col text-sm truncate max-w-[85%]">
-                      <span className="text-xs font-bold text-indigo-600 mb-0.5">Replying to {replyingTo.sender?.name || 'Unknown'}</span>
+                      <span className="text-xs font-bold text-indigo-600 mb-0.5">Replying to {replyingTo.sender?.name ? `${replyingTo.sender.name}${replyingTo.sender.rollNumber ? ` (${replyingTo.sender.rollNumber})` : ''}` : 'Unknown'}</span>
                       <span className="text-gray-600 truncate text-[13px]">{replyingTo.content}</span>
                     </div>
                     <button onClick={() => setReplyingTo(null)} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition-colors">
@@ -749,13 +751,13 @@ const Messages = () => {
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {opt.votes?.map(v => (
-                          <div key={v._id} className="text-[10px] bg-white border border-gray-200 px-2 py-1 rounded shadow-sm flex items-center gap-1" title={v.name}>
+                          <div key={v._id} className="text-[10px] bg-white border border-gray-200 px-2 py-1 rounded shadow-sm flex items-center gap-1" title={v.name + (v.rollNumber ? ` (${v.rollNumber})` : '')}>
                             {v.profilePicture ? (
                               <img src={v.profilePicture} className="w-3 h-3 rounded-full object-cover" />
                             ) : (
                               <div className="w-3 h-3 rounded-full bg-indigo-100 text-indigo-600 flex flex-col justify-center items-center font-bold text-[8px]">{v.name.charAt(0)}</div>
                             )}
-                            <span className="truncate max-w-[60px]">{v.name.split(' ')[0]}</span>
+                            <span className="truncate max-w-[100px]">{v.name.split(' ')[0]}{v.rollNumber ? ` (${v.rollNumber})` : ''}</span>
                           </div>
                         ))}
                       </div>

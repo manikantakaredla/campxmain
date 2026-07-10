@@ -83,7 +83,7 @@ exports.getConversations = async (req, res) => {
     }
 
     const contactsInfo = await User.find({ _id: { $in: contactIds } })
-      .select('name profilePicture role department branch')
+      .select('name profilePicture role department branch rollNumber')
       .lean();
     
     const contactsInfoMap = new Map();
@@ -96,6 +96,7 @@ exports.getConversations = async (req, res) => {
           directUsersMap.set(info._id.toString(), {
              _id: info._id,
              name: info.name,
+             rollNumber: info.rollNumber,
              profilePicture: info.profilePicture,
              role: info.role,
              department: info.department || info.branch,
@@ -112,6 +113,7 @@ exports.getConversations = async (req, res) => {
           directUsersMap.set(userId, {
              _id: info._id,
              name: info.name,
+             rollNumber: info.rollNumber,
              profilePicture: info.profilePicture,
              role: info.role,
              department: info.department || info.branch,
@@ -305,11 +307,11 @@ exports.getMessages = async (req, res) => {
 
     const messages = await Message.find(query)
       .sort({ createdAt: 1 })
-      .populate('sender', 'name profilePicture role')
+      .populate('sender', 'name profilePicture role rollNumber')
       .populate({
         path: 'replyTo',
         select: 'content sender isDeleted',
-        populate: { path: 'sender', select: 'name' }
+        populate: { path: 'sender', select: 'name rollNumber' }
       })
       .lean();
 
@@ -350,12 +352,12 @@ exports.sendMessage = async (req, res) => {
 
     await newMessage.save();
 
-    await newMessage.populate('sender', 'name profilePicture role');
+    await newMessage.populate('sender', 'name profilePicture role rollNumber');
     if (replyTo) {
       await newMessage.populate({
         path: 'replyTo',
         select: 'content sender isDeleted',
-        populate: { path: 'sender', select: 'name' }
+        populate: { path: 'sender', select: 'name rollNumber' }
       });
     }
 
@@ -590,12 +592,12 @@ exports.votePoll = async (req, res) => {
 
     await message.save();
     
-    await message.populate('sender', 'name profilePicture role');
+    await message.populate('sender', 'name profilePicture role rollNumber');
     if (message.replyTo) {
       await message.populate({
         path: 'replyTo',
         select: 'content sender isDeleted',
-        populate: { path: 'sender', select: 'name' }
+        populate: { path: 'sender', select: 'name rollNumber' }
       });
     }
 
