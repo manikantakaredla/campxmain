@@ -20,7 +20,8 @@ import {
   BookOpen,
   Briefcase,
   TrendingUp,
-  MessageSquare
+  MessageSquare,
+  Sparkles
 } from 'lucide-react'
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -67,6 +68,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     if (role === 'student') {
       return [
         { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
+        { path: '/feed', icon: <Sparkles size={20} />, label: 'My Feed' },
         { path: '/announcements', icon: <UserCircle size={20} />, label: 'Announcements' },
         { path: '/class-updates', icon: <BookOpen size={20} />, label: 'Class Updates' },
         { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
