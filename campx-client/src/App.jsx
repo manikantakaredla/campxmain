@@ -19,6 +19,7 @@ import ResetPassword from './pages/auth/ResetPassword'
 import MaintenancePage from './pages/common/MaintenancePage'
 
 // Lazy loaded pages
+const StudentSOS = lazy(() => import('./pages/student/StudentSOS'))
 const StudentFacultyConnect = lazy(() => import('./pages/student/StudentFacultyConnect'))
 const StudentFeed = lazy(() => import('./pages/student/StudentFeed'))
 const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'))
@@ -122,6 +123,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/student/dashboard" replace />} />
           <Route path="/student/dashboard" element={wrapSuspense(StudentDashboard)} />
+          <Route path="/student/sos" element={wrapSuspense(StudentSOS)} />
           <Route path="/student/faculty-connect" element={wrapSuspense(StudentFacultyConnect)} />
           <Route path="/student/feed" element={wrapSuspense(StudentFeed)} />
           <Route path="/student/announcements" element={wrapSuspense(StudentAnnouncements)} />

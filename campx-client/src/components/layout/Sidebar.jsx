@@ -21,7 +21,8 @@ import {
   Briefcase,
   TrendingUp,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  ShieldAlert
 } from 'lucide-react'
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -68,6 +69,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     if (role === 'student') {
       return [
         { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
+        { path: '/sos', icon: <ShieldAlert size={20} className="text-red-500" />, label: 'Campus SOS' },
         { path: '/feed', icon: <Sparkles size={20} />, label: 'My Feed' },
         { path: '/faculty-connect', icon: <Users size={20} />, label: 'Smart Faculty Connect' },
         { path: '/announcements', icon: <UserCircle size={20} />, label: 'Announcements' },
