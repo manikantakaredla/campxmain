@@ -168,8 +168,11 @@ function LandingPage() {
                   />
                 ) : (
                   <FacultyRegisterForm
-                    setActiveTab={() => {
-                      setShowRegister(false);
+                    setActiveTab={(tab) => {
+                      if (tab === "verifyOtp") {
+                        setShowVerifyOTP(true);
+                        setShowRegister(false);
+                      }
                     }}
                     setEmail={setEmail}
                     setRegistrationData={setRegistrationData}
