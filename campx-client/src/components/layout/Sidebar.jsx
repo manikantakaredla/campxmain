@@ -69,6 +69,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       return [
         { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
         { path: '/feed', icon: <Sparkles size={20} />, label: 'My Feed' },
+        { path: '/faculty-connect', icon: <Users size={20} />, label: 'Smart Faculty Connect' },
         { path: '/announcements', icon: <UserCircle size={20} />, label: 'Announcements' },
         { path: '/class-updates', icon: <BookOpen size={20} />, label: 'Class Updates' },
         { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
