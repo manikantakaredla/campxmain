@@ -12,3 +12,5 @@ build/
 
 # Logs
 *.log
+
+server/config/service-account.json
