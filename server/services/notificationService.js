@@ -5,6 +5,7 @@ const EmailDeliveryLog = require("../models/EmailDeliveryLog");
 const { getIO } = require("../config/socket");
 const { sendBatchEmails } = require("../utils/sendEmail");
 const emailTemplates = require("../utils/emailTemplates");
+const admin = require("../config/firebase");
 
 // In-memory set to deduplicate short-lived duplicate requests (notificationId_userId)
 const processingSet = new Set();
@@ -107,6 +108,89 @@ const dispatchEmailJob = async (notification, targetUsers) => {
   }
 };
 
+const dispatchFCMJob = async (notification, targetUsers) => {
+  try {
+    const users = await User.find({ 
+      _id: { $in: targetUsers }, 
+      "notificationPreferences.push": { $ne: false } 
+    }).select("fcmTokens notificationPreferences");
+
+    const category = notification.category || notification.type || "system";
+    
+    // Map category to preference key
+    let prefKey = 'system';
+    if (category === 'announcement') prefKey = 'announcements';
+    else if (category === 'opportunity' || category === 'placement') prefKey = 'placements';
+    else if (category === 'activity') prefKey = 'events';
+    else if (category === 'internship') prefKey = 'internships';
+    else if (category === 'emergency' || category === 'system') prefKey = 'emergencyAlerts';
+
+    const tokens = [];
+    users.forEach(u => {
+      if (prefKey !== 'system' && u.notificationPreferences && u.notificationPreferences[prefKey] === false) {
+        return; // User disabled this specific category
+      }
+      if (u.fcmTokens && u.fcmTokens.length > 0) {
+        tokens.push(...u.fcmTokens);
+      }
+    });
+
+    if (tokens.length === 0) return;
+    
+    if (!admin.apps.length) {
+      console.warn('Firebase Admin not initialized, skipping push notifications');
+      return;
+    }
+
+    let targetUrl = '/';
+    if (notification.relatedId) {
+      if (category === 'announcement') targetUrl = `/announcement/${notification.relatedId}`;
+      else if (category === 'resource') targetUrl = `/resource/${notification.relatedId}`;
+      else if (category === 'activity') targetUrl = `/activity/${notification.relatedId}`;
+    }
+
+    const message = {
+      notification: {
+        title: notification.title,
+        body: notification.message
+      },
+      data: {
+        url: targetUrl,
+        category: category
+      }
+    };
+
+    const chunkSize = 500;
+    for (let i = 0; i < tokens.length; i += chunkSize) {
+      const chunk = tokens.slice(i, i + chunkSize);
+      const multicastMessage = { ...message, tokens: chunk };
+      
+      const response = await admin.messaging().sendEachForMulticast(multicastMessage);
+      
+      if (response.failureCount > 0) {
+        const failedTokens = [];
+        response.responses.forEach((resp, idx) => {
+          if (!resp.success) {
+            if (resp.error.code === 'messaging/invalid-registration-token' ||
+                resp.error.code === 'messaging/registration-token-not-registered') {
+              failedTokens.push(chunk[idx]);
+            }
+          }
+        });
+        
+        if (failedTokens.length > 0) {
+          await User.updateMany(
+            { fcmTokens: { $in: failedTokens } },
+            { $pullAll: { fcmTokens: failedTokens } }
+          );
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Async FCM Job Error:", error);
+  }
+};
+
 exports.createNotification = async (data) => {
   // 1. Create in DB
   const notification = await Notification.create({
@@ -133,10 +217,11 @@ exports.createNotification = async (data) => {
     });
   }
 
-  // 3. Queue Email async (fire and forget)
+  // 3. Queue Email and Push async (fire and forget)
   if (data.targetUsers && data.targetUsers.length > 0) {
     setTimeout(() => {
       dispatchEmailJob(notification, data.targetUsers);
+      dispatchFCMJob(notification, data.targetUsers);
     }, 0);
   }
 
@@ -176,11 +261,12 @@ exports.createBulkNotifications = async (notificationsDataArray) => {
     });
   }
 
-  // Fire and forget emails
+  // Fire and forget emails and push
   setTimeout(() => {
     inserted.forEach(notification => {
       if (notification.targetUsers && notification.targetUsers.length > 0) {
         dispatchEmailJob(notification, notification.targetUsers);
+        dispatchFCMJob(notification, notification.targetUsers);
       }
     });
   }, 0);

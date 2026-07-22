@@ -3,12 +3,14 @@ import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Navbar from './Navbar'
 import MobileBottomNav from './MobileBottomNav'
+import PushNotificationManager from '../common/PushNotificationManager'
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(true)
 
   return (
     <div className="flex h-screen bg-gray-50">
+      <PushNotificationManager />
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       

@@ -4,7 +4,7 @@ import { userService } from '../../services/userService'
 import { 
   User, Mail, Phone, GraduationCap, BookOpen, Calendar, 
   Save, Edit2, Camera, X, Lock, Eye, EyeOff, 
-  Award, Hash, CalendarDays, CheckCircle
+  Award, Hash, CalendarDays, CheckCircle, Bell, ToggleLeft, ToggleRight
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
@@ -33,6 +33,16 @@ const StudentProfile = () => {
     phoneNumber: '',
     section: ''
   })
+  
+  const [preferences, setPreferences] = useState({
+    email: true,
+    push: true,
+    announcements: true,
+    placements: true,
+    events: true,
+    internships: true,
+    emergencyAlerts: true
+  })
 
   useEffect(() => {
     if (user) {
@@ -41,6 +51,9 @@ const StudentProfile = () => {
         phoneNumber: user.phoneNumber || '',
         section: user.section || ''
       })
+      if (user.notificationPreferences) {
+        setPreferences(user.notificationPreferences)
+      }
     }
   }, [user])
 
@@ -125,6 +138,25 @@ const StudentProfile = () => {
       toast.error(error.response?.data?.message || 'Failed to change password')
     } finally {
       setSubmittingPassword(false)
+    }
+  }
+
+  const handleTogglePreference = async (key) => {
+    const newValue = !preferences[key];
+    setPreferences({ ...preferences, [key]: newValue });
+    
+    try {
+      const response = await api.put('/notifications/preferences', {
+        [key]: newValue
+      });
+      if (response.data.success) {
+        toast.success('Preference updated');
+        updateUser({ ...user, notificationPreferences: { ...user.notificationPreferences, [key]: newValue } });
+      }
+    } catch (error) {
+      toast.error('Failed to update preference');
+      // Revert on fail
+      setPreferences({ ...preferences, [key]: !newValue });
     }
   }
 
@@ -416,6 +448,37 @@ const StudentProfile = () => {
                 <Lock size={14} />
                 Change Password
               </button>
+            </div>
+
+            {/* Notification Preferences Section */}
+            <div className="mt-6 pt-5 border-t border-gray-100">
+              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
+                <Bell size={16} />
+                Notification Preferences
+              </h3>
+              
+              <div className="space-y-4 mt-4">
+                {[
+                  { key: 'push', label: 'Push Notifications', desc: 'Receive notifications on your device' },
+                  { key: 'announcements', label: 'Announcements', desc: 'Updates from the college' },
+                  { key: 'events', label: 'Events & Activities', desc: 'Campus events and activities' },
+                  { key: 'placements', label: 'Placement Drives', desc: 'Job and internship opportunities' },
+                  { key: 'emergencyAlerts', label: 'Emergency Alerts', desc: 'Critical system and emergency updates' }
+                ].map(pref => (
+                  <div key={pref.key} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{pref.label}</p>
+                      <p className="text-xs text-gray-500">{pref.desc}</p>
+                    </div>
+                    <button
+                      onClick={() => handleTogglePreference(pref.key)}
+                      className={`transition-colors ${preferences[pref.key] ? 'text-blue-600' : 'text-gray-300 hover:text-gray-400'}`}
+                    >
+                      {preferences[pref.key] ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react'
 import { authService } from '../services/authService'
+import api from '../services/api'
 
 export const AuthContext = createContext()
 
@@ -63,6 +64,17 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      // Remove FCM token from backend to stop receiving push notifications
+      const cachedToken = localStorage.getItem('fcm_token');
+      if (cachedToken) {
+        await api.delete('/notifications/fcm-token', { data: { token: cachedToken } }).catch(e => console.error(e));
+        localStorage.removeItem('fcm_token');
+      }
+      
+      if (navigator.clearAppBadge) {
+        navigator.clearAppBadge().catch(e => console.error(e));
+      }
+
       await authService.logout()
     } catch (error) {
       console.error(error)

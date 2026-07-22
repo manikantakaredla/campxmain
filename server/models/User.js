@@ -49,7 +49,16 @@ const userSchema = new mongoose.Schema({
   },
   notificationPreferences: {
     email: { type: Boolean, default: true },
-    push: { type: Boolean, default: true }
+    push: { type: Boolean, default: true },
+    announcements: { type: Boolean, default: true },
+    placements: { type: Boolean, default: true },
+    events: { type: Boolean, default: true },
+    internships: { type: Boolean, default: true },
+    emergencyAlerts: { type: Boolean, default: true }
+  },
+  fcmTokens: {
+    type: [String],
+    default: []
   },
   lastLogin: {
     type: Date
