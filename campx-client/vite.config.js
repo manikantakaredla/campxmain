@@ -5,16 +5,38 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   plugins: [
     react(),
+
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+
+      includeAssets: [
+        'favicon.ico',
+        'apple-touch-icon.png',
+        'masked-icon.svg',
+        'pwa-192x192.png',
+        'pwa-512x512.png',
+        'maskable-icon-512.png'
+      ],
+
       manifest: {
+        id: '/',
         name: 'CAMPX Platform',
         short_name: 'CAMPX',
         description: 'Comprehensive Campus Management System',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
+
+        start_url: '/',
+        scope: '/',
         display: 'standalone',
+        orientation: 'portrait',
+
+        theme_color: '#2563eb',
+        background_color: '#ffffff',
+
+        categories: [
+          'education',
+          'productivity'
+        ],
+
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -27,36 +49,92 @@ export default defineConfig({
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'maskable-icon-512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
+          }
+        ],
+
+        screenshots: [
+          {
+            src: 'screenshot-desktop.png',
+            sizes: '1440x900',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'CAMPX Desktop Dashboard'
+          },
+          {
+            src: 'screenshot-mobile.png',
+            sizes: '390x844',
+            type: 'image/png',
+            label: 'CAMPX Mobile Dashboard'
           }
         ]
+      },
+
+      workbox: {
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
+
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/campxserver\.onrender\.com\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'campx-api-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24
+              }
+            }
+          }
+        ]
+      },
+
+      devOptions: {
+        enabled: true
       }
     })
   ],
+
   server: {
     port: 5173,
+
     proxy: {
       '/api': {
         target: 'https://campxserver.onrender.com',
-        changeOrigin: true,
+        changeOrigin: true
       },
+
       '/socket.io': {
         target: 'https://campxserver.onrender.com',
         ws: true,
-      },
-    },
+        changeOrigin: true
+      }
+    }
   },
+
   build: {
     target: 'esnext',
+
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          icons: ['lucide-react'],
-          socket: ['socket.io-client'],
+          vendor: [
+            'react',
+            'react-dom',
+            'react-router-dom'
+          ],
+
+          icons: [
+            'lucide-react'
+          ],
+
+          socket: [
+            'socket.io-client'
+          ]
         }
       }
     }
