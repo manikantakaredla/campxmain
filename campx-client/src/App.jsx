@@ -37,6 +37,7 @@ const ResourceDetails = lazy(() => import('./pages/shared/ResourceDetails'))
 const ActivityDetails = lazy(() => import('./pages/shared/ActivityDetails'))
 const Messages = lazy(() => import('./pages/shared/Messages'))
 const AnalyticsDashboard = lazy(() => import('./pages/shared/AnalyticsDashboard'))
+const NotificationDebug = lazy(() => import('./pages/shared/NotificationDebug'))
 
 const FacultyDashboard = lazy(() => import('./pages/faculty/FacultyDashboard'))
 const MyStudents = lazy(() => import('./pages/faculty/MyStudents'))
@@ -140,6 +141,7 @@ function App() {
           <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
           <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
           <Route path="/activity/:id" element={wrapSuspense(ActivityDetails)} />
+          <Route path="/dev/notifications" element={wrapSuspense(NotificationDebug)} />
           
           <Route path="*" element={<Navigate to="/student/dashboard" replace />} />
         </Route>
@@ -174,6 +176,7 @@ function App() {
           <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
           <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
           <Route path="/activity/:id" element={wrapSuspense(ActivityDetails)} />
+          <Route path="/dev/notifications" element={wrapSuspense(NotificationDebug)} />
           
           <Route path="*" element={<Navigate to="/faculty/dashboard" replace />} />
         </Route>
@@ -208,6 +211,7 @@ function App() {
           <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
           <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
           <Route path="/activity/:id" element={wrapSuspense(ActivityDetails)} />
+          <Route path="/dev/notifications" element={wrapSuspense(NotificationDebug)} />
           
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Route>

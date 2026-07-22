@@ -7,6 +7,9 @@ export default defineConfig({
     react(),
 
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
       registerType: 'autoUpdate',
 
       includeAssets: [
@@ -73,25 +76,7 @@ export default defineConfig({
         ]
       },
 
-      workbox: {
-        cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true,
 
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/campxserver\.onrender\.com\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'campx-api-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24
-              }
-            }
-          }
-        ]
-      },
 
       devOptions: {
         enabled: true

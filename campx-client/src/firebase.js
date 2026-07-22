@@ -10,46 +10,74 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
-
+let app = null;
 let messaging = null;
-isSupported().then((supported) => {
-  if (supported) {
-    messaging = getMessaging(app);
-  } else {
-    console.warn("Firebase Messaging is not supported in this browser.");
-  }
-}).catch(console.warn);
+let isInitialized = false;
 
-export const generateToken = async () => {
+const initFirebase = async () => {
+  if (isInitialized) return true;
+  
   try {
-    if (!messaging) return null;
-    
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      const currentToken = await getToken(messaging, {
-        vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-      });
-      if (currentToken) {
-        const cachedToken = localStorage.getItem('fcm_token');
-        if (cachedToken !== currentToken) {
-          localStorage.setItem('fcm_token', currentToken);
-          return currentToken;
-        }
-        return 'CACHED';
-      } else {
-        console.log('No registration token available. Request permission to generate one.');
-        return null;
-      }
-    } else {
-      console.log('Notification permission not granted.');
-      return null;
+    const supported = await isSupported();
+    if (!supported) {
+      console.warn("Firebase Messaging is not supported in this browser.");
+      return false;
     }
-  } catch (err) {
-    console.error('An error occurred while retrieving token. ', err);
-    return null;
+    
+    app = initializeApp(firebaseConfig);
+    messaging = getMessaging(app);
+    isInitialized = true;
+    return true;
+  } catch (error) {
+    console.error("Firebase initialization failed:", error);
+    return false;
   }
 };
 
-export const getMessagingInstance = () => messaging;
+export const generateToken = async () => {
+  try {
+    const initialized = await initFirebase();
+    if (!initialized) return { error: 'unsupported' };
+    
+    const permission = await Notification.requestPermission();
+    if (permission === 'denied') {
+      console.log('Notification permission denied.');
+      return { error: 'denied' };
+    }
+    
+    if (permission === 'granted') {
+      // Ensure service worker is ready before requesting token
+      const registration = await navigator.serviceWorker.ready;
+      
+      const currentToken = await getToken(messaging, {
+        vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+        serviceWorkerRegistration: registration
+      });
+      
+      if (currentToken) {
+        const cachedToken = localStorage.getItem('fcm_token');
+        
+        if (cachedToken !== currentToken) {
+          localStorage.setItem('fcm_token', currentToken);
+          return { token: currentToken, oldToken: cachedToken };
+        }
+        return { token: currentToken, oldToken: null, cached: true };
+      } else {
+        console.log('No registration token available. Request permission to generate one.');
+        return { error: 'no_token' };
+      }
+    } else {
+      return { error: 'default' }; // user dismissed the prompt
+    }
+  } catch (err) {
+    console.error('An error occurred while retrieving token. ', err);
+    return { error: 'error', details: err.message };
+  }
+};
+
+export const getMessagingInstance = async () => {
+  await initFirebase();
+  return messaging;
+};
+
 export { onMessage };

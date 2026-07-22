@@ -153,14 +153,26 @@ exports.deleteNotification = async (req, res) => {
 // ==================== FCM TOKEN MANAGEMENT ====================
 exports.registerFCMToken = async (req, res) => {
   try {
-    const { token } = req.body;
+    const { token, oldToken } = req.body;
     if (!token) return res.status(400).json({ success: false, message: "Token is required" });
 
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
+    // Handle token replacement or addition
+    if (oldToken) {
+      user.fcmTokens = user.fcmTokens.filter(t => t !== oldToken);
+    }
+    
     if (!user.fcmTokens.includes(token)) {
       user.fcmTokens.push(token);
+      
+      // Limit to 5 devices max per user to prevent bloat
+      if (user.fcmTokens.length > 5) {
+        // Keep the 5 most recent tokens (remove from the beginning)
+        user.fcmTokens = user.fcmTokens.slice(-5);
+      }
+      
       await user.save();
     }
 
@@ -183,6 +195,36 @@ exports.removeFCMToken = async (req, res) => {
 
     res.status(200).json({ success: true, message: "FCM token removed" });
   } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.testPush = async (req, res) => {
+  try {
+    const { title, message, token } = req.body;
+    if (!token) return res.status(400).json({ success: false, message: "Token is required" });
+
+    const admin = require("../config/firebase");
+    if (!admin.apps.length) {
+      return res.status(500).json({ success: false, message: "Firebase Admin not initialized" });
+    }
+
+    const payload = {
+      notification: {
+        title: title || 'Test Notification',
+        body: message || 'This is a test notification.'
+      },
+      data: {
+        url: '/dev/notifications',
+        category: 'system'
+      },
+      token: token
+    };
+
+    const response = await admin.messaging().send(payload);
+    res.status(200).json({ success: true, message: "Test push sent", response });
+  } catch (error) {
+    console.error("Test Push Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

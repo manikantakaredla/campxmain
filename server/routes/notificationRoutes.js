@@ -8,7 +8,8 @@ const {
   deleteNotification,
   registerFCMToken,
   removeFCMToken,
-  updatePreferences
+  updatePreferences,
+  testPush
 } = require("../controllers/notificationController");
 const protect = require("../middleware/authMiddleware");
 
@@ -18,6 +19,7 @@ router.get("/", getMyNotifications);
 router.get("/unread/count", getUnreadCount);
 router.put("/preferences", updatePreferences);
 router.post("/fcm-token", registerFCMToken);
+router.post("/test-push", testPush);
 router.delete("/fcm-token", removeFCMToken);
 router.put("/read-all", markAllAsRead);
 router.put("/:id", markAsRead);

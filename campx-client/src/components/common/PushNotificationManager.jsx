@@ -11,27 +11,40 @@ const PushNotificationManager = () => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      registerFCMToken();
+      // Don't repeatedly request if denied
+      if (Notification.permission !== 'denied') {
+        registerFCMToken();
+      }
       setupForegroundListener();
-      initializeServiceWorker();
     }
   }, [isAuthenticated, user]);
 
   const registerFCMToken = async () => {
     try {
-      const token = await generateToken();
-      if (token && token !== 'CACHED') {
-        // Send token to backend
-        await api.post('/notifications/fcm-token', { token });
+      const result = await generateToken();
+      
+      if (result.error) {
+        if (result.error !== 'unsupported' && result.error !== 'denied' && result.error !== 'default') {
+          console.error('Failed to generate FCM token:', result.details || result.error);
+        }
+        return;
+      }
+      
+      if (!result.cached && result.token) {
+        // Send token to backend, including oldToken if it exists for replacement
+        await api.post('/notifications/fcm-token', { 
+          token: result.token,
+          oldToken: result.oldToken
+        });
       }
     } catch (error) {
       console.error('Failed to register FCM token:', error);
     }
   };
 
-  const setupForegroundListener = () => {
-    const checkAndSetup = () => {
-      const messaging = getMessagingInstance();
+  const setupForegroundListener = async () => {
+    try {
+      const messaging = await getMessagingInstance();
       if (messaging) {
         onMessage(messaging, (payload) => {
           console.log('Foreground Message received. ', payload);
@@ -67,31 +80,9 @@ const PushNotificationManager = () => {
             );
           }
         });
-      } else {
-        setTimeout(checkAndSetup, 1000);
       }
-    };
-    
-    checkAndSetup();
-  };
-
-  const initializeServiceWorker = () => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then((registration) => {
-        if (registration.active) {
-          registration.active.postMessage({
-            type: 'INIT_FIREBASE',
-            config: {
-              apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-              authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-              projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-              storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-              messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-              appId: import.meta.env.VITE_FIREBASE_APP_ID,
-            }
-          });
-        }
-      });
+    } catch (error) {
+      console.error('Failed to setup foreground listener:', error);
     }
   };
 
