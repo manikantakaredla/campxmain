@@ -11,6 +11,7 @@ const Messages = () => {
   const currentUserId = user?._id || user?.id;
   const [searchParams] = useSearchParams();
   const initialUserId = searchParams.get('userId');
+  const initialGroupId = searchParams.get('groupId');
 
   const [conversations, setConversations] = useState([]);
   const [filteredConversations, setFilteredConversations] = useState([]);
@@ -65,9 +66,12 @@ const Messages = () => {
 
         setConversations(formattedChats);
         
-        // Auto select if userId is provided
+        // Auto select if userId or groupId is provided
         if (initialUserId && !selectedChat) {
            const initial = formattedChats.find(c => !c.isGroup && c._id === initialUserId);
+           if (initial) setSelectedChat(initial);
+        } else if (initialGroupId && !selectedChat) {
+           const initial = formattedChats.find(c => c.isGroup && c._id === initialGroupId);
            if (initial) setSelectedChat(initial);
         }
 
@@ -85,7 +89,7 @@ const Messages = () => {
 
   useEffect(() => {
     fetchConversations();
-  }, [initialUserId]);
+  }, [initialUserId, initialGroupId]);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {

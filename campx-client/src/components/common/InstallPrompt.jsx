@@ -30,7 +30,7 @@ const InstallPrompt = () => {
   return (
     <>
       <style>
-        {\`
+        {`
           @keyframes slideUpFadeIn {
             0% {
               opacity: 0;
@@ -44,7 +44,7 @@ const InstallPrompt = () => {
           .animate-pwa-popup {
             animation: slideUpFadeIn 200ms ease-out forwards;
           }
-        \`}
+        `}
       </style>
       {/* Backdrop for mobile bottom sheet effect, hidden on desktop */}
       <div 
@@ -54,12 +54,12 @@ const InstallPrompt = () => {
         style={{ animationName: 'fadeOnly', animationDuration: '200ms' }}
       />
       <style>
-        {\`
+        {`
           @keyframes fadeOnly {
             0% { opacity: 0; }
             100% { opacity: 1; }
           }
-        \`}
+        `}
       </style>
 
       <div

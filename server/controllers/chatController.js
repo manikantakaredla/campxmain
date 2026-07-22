@@ -24,6 +24,67 @@ const getShortBranch = (str) => {
   return str.split(' ')[0].toUpperCase();
 };
 
+const resolveGroupUsers = async (groupId) => {
+  let targetUsers = [];
+  try {
+    if (groupId.startsWith('class_')) {
+      const parts = groupId.split('_');
+      if (parts.length === 4) {
+        const dept = parts[1];
+        const year = parseInt(parts[2]);
+        const sec = parts[3];
+        targetUsers = await User.find({ 
+          role: 'student', 
+          currentYear: year,
+          section: sec,
+          isActive: true 
+        }).select('_id branch');
+        
+        targetUsers = targetUsers.filter(u => getShortBranch(u.branch) === dept);
+      }
+    } else if (groupId.startsWith('subjectGroup_')) {
+      const parts = groupId.split('_');
+      if (parts.length === 4) {
+        const facId = parts[1];
+        const subId = parts[2];
+        const yr = parseInt(parts[3]);
+        
+        const assignments = await SubjectSectionAssignment.find({
+          facultyId: facId,
+          subjectId: subId,
+          year: yr,
+          isActive: true
+        });
+        
+        const validDepts = [...new Set(assignments.map(a => a.department.toUpperCase()))];
+        const validSecs = [...new Set(assignments.map(a => a.section.toUpperCase()))];
+        
+        targetUsers = await User.find({
+          role: 'student',
+          currentYear: yr,
+          isActive: true
+        }).select('_id branch section');
+        
+        targetUsers = targetUsers.filter(u => {
+           const uBranch = getShortBranch(u.branch).toUpperCase();
+           return validDepts.some(d => getShortBranch(d).toUpperCase() === uBranch) && validSecs.includes(u.section.toUpperCase());
+        });
+      }
+    } else if (groupId.startsWith('proctor_')) {
+      const facultyId = groupId.replace('proctor_', '');
+      const ProctorStudentAssignment = require('../models/ProctorStudentAssignment');
+      const assignments = await ProctorStudentAssignment.find({ facultyId }).select('studentId');
+      targetUsers = assignments.map(a => a.studentId).filter(s => s);
+    }
+    
+    const uniqueIds = [...new Set(targetUsers.map(u => (u._id || u).toString()))];
+    return uniqueIds;
+  } catch (err) {
+    console.error("Error resolving group users:", err);
+    return [];
+  }
+};
+
 // ==================== GET CONVERSATIONS ====================
 exports.getConversations = async (req, res) => {
   try {
@@ -386,6 +447,27 @@ exports.sendMessage = async (req, res) => {
           targetUsers: [receiverId],
           createdBy: req.user.id
         });
+      } else if (groupId) {
+        const targetIds = await resolveGroupUsers(groupId);
+        // Remove sender from notification recipients
+        const recipients = targetIds.filter(id => id.toString() !== req.user.id.toString());
+        
+        if (recipients.length > 0) {
+          let groupName = "your group";
+          if (groupId.startsWith('class_')) groupName = "your class";
+          else if (groupId.startsWith('subjectGroup_')) groupName = "your subject group";
+          else if (groupId.startsWith('proctor_')) groupName = "your proctor group";
+
+          await notificationService.createNotification({
+            title: `New Message in ${groupName}`,
+            message: `${req.user.name}: ${content ? content.substring(0, 100) : 'Sent a poll'}`,
+            type: 'message',
+            category: 'message',
+            relatedId: groupId, 
+            targetUsers: recipients,
+            createdBy: req.user.id
+          });
+        }
       }
     } catch (err) {
       console.error('Failed to create notification for message:', err);

@@ -14,7 +14,11 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
   const handleNotificationClick = (notif) => {
     setShowNotifications(false);
     if (notif.type === 'message') {
-      navigate(`/${user?.role === 'admin' ? 'admin' : user?.role}/messages?userId=${notif.relatedId}`);
+      let queryParam = 'userId=';
+      if (notif.relatedId?.startsWith('class_') || notif.relatedId?.startsWith('subjectGroup_') || notif.relatedId?.startsWith('proctor_')) {
+        queryParam = 'groupId=';
+      }
+      navigate(`/${user?.role === 'admin' ? 'admin' : user?.role}/messages?${queryParam}${notif.relatedId}`);
     } else {
       navigate(`/${user?.role === 'admin' ? 'admin' : user?.role}/notifications`);
     }
