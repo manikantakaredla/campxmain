@@ -4,6 +4,7 @@ import Sidebar from './Sidebar'
 import Navbar from './Navbar'
 import MobileBottomNav from './MobileBottomNav'
 import PushNotificationManager from '../common/PushNotificationManager'
+import InstallPrompt from '../common/InstallPrompt'
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(true)
@@ -11,6 +12,7 @@ const Layout = () => {
   return (
     <div className="flex h-screen bg-gray-50">
       <PushNotificationManager />
+      <InstallPrompt />
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       
