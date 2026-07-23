@@ -76,7 +76,7 @@ const StudentDashboard = () => {
   ];
 
   return (
-    <div className="bg-[#f8f9fa] min-h-screen font-sans">
+    <div className="bg-[#F8FAFC] min-h-screen font-sans pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
         {/* Header section matching mockup exactly */}
@@ -92,7 +92,7 @@ const StudentDashboard = () => {
         </div>
 
         {/* Carousel Section */}
-        <div className="mb-8 relative w-full overflow-hidden rounded-3xl aspect-[1.8/1] sm:aspect-[2.5/1] md:aspect-[3/1] bg-gradient-to-r from-[#1E2B6D] to-[#3B4FA3] text-white shadow-lg">
+        <div className="mb-8 relative w-full overflow-hidden rounded-[24px] aspect-[1.8/1] sm:aspect-[2.5/1] md:aspect-[3/1] bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
           <div className="absolute inset-0 flex snap-x snap-mandatory overflow-x-auto [&::-webkit-scrollbar]:hidden scroll-smooth" onScroll={(e) => {
             const index = Math.round(e.target.scrollLeft / e.target.clientWidth);
             setActiveBanner(index);
@@ -165,7 +165,7 @@ const StudentDashboard = () => {
 
               return (
                 <Component key={idx} {...props} className="flex flex-col items-center gap-2 min-w-[70px] group">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${action.bg} ${action.color} group-hover:-translate-y-1 transition-transform border border-white`}>
+                  <div className={`w-14 h-14 rounded-[18px] flex items-center justify-center shadow-sm ${action.bg} ${action.color} group-hover:-translate-y-1 transition-transform border border-white`}>
                     {action.icon}
                   </div>
                   <span className="text-[10px] md:text-xs font-bold text-gray-700 text-center leading-tight">
@@ -180,7 +180,7 @@ const StudentDashboard = () => {
         {/* 2-Column Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Today's Schedule */}
-          <div className="bg-white rounded-3xl p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col h-full">
+          <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 flex flex-col h-full">
             <div className="flex justify-between items-center mb-5">
               <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
                 <Calendar size={18} className="text-blue-500"/> Today's Schedule
@@ -189,7 +189,7 @@ const StudentDashboard = () => {
             </div>
             <div className="flex-1 flex flex-col gap-3">
               {todaySchedule.map((item, idx) => (
-                <div key={idx} className={`p-4 rounded-2xl border-l-4 bg-${item.color}-50/50 border-${item.color}-500 flex gap-4`}>
+                <div key={idx} className={`p-4 rounded-[16px] border-l-4 bg-${item.color}-50/50 border-${item.color}-500 flex gap-4`}>
                   <div className={`text-${item.color}-600 font-bold text-xs whitespace-nowrap pt-1`}>{item.time}</div>
                   <div>
                     <h4 className="font-bold text-gray-900 text-sm">{item.subject}</h4>
@@ -207,7 +207,7 @@ const StudentDashboard = () => {
           </div>
 
           {/* Latest Announcements */}
-          <div className="bg-white rounded-3xl p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col h-full">
+          <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 flex flex-col h-full">
             <div className="flex justify-between items-center mb-5">
               <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
                 <Megaphone size={18} className="text-blue-500"/> Latest Announcements
@@ -219,7 +219,7 @@ const StudentDashboard = () => {
                 <div className="text-sm text-gray-400 text-center py-6">No announcements today</div>
               ) : (
                 recentAnnouncements.map((item, idx) => (
-                  <Link key={item._id} to={`/announcement/${item._id}`} className="p-4 rounded-2xl border border-gray-100 flex gap-3 hover:bg-gray-50 transition-colors">
+                  <Link key={item._id} to={`/announcement/${item._id}`} className="p-4 rounded-[16px] border border-gray-50 flex gap-3 hover:bg-gray-50 transition-colors">
                     <div className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded h-fit whitespace-nowrap mt-0.5">
                       {item.priority === 'urgent' ? 'Important' : 'New'}
                     </div>
@@ -258,7 +258,7 @@ const StudentDashboard = () => {
                 const colors = ['purple', 'green', 'orange'];
                 const c = colors[idx % colors.length];
                 return (
-                  <Link key={event._id} to={`/activity/${event._id}`} className={`min-w-[240px] w-[240px] snap-center bg-${c}-50 rounded-3xl p-5 border border-${c}-100 relative group hover:shadow-md transition-all`}>
+                  <Link key={event._id} to={`/activity/${event._id}`} className={`min-w-[240px] w-[240px] snap-center bg-${c}-50 rounded-[24px] p-5 border border-${c}-100 relative group hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all`}>
                     <Bookmark size={16} className={`absolute top-5 right-5 text-${c}-300`} />
                     <div className={`text-3xl font-black text-${c}-600 mb-1`}>{new Date(event.startDate).getDate()}</div>
                     <div className={`text-xs font-black text-${c}-400 uppercase tracking-widest mb-4`}>{new Date(event.startDate).toLocaleString('default', { month: 'short' })}</div>
@@ -287,7 +287,7 @@ const StudentDashboard = () => {
             </Link>
           </div>
           
-          <div className="bg-white rounded-3xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col md:flex-row items-center gap-6 md:gap-10">
+          <div className="bg-white rounded-[24px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 flex flex-col md:flex-row items-center gap-6 md:gap-10">
             <div className="flex items-center gap-6">
               {/* Circular Progress Ring Mock */}
               <div className="relative w-24 h-24 flex items-center justify-center">

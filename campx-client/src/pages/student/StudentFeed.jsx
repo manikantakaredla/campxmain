@@ -28,6 +28,7 @@ const MOCK_FEED = [
     logo: 'G',
     title: 'GDG AI Hackathon 2026',
     description: 'Join the biggest AI hackathon on campus. Build innovative solutions using Gemini and generative AI technologies. Prizes worth $5000!',
+    image: 'https://images.unsplash.com/photo-1540317580384-e5d43867caa6?auto=format&fit=crop&w=800&q=80',
     tags: ['Hackathon', 'Artificial Intelligence', 'Coding'],
     date: 'Oct 15 - Oct 17',
     deadline: 'Oct 10',
@@ -41,6 +42,7 @@ const MOCK_FEED = [
     logo: 'M',
     title: 'Azure Cloud & Web Workshop',
     description: 'Learn how to deploy scalable full-stack web applications on Microsoft Azure. Hands-on workshop with industry experts.',
+    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80',
     tags: ['Workshop', 'Web Development'],
     date: 'Oct 20, 2:00 PM',
     deadline: 'Oct 18',
@@ -54,6 +56,7 @@ const MOCK_FEED = [
     logo: 'D',
     title: 'UI/UX Design Sprint',
     description: 'A 24-hour design sprint focused on solving real-world accessibility challenges in modern university apps.',
+    image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=800&q=80',
     tags: ['Competition', 'UI/UX'],
     date: 'Oct 25',
     deadline: 'Oct 22',
@@ -67,6 +70,7 @@ const MOCK_FEED = [
     logo: 'S',
     title: 'Inter-Department Cricket Tournament',
     description: 'Annual cricket tournament registrations are open. Form a team of 11 from your department and compete for the campus cup.',
+    image: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=800&q=80',
     tags: ['Sports', 'Tournament'],
     date: 'Nov 1 - Nov 10',
     deadline: 'Oct 28',
@@ -109,7 +113,7 @@ const StudentFeed = () => {
   }
 
   return (
-    <div className="bg-[#f8f9fa] min-h-screen font-sans pb-12">
+    <div className="bg-[#F8FAFC] min-h-screen font-sans pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
         {/* Top Header Section */}
@@ -163,7 +167,7 @@ const StudentFeed = () => {
           <div className="lg:col-span-2 space-y-5">
             
             {/* Interests Section */}
-            <div className="bg-white rounded-2xl p-4 md:p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100">
+            <div className="bg-white rounded-[24px] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50">
               <div className="flex justify-between items-center mb-3">
                 <h2 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
                   <Target size={16} className="text-blue-500" />
@@ -211,11 +215,11 @@ const StudentFeed = () => {
             </div>
 
             {/* Feed Cards List */}
-            <div className="space-y-4">
+            <div className="space-y-6">
               {MOCK_FEED.map((item) => (
                 <div 
                   key={item.id} 
-                  className="bg-white rounded-2xl p-4 md:p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100 hover:shadow-md transition-all duration-300"
+                  className="bg-white rounded-[24px] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300"
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-2.5">
@@ -232,8 +236,14 @@ const StudentFeed = () => {
                       <span className="text-[10px] font-black">{item.matchScore}%</span>
                     </div>
                   </div>
+
+                  {item.image && (
+                    <div className="w-full h-48 sm:h-64 mb-4 rounded-[16px] overflow-hidden bg-gray-100">
+                      <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                    </div>
+                  )}
                   
-                  <p className="text-gray-500 text-[11px] md:text-xs mb-3 line-clamp-2">
+                  <p className="text-gray-600 text-[11px] md:text-xs mb-4 line-clamp-2 leading-relaxed">
                     {item.description}
                   </p>
                   
@@ -280,7 +290,7 @@ const StudentFeed = () => {
           <div className="space-y-5">
             
             {/* Trending Widget */}
-            <div className="bg-white rounded-2xl p-4 md:p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100">
+            <div className="bg-white rounded-[24px] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50">
               <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1.5">
                 <TrendingUp className="text-blue-500" size={16} />
                 Trending on Campus
@@ -301,7 +311,7 @@ const StudentFeed = () => {
             </div>
 
             {/* Upcoming Deadlines */}
-            <div className="bg-white rounded-2xl p-4 md:p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100">
+            <div className="bg-white rounded-[24px] p-5 md:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50">
               <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1.5">
                 <Clock className="text-red-500" size={16} />
                 Deadlines
@@ -320,7 +330,7 @@ const StudentFeed = () => {
             </div>
 
             {/* Weekly Goal */}
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-4 md:p-5 text-white shadow-lg">
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[24px] p-5 md:p-6 text-white shadow-lg">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-sm font-bold flex items-center gap-1.5">
                   <Trophy size={16} className="text-yellow-300" />

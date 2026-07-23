@@ -39,7 +39,7 @@ export default {
           500: '#2b5ea9',
           600: '#204a8c',
           700: '#1b3c73',
-          800: '#163269', // Aditya Blue
+          800: '#0D4DA2', // Aditya Blue
           900: '#142a55',
           950: '#0c1a36',
         },
@@ -49,7 +49,7 @@ export default {
           200: '#fad6be',
           300: '#f7ba93',
           400: '#f3955d',
-          500: '#f26522', // Aditya Orange
+          500: '#F26A21', // Aditya Orange
           600: '#e34e12',
           700: '#be3a0f',
           800: '#972e12',

@@ -75,13 +75,14 @@ const ComplaintsPortal = () => {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto animate-fade-in">
+    <div className="bg-[#F8FAFC] min-h-screen font-sans pb-24">
+      <div className="p-6 max-w-6xl mx-auto animate-fade-in">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Complaints & Grievances</h1>
         <p className="text-gray-600 mt-1">Submit and track your requests, issues, and grievances.</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 overflow-hidden">
         <div className="flex border-b border-gray-200">
           <button 
             className={`flex-1 py-4 px-6 text-sm font-medium transition-colors ${activeTab === 'new' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
@@ -108,7 +109,7 @@ const ComplaintsPortal = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                   <select 
-                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
                     value={formData.category}
                     onChange={(e) => setFormData({...formData, category: e.target.value})}
                   >
@@ -123,7 +124,7 @@ const ComplaintsPortal = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Priority Level</label>
                   <select 
-                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
                     value={formData.priority}
                     onChange={(e) => setFormData({...formData, priority: e.target.value})}
                   >
@@ -139,7 +140,7 @@ const ComplaintsPortal = () => {
                 <input 
                   type="text" 
                   placeholder="Brief summary of the issue"
-                  className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white"
                   value={formData.subject}
                   onChange={(e) => setFormData({...formData, subject: e.target.value})}
                 />
@@ -150,14 +151,14 @@ const ComplaintsPortal = () => {
                 <textarea 
                   rows="5"
                   placeholder="Provide all relevant details to help us resolve the issue faster..."
-                  className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white resize-none"
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                 ></textarea>
               </div>
 
               <div className="pt-4 border-t border-gray-100 flex justify-end">
-                <button type="submit" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm shadow-blue-200 transition-all active:scale-[0.98]">
+                <button type="submit" className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-[0_8px_30px_rgba(37,99,235,0.2)] transition-all active:scale-[0.98]">
                   Submit Grievance
                 </button>
               </div>
@@ -169,17 +170,17 @@ const ComplaintsPortal = () => {
                   <input 
                     type="text" 
                     placeholder="Search by Ticket ID or Subject..." 
-                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                   />
                   <Search size={16} className="absolute left-3 top-2.5 text-gray-400" />
                 </div>
-                <button className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">
+                <button className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50">
                   <Filter size={16} /> Filter
                 </button>
               </div>
 
               {dummyComplaints.map((complaint) => (
-                <div key={complaint.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-gray-50/30">
+                <div key={complaint.id} className="border border-gray-100 rounded-[20px] p-5 hover:shadow-md transition-shadow bg-white shadow-sm">
                   <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-4">
                     <div className="flex items-center gap-3">
                       <span className="text-sm font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded">{complaint.id}</span>
@@ -208,6 +209,7 @@ const ComplaintsPortal = () => {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

@@ -241,7 +241,8 @@ const StudentProfile = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6">
+    <div className="bg-[#F8FAFC] min-h-screen font-sans pb-24">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-gray-900">My Profile</h1>
         <p className="text-sm text-gray-500 mt-0.5">View and manage your profile information</p>
@@ -250,9 +251,12 @@ const StudentProfile = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Card - Left Column */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg border border-gray-200 p-6 text-center">
+          <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-6 md:p-8 text-center relative overflow-hidden">
+            {/* Soft decorative background element */}
+            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-blue-600 to-indigo-700 opacity-90 rounded-t-[24px]" />
+            
             {/* Avatar */}
-            <div className="relative inline-block mb-4">
+            <div className="relative inline-block mb-4 mt-6 z-10">
               <div className="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                 {user?.profilePicture ? (
                   <img 
@@ -269,7 +273,7 @@ const StudentProfile = () => {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingImage}
-                className="absolute bottom-0 right-0 bg-white border border-gray-300 rounded-full p-1.5 hover:bg-gray-50 transition-colors"
+                className="absolute bottom-0 right-0 bg-white border border-gray-200 rounded-full p-2 shadow-sm hover:bg-gray-50 transition-colors z-20"
               >
                 {uploadingImage ? (
                   <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
@@ -357,7 +361,7 @@ const StudentProfile = () => {
 
         {/* Edit Form - Right Column */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-6 md:p-8">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-medium text-gray-900">Personal Information</h2>
               <button
@@ -530,7 +534,7 @@ const StudentProfile = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-4 py-2 bg-gray-800 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="px-6 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
                   >
                     {loading ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -594,8 +598,8 @@ const StudentProfile = () => {
       {/* Change Password Modal */}
       {showPasswordModal && (
         <>
-          <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setShowPasswordModal(false)} />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl z-50 w-full max-w-md">
+          <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-40" onClick={() => setShowPasswordModal(false)} />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-[24px] shadow-2xl z-50 w-full max-w-md overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <h3 className="text-base font-medium text-gray-900">Change Password</h3>
               <button onClick={() => setShowPasswordModal(false)} className="p-1 rounded hover:bg-gray-100">
@@ -660,8 +664,8 @@ const StudentProfile = () => {
               </div>
 
               <div className="flex justify-end gap-3 pt-3">
-                <button type="button" onClick={() => setShowPasswordModal(false)} className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">Cancel</button>
-                <button type="submit" disabled={submittingPassword} className="px-4 py-2 text-sm bg-gray-800 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2">
+                <button type="button" onClick={() => setShowPasswordModal(false)} className="px-4 py-2 text-sm font-bold border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50">Cancel</button>
+                <button type="submit" disabled={submittingPassword} className="px-4 py-2 text-sm font-bold bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
                   {submittingPassword ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Update Password'}
                 </button>
               </div>
@@ -669,6 +673,7 @@ const StudentProfile = () => {
           </div>
         </>
       )}
+      </div>
     </div>
   )
 }

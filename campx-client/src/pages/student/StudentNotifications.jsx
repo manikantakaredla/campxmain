@@ -119,10 +119,10 @@ const StudentNotifications = () => {
   const unreadNotifications = notifications.filter(n => !n.isRead).length
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
-      <div className=" mx-auto px-4 py-8">
+    <div className="bg-[#F8FAFC] min-h-screen pb-24">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-6 md:p-8 mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-sm">
@@ -138,7 +138,7 @@ const StudentNotifications = () => {
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all"
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-all"
               >
                 <CheckCheck size={16} />
                 Mark all as read
@@ -170,7 +170,7 @@ const StudentNotifications = () => {
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-1 mb-6 bg-white rounded-xl p-1 border border-gray-100 shadow-sm">
+        <div className="flex gap-1 mb-6 bg-white rounded-[20px] p-1.5 border border-gray-50 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           {filterOptions.map(option => {
             const Icon = option.icon
             const isActive = filter === option.value
@@ -182,7 +182,7 @@ const StudentNotifications = () => {
               <button
                 key={option.value}
                 onClick={() => setFilter(option.value)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 justify-center ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-[16px] text-sm font-bold transition-all flex-1 justify-center ${
                   isActive
                     ? 'bg-gray-400 text-white shadow-sm'
                     : 'text-gray-900 hover:bg-gray-50'
@@ -204,11 +204,11 @@ const StudentNotifications = () => {
 
         {/* Notifications List */}
         {loading ? (
-          <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
+          <div className="bg-white rounded-[24px] border border-gray-50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-12 text-center">
             <div className="w-8 h-8 border-2 border-gray-200 border-t-gray-600 rounded-full animate-spin mx-auto" />
           </div>
         ) : filteredNotifications.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
+          <div className="bg-white rounded-[24px] border border-gray-50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-12 text-center">
             <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
               <Inbox size={28} className="text-gray-300" />
             </div>
@@ -225,10 +225,10 @@ const StudentNotifications = () => {
               return (
                 <div
                   key={notification._id}
-                  className={`group bg-white rounded-xl border transition-all duration-200 hover:shadow-md ${
+                  className={`group bg-white rounded-[20px] border transition-all duration-200 shadow-sm hover:shadow-md ${
                     isUnread 
-                      ? 'border-l-4 border-l-blue-500 border-gray-200 shadow-sm' 
-                      : 'border-gray-100 hover:border-gray-200'
+                      ? 'border-l-4 border-l-blue-500 border-gray-100' 
+                      : 'border-gray-50 hover:border-gray-100'
                   }`}
                 >
                   <div className="p-5">
@@ -273,7 +273,7 @@ const StudentNotifications = () => {
                             {isUnread && (
                               <button
                                 onClick={() => handleMarkAsRead(notification._id)}
-                                className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50"
+                                className="p-2 text-gray-400 hover:text-blue-600 transition-colors rounded-xl hover:bg-blue-50"
                                 title="Mark as read"
                               >
                                 <CheckCheck size={16} />
@@ -287,7 +287,7 @@ const StudentNotifications = () => {
                                     handleMarkAsRead(notification._id);
                                   }
                                 }}
-                                className="p-1.5 text-gray-400 hover:text-gray-700 transition-colors rounded-lg hover:bg-gray-100"
+                                className="p-2 text-gray-400 hover:text-gray-700 transition-colors rounded-xl hover:bg-gray-100"
                               >
                                 <ChevronRight size={16} />
                               </Link>

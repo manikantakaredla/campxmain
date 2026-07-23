@@ -32,13 +32,13 @@ const PlacementReadiness = () => {
   };
 
   return (
-    <div className="px-4 py-6 max-w-7xl mx-auto space-y-5 animate-fade-in bg-[#f8f9fa] min-h-screen">
+    <div className="px-4 py-6 max-w-7xl mx-auto space-y-5 animate-fade-in bg-[#F8FAFC] min-h-screen pb-24">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-xl md:text-2xl font-extrabold text-gray-900">Placement Readiness Profile</h1>
           <p className="text-xs text-gray-500 mt-1 font-medium">Track your progress and identify areas for improvement before placement season.</p>
         </div>
-        <div className="flex items-center gap-3 bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-3 bg-white p-3 md:p-4 rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50">
           <div className="flex flex-col">
             <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Overall Score</span>
             <span className="text-2xl font-bold text-blue-600">78%</span>
@@ -53,7 +53,7 @@ const PlacementReadiness = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 overflow-hidden">
         <div className="p-4 md:p-5 border-b border-gray-100">
           <h2 className="text-sm font-bold text-gray-800">Readiness Breakdown</h2>
         </div>
@@ -106,7 +106,7 @@ const PlacementReadiness = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-4 md:p-5 border border-blue-100 shadow-sm">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-[24px] p-5 md:p-6 border border-blue-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <h3 className="text-sm font-bold text-blue-900 mb-2">Recommended Next Steps</h3>
           <ul className="space-y-2 mt-3">
             <li className="flex gap-2.5 text-blue-800 text-[10px] md:text-xs">
@@ -124,7 +124,7 @@ const PlacementReadiness = () => {
           </ul>
         </div>
         
-        <div className="bg-white rounded-2xl p-4 md:p-5 border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)]">
+        <div className="bg-white rounded-[24px] p-5 md:p-6 border border-gray-50 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <h3 className="text-sm font-bold text-gray-800 mb-3">Mock Interview History</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center p-2.5 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">

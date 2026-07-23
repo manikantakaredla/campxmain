@@ -138,7 +138,7 @@ const StudentResources = () => {
   }
 
   return (
-    <div className="px-4 py-6 max-w-7xl mx-auto space-y-5 bg-[#f8f9fa] min-h-screen">
+    <div className="px-4 py-6 max-w-7xl mx-auto space-y-5 bg-[#F8FAFC] min-h-screen pb-24">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
@@ -155,7 +155,7 @@ const StudentResources = () => {
             <button
               key={card.id}
               onClick={() => handleCategoryClick(card.value)}
-              className={`flex flex-col items-center justify-center p-4 rounded-2xl border ${card.borderColor} ${card.bgColor} ${card.hoverBorder} transition-all duration-300 hover:shadow-lg group text-center cursor-pointer h-full`}
+              className={`flex flex-col items-center justify-center p-4 rounded-[24px] border ${card.borderColor} ${card.bgColor} ${card.hoverBorder} transition-all duration-300 hover:shadow-lg group text-center cursor-pointer h-full`}
             >
               <div className="scale-75 md:scale-100">{card.icon}</div>
               <h3 className="font-bold text-gray-800 text-[10px] md:text-xs group-hover:text-blue-700 transition-colors uppercase tracking-wider">{card.title}</h3>
@@ -168,7 +168,7 @@ const StudentResources = () => {
           <div className="flex items-center gap-3 mb-2">
             <button
               onClick={() => setActiveView('categories')}
-              className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2 text-sm font-medium border border-gray-200 bg-white"
+              className="p-2 hover:bg-gray-100 rounded-xl text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2 text-sm font-bold border border-gray-200 bg-white"
             >
               <ArrowLeft className="w-4 h-4" /> Back to Categories
             </button>
@@ -178,7 +178,7 @@ const StudentResources = () => {
           </div>
 
           {/* Filters Bar */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 p-5 md:p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2">
             <SearchBar 
@@ -191,7 +191,7 @@ const StudentResources = () => {
             <select
               value={filters.semester || 'All'}
               onChange={(e) => setFilters(prev => ({ ...prev, semester: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="All">All Semesters</option>
               {semesters.slice(1).map(sem => (
@@ -204,7 +204,7 @@ const StudentResources = () => {
             <select
               value={filters.resourceType || 'All'}
               onChange={(e) => setFilters(prev => ({ ...prev, resourceType: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="All">All Types</option>
               {resourceTypes.slice(1).map(type => (
@@ -236,7 +236,7 @@ const StudentResources = () => {
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {Object.keys(groupedResources[semesterKey]).map(subjectName => (
-                  <div key={subjectName} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col hover:border-blue-100 hover:shadow-md transition-all">
+                  <div key={subjectName} className="bg-white rounded-[24px] border border-gray-50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col hover:border-blue-100 hover:shadow-md transition-all">
                     {/* Subject Header */}
                     <div className="px-5 py-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/20 border-b border-gray-100 flex items-center justify-between">
                       <h3 className="font-bold text-gray-800 flex items-center gap-2 text-md">
@@ -287,7 +287,7 @@ const StudentResources = () => {
                               <button
                                 onClick={() => handleMarkCompleted(resource._id)}
                                 disabled={resource.completedBy?.includes(user._id)}
-                                className={`w-full px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-colors ${
+                                className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-colors ${
                                   resource.completedBy?.includes(user._id)
                                     ? 'bg-green-100 text-green-700 cursor-not-allowed border border-green-200'
                                     : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
@@ -300,13 +300,13 @@ const StudentResources = () => {
                             <div className="flex gap-2 w-full">
                               <Link
                                 to={`/resource/${resource._id}`}
-                                className="w-full text-center px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center justify-center gap-1"
+                                className="w-full text-center px-3 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center justify-center gap-1"
                               >
                                 <Eye size={12} /> View
                               </Link>
                               <button
                                 onClick={() => handleDownload(resource._id)}
-                                className="w-full px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
+                                className="w-full px-3 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
                               >
                                 <Download size={12} /> DL
                               </button>

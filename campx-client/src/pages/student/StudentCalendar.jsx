@@ -156,7 +156,7 @@ const StudentCalendar = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-[#F8FAFC] min-h-screen font-sans pb-24">
       {/* Header */}
       <div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -190,7 +190,7 @@ const StudentCalendar = () => {
           {/* Main Calendar Section */}
           <div className="lg:col-span-2">
             {viewMode === 'month' ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 overflow-hidden">
                 {/* Calendar Toolbar */}
                 <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                   <div className="flex items-center gap-2">
@@ -210,7 +210,7 @@ const StudentCalendar = () => {
                   </div>
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm transition-all ${
                       showFilters || activeFilterCount > 0
                         ? 'bg-blue-100 text-blue-700'
                         : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
@@ -315,13 +315,13 @@ const StudentCalendar = () => {
               </div>
             ) : (
               // List View
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 overflow-hidden">
                 <div className="p-4 border-b border-gray-100 bg-gray-50/50">
                   <div className="flex items-center justify-between">
                     <h2 className="font-semibold text-gray-800">All Events</h2>
                     <button
                       onClick={() => setShowFilters(!showFilters)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold ${
                         showFilters ? 'bg-blue-100 text-blue-700' : 'bg-white text-gray-600 border border-gray-200'
                       }`}
                     >
@@ -411,7 +411,7 @@ const StudentCalendar = () => {
 
           {/* Upcoming Events Sidebar */}
           <div className="space-y-5">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 overflow-hidden">
               <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-600 to-blue-700">
                 <h3 className="font-semibold text-white flex items-center gap-2">
                   <Clock size={16} />
@@ -494,9 +494,9 @@ const StudentCalendar = () => {
       {/* Event Details Modal */}
       {showEventModal && selectedEvent && (
         <>
-          <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setShowEventModal(false)} />
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl z-50 w-full max-w-md max-h-[85vh] overflow-y-auto">
-            <div className={`p-4 rounded-t-xl ${getEventTypeColor(selectedEvent.type)} border-b`}>
+          <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-40" onClick={() => setShowEventModal(false)} />
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-[24px] shadow-2xl z-50 w-full max-w-md max-h-[85vh] overflow-y-auto">
+            <div className={`p-4 rounded-t-[24px] ${getEventTypeColor(selectedEvent.type)} border-b`}>
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-gray-800">{selectedEvent.title}</h3>
@@ -542,7 +542,7 @@ const StudentCalendar = () => {
               
               <button
                 onClick={() => setShowEventModal(false)}
-                className="w-full mt-2 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium"
+                className="w-full mt-2 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold"
               >
                 Close
               </button>

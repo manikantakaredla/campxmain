@@ -354,7 +354,7 @@ const Messages = () => {
 
   return (
     <div className="flex h-[calc(100dvh-5rem)] md:h-[calc(100vh-5rem)] w-full max-w-7xl mx-auto md:py-4">
-      <div className="flex w-full h-full bg-white md:rounded-2xl shadow-xl border-x md:border border-gray-200 overflow-hidden relative">
+      <div className="flex w-full h-full bg-white md:rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-x md:border border-gray-50 overflow-hidden relative">
         
         {/* Left Pane - Inbox */}
         <div className={`flex w-full md:w-[350px] lg:w-[400px] flex-col border-r border-gray-200 bg-white shrink-0 transition-transform duration-300 ${selectedChat ? '-translate-x-full absolute md:relative md:translate-x-0' : 'translate-x-0'}`}>
@@ -625,7 +625,7 @@ const Messages = () => {
               </div>
 
               {/* Input Area */}
-              <div className="bg-white px-4 py-3 border-t border-gray-200 shrink-0 z-20">
+              <div className="bg-white px-4 py-3 border-t border-gray-50 shrink-0 z-20 shadow-[0_-4px_20px_rgb(0,0,0,0.02)]">
                 {replyingTo && (
                   <div className="mb-3 px-4 py-3 bg-gray-50 border-l-4 border-indigo-500 rounded-r-xl flex items-center justify-between relative shadow-sm animate-in slide-in-from-bottom-2">
                     <div className="flex flex-col text-sm truncate max-w-[85%]">
@@ -640,7 +640,7 @@ const Messages = () => {
                 
                 <form onSubmit={handleSendMessage} className="flex flex-col gap-2 relative">
                   {isCreatingPoll ? (
-                    <div className="bg-white rounded-xl border border-indigo-100 p-4 shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                    <div className="bg-white rounded-[24px] border border-indigo-50 p-4 shadow-sm animate-in fade-in slide-in-from-bottom-2">
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="font-semibold text-gray-800 text-sm flex items-center gap-2"><BarChart2 size={16} className="text-indigo-600" /> Create a Poll</h4>
                         <button type="button" onClick={() => setIsCreatingPoll(false)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
@@ -650,7 +650,7 @@ const Messages = () => {
                         placeholder="Ask a question..." 
                         value={pollQuestion}
                         onChange={e => setPollQuestion(e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm mb-3 focus:outline-none focus:border-indigo-300 focus:bg-white"
+                        className="w-full px-3 py-3 bg-gray-50 border border-gray-200 rounded-[16px] text-sm mb-3 focus:outline-none focus:border-indigo-300 focus:bg-white transition-all"
                       />
                       <div className="space-y-2 mb-3">
                         {pollOptions.map((opt, idx) => (
@@ -664,7 +664,7 @@ const Messages = () => {
                                 newOpts[idx].text = e.target.value;
                                 setPollOptions(newOpts);
                               }}
-                              className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-300 focus:bg-white"
+                              className="flex-1 px-3 py-3 bg-gray-50 border border-gray-200 rounded-[16px] text-sm focus:outline-none focus:border-indigo-300 focus:bg-white transition-all"
                             />
                             {pollOptions.length > 2 && (
                               <button type="button" onClick={() => setPollOptions(pollOptions.filter((_, i) => i !== idx))} className="p-1.5 text-gray-400 hover:text-red-500 bg-gray-50 rounded-lg hover:bg-red-50">
@@ -695,7 +695,7 @@ const Messages = () => {
                     )}
                     
                     {!isCreatingPoll && (
-                      <div className="flex-1 bg-gray-100 rounded-2xl flex items-center border border-transparent focus-within:border-indigo-300 focus-within:bg-white focus-within:shadow-sm transition-all relative">
+                      <div className="flex-1 bg-gray-50 rounded-[24px] flex items-center border border-gray-100 focus-within:border-indigo-200 focus-within:bg-white focus-within:shadow-sm transition-all relative">
                         <input
                           type="text"
                           value={newMessage}
@@ -735,7 +735,7 @@ const Messages = () => {
       {/* Poll Stats Modal */}
       {showPollStatsModal && pollStatsData && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
+          <div className="bg-white rounded-[24px] w-full max-w-lg shadow-[0_8px_30px_rgb(0,0,0,0.08)] overflow-hidden flex flex-col max-h-[85vh]">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
               <h2 className="font-bold text-gray-900 text-lg flex items-center gap-2"><PieChart size={20} className="text-indigo-600" /> Poll Analytics</h2>
               <button onClick={() => setShowPollStatsModal(false)} className="p-1.5 text-gray-400 hover:bg-gray-200 rounded-full">
