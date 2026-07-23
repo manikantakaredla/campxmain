@@ -135,6 +135,8 @@ const dispatchFCMJob = async (notification, targetUsers) => {
       }
     });
 
+    console.log(`[FCM Job] Found ${tokens.length} tokens for category: ${category}`);
+
     if (tokens.length === 0) return;
     
     if (!admin.apps.length) {
@@ -164,6 +166,11 @@ const dispatchFCMJob = async (notification, targetUsers) => {
       data: {
         url: targetUrl,
         category: category
+      },
+      webpush: {
+        fcmOptions: {
+          link: targetUrl
+        }
       }
     };
 
@@ -173,6 +180,7 @@ const dispatchFCMJob = async (notification, targetUsers) => {
       const multicastMessage = { ...message, tokens: chunk };
       
       const response = await admin.messaging().sendEachForMulticast(multicastMessage);
+      console.log(`[FCM Job] Successfully sent ${response.successCount} messages, ${response.failureCount} failed.`);
       
       if (response.failureCount > 0) {
         const failedTokens = [];
