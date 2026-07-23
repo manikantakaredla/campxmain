@@ -38,7 +38,7 @@ const MobileBottomNav = () => {
       path: `${basePath}/events`, 
       label: 'Campus' 
     },
-    { icon: <MessageSquare size={22} />, path: `${basePath}/messages`, label: 'Messages' },
+    // { icon: <MessageSquare size={22} />, path: `${basePath}/messages`, label: 'Messages' },
   ];
 
   return (

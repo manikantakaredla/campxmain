@@ -40,6 +40,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   useEffect(() => {
     if (socket) {
       const handleNewMessage = (msg) => {
+        // Temporarily disable message notifications
+        /*
         if (!location.pathname.includes('/messages')) {
           toast((t) => (
              <div className="flex flex-col gap-1 cursor-pointer" onClick={() => { toast.dismiss(t.id); navigate(`/${user?.role}/messages?userId=${msg.sender?._id || ''}`); }}>
@@ -49,6 +51,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
              </div>
           ), { duration: 4000 });
         }
+        */
       };
       socket.on('newMessage', handleNewMessage);
       return () => socket.off('newMessage', handleNewMessage);
@@ -107,7 +110,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           type: 'group',
           label: 'Communication',
           items: [
-            { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
+            // { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
             { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
           ]
         },
@@ -160,7 +163,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           type: 'group',
           label: 'Communication',
           items: [
-            { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
+            // { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
             { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
           ]
         },

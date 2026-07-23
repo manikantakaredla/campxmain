@@ -1,436 +1,329 @@
-import React, { useState, useEffect } from 'react'
-import { useAuth } from '../../hooks/useAuth'
-import { announcementService } from '../../services/announcementService'
-import { resourceService } from '../../services/resourceService'
-import { calendarService } from '../../services/calendarService'
-import { notificationService } from '../../services/notificationService'
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import { announcementService } from '../../services/announcementService';
+import { calendarService } from '../../services/calendarService';
+import { notificationService } from '../../services/notificationService';
+import { useSettings } from '../../hooks/useSettings';
 import api from '../../api/axios';
 import { 
   Bell, 
   Megaphone, 
-  FileText, 
   Calendar, 
   ChevronRight,
-  Download,
-  TrendingUp,
   Clock,
   ArrowRight,
   Briefcase,
-  Award,
-  Star,
-  MessageSquare
-} from 'lucide-react'
-import { Link } from 'react-router-dom'
-import toast from 'react-hot-toast'
-import QuickActions from '../../components/layout/QuickActions'
+  UserCheck,
+  CreditCard,
+  Grid,
+  MapPin,
+  Bookmark
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const StudentDashboard = () => {
-  const { user } = useAuth()
-  const [stats, setStats] = useState({
-    announcements: 0,
-    resources: 0,
-    events: 0,
-    unreadNotifications: 0
-  })
-  const [recentAnnouncements, setRecentAnnouncements] = useState([])
-  const [recentResources, setRecentResources] = useState([])
-  const [upcomingEvents, setUpcomingEvents] = useState([])
-  const [assignedFaculty, setAssignedFaculty] = useState(null)
+  const { user } = useAuth();
+  const { settings } = useSettings();
   
-  // Loading states for individual widgets could be added if needed,
-  // but for now we just render with empty/zero data until they load.
-  
+  const [recentAnnouncements, setRecentAnnouncements] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [activeBanner, setActiveBanner] = useState(0);
+
+  // Mock data for timetable
+  const todaySchedule = [
+    { time: '09:00 AM', subject: 'Data Structures', class: 'CSE - 3A', room: 'Room 201', color: 'blue' },
+    { time: '11:00 AM', subject: 'Operating Systems', class: 'CSE - 3A', room: 'Room 203', color: 'green' },
+    { time: '02:00 PM', subject: 'Database Management', class: 'CSE - 3A', room: 'Room 205', color: 'orange' },
+  ];
+
   useEffect(() => {
-    fetchAnnouncements()
-    fetchResources()
-    fetchEvents()
-    fetchNotifications()
-    fetchAssignedFaculty()
-  }, [])
+    fetchAnnouncements();
+    fetchEvents();
+  }, []);
 
   const fetchAnnouncements = async () => {
     try {
-      const res = await announcementService.getAll({ page: 1, limit: 5 });
+      const res = await announcementService.getAll({ page: 1, limit: 3 });
       setRecentAnnouncements(res.announcements || []);
-      setStats(prev => ({ ...prev, announcements: res.pagination?.total || 0 }));
     } catch (error) {
       console.error('Error fetching announcements:', error);
     }
-  }
-
-  const fetchResources = async () => {
-    try {
-      const res = await resourceService.getAll({ page: 1, limit: 5 });
-      setRecentResources(res.resources || []);
-      setStats(prev => ({ ...prev, resources: res.pagination?.total || 0 }));
-    } catch (error) {
-      console.error('Error fetching resources:', error);
-    }
-  }
+  };
 
   const fetchEvents = async () => {
     try {
-      const today = new Date();
-      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
-      const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999).toISOString();
-
-      const [upcomingRes, monthRes] = await Promise.all([
-        calendarService.getUpcoming().catch(() => ({ activities: [] })),
-        calendarService.getAll({ startDate: firstDayOfMonth, endDate: lastDayOfMonth, limit: 1 }).catch(() => ({ pagination: { total: 0 } }))
-      ]);
-
-      setUpcomingEvents(upcomingRes.activities || []);
-      setStats(prev => ({ ...prev, events: monthRes.pagination?.total || 0 }));
+      const upcomingRes = await calendarService.getUpcoming();
+      setUpcomingEvents(upcomingRes.activities?.slice(0, 3) || []);
     } catch (error) {
       console.error('Error fetching events:', error);
     }
-  }
+  };
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await notificationService.getUnreadCount();
-      setStats(prev => ({ ...prev, unreadNotifications: res.unreadCount || 0 }));
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
+  const banners = settings?.homeBanners?.filter(b => b.isActive) || [];
+
+  // Fallback banner if none are configured by admin
+  const displayBanners = banners.length > 0 ? banners : [
+    {
+      id: 'fallback1',
+      tag: 'Upcoming Event',
+      title: 'AI/ML Workshop',
+      date: '15 May 2025',
+      time: '10:00 AM',
+      location: 'Seminar Hall, Block A',
+      image: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop',
+      link: '/student/events'
     }
-  }
-
-  const fetchAssignedFaculty = async () => {
-    try {
-      const res = await api.get('/student/assigned-faculty');
-      setAssignedFaculty(res.data.data);
-    } catch (error) {
-      console.error('Error fetching assigned faculty:', error);
-    }
-  }
-
-  const getPriorityClass = (priority) => {
-    switch(priority) {
-      case 'urgent': return 'bg-red-50 text-red-600 border-red-100';
-      case 'high': return 'bg-orange-50 text-orange-600 border-orange-100';
-      case 'medium': return 'bg-yellow-50 text-yellow-600 border-yellow-100';
-      default: return 'bg-gray-50 text-gray-500 border-gray-100';
-    }
-  }
-
-  const statCards = [
-    { label: 'Announcements', value: stats.announcements, icon: Megaphone, link: '/student/announcements', color: 'blue' },
-    { label: 'Resources', value: stats.resources, icon: FileText, link: '/student/resources', color: 'green' },
-    { label: 'Events', value: stats.events, icon: Calendar, link: '/student/calendar', color: 'purple' },
-    { label: 'Notifications', value: stats.unreadNotifications, icon: Bell, link: '/student/notifications', color: 'orange' }
-  ]
+  ];
 
   return (
     <div className="bg-[#f8f9fa] min-h-screen font-sans">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Header */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        {/* Header section matching mockup exactly */}
+        <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 flex items-center gap-2">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                Welcome, {user?.name?.split(' ')[0]}
-              </span>
-            </h1>
-            <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5 font-medium">
-              Student Dashboard
-            </p>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">Good Morning, {user?.name?.split(' ')[0]} 👋</h1>
+            <p className="text-sm text-gray-500 mt-1 font-medium">Have a productive day at CAMPX!</p>
+          </div>
+          <div className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl text-center shadow-sm border border-blue-100">
+            <div className="text-[10px] font-bold uppercase tracking-wider">{new Date().toLocaleString('default', { weekday: 'long' })}</div>
+            <div className="text-sm font-black">{new Date().getDate()} {new Date().toLocaleString('default', { month: 'short' })}</div>
           </div>
         </div>
 
-        <QuickActions actions={[
-          { label: 'Register Event', icon: <Calendar size={18} />, path: '/student/events', className: 'bg-purple-50 hover:bg-purple-100 border-purple-200', iconClassName: 'text-purple-600', textClassName: 'text-purple-900' },
-          { label: 'View Timetable', icon: <Clock size={18} />, path: '/student/timetable', className: 'bg-blue-50 hover:bg-blue-100 border-blue-200', iconClassName: 'text-blue-600', textClassName: 'text-blue-900' },
-          { label: 'Book Faculty', icon: <Briefcase size={18} />, path: '/student/faculty-connect', className: 'bg-green-50 hover:bg-green-100 border-green-200', iconClassName: 'text-green-600', textClassName: 'text-green-900' },
-          { label: 'Placement Dashboard', icon: <TrendingUp size={18} />, path: '/student/placement-readiness', className: 'bg-orange-50 hover:bg-orange-100 border-orange-200', iconClassName: 'text-orange-600', textClassName: 'text-orange-900' },
-          { label: 'Raise Complaint', icon: <MessageSquare size={18} />, path: '/student/complaints', className: 'bg-red-50 hover:bg-red-100 border-red-200', iconClassName: 'text-red-600', textClassName: 'text-red-900' },
-        ]} />
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-[24px] p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-bl-[40px] opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl flex items-center justify-center shadow-sm border border-white">
-                <Megaphone size={20} className="text-blue-600" />
+        {/* Carousel Section */}
+        <div className="mb-8 relative w-full overflow-hidden rounded-3xl aspect-[1.8/1] sm:aspect-[2.5/1] md:aspect-[3/1] bg-gradient-to-r from-[#1E2B6D] to-[#3B4FA3] text-white shadow-lg">
+          <div className="absolute inset-0 flex snap-x snap-mandatory overflow-x-auto [&::-webkit-scrollbar]:hidden scroll-smooth" onScroll={(e) => {
+            const index = Math.round(e.target.scrollLeft / e.target.clientWidth);
+            setActiveBanner(index);
+          }}>
+            {displayBanners.map((banner, index) => (
+              <div key={banner.id} className="min-w-full snap-center relative p-6 md:p-8 flex items-center">
+                {banner.image && (
+                  <div className="absolute right-0 bottom-0 h-full w-1/2 opacity-30 md:opacity-50">
+                    <img src={banner.image} alt={banner.title} className="object-cover h-full w-full object-right mix-blend-overlay" />
+                  </div>
+                )}
+                <div className="relative z-10 max-w-[60%]">
+                  {banner.tag && (
+                    <span className="inline-block bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-3">
+                      {banner.tag}
+                    </span>
+                  )}
+                  <h2 className="text-xl md:text-3xl font-bold mb-3 leading-tight">{banner.title}</h2>
+                  <div className="flex flex-col gap-1.5 text-xs md:text-sm font-medium text-blue-100 mb-4">
+                    {(banner.date || banner.time) && (
+                      <div className="flex items-center gap-2">
+                        <Calendar size={14} /> {banner.date} {banner.time && `• ${banner.time}`}
+                      </div>
+                    )}
+                    {banner.location && (
+                      <div className="flex items-center gap-2">
+                        <MapPin size={14} /> {banner.location}
+                      </div>
+                    )}
+                  </div>
+                  <Link to={banner.link || '#'} className="inline-flex items-center bg-white text-blue-900 px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-50 transition-colors shadow-sm">
+                    View Details <ChevronRight size={14} className="ml-1" />
+                  </Link>
+                </div>
               </div>
-              <TrendingUp size={16} className="text-green-500 hidden md:block" />
+            ))}
+          </div>
+          {/* Pagination Dots */}
+          {displayBanners.length > 1 && (
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20">
+              {displayBanners.map((_, idx) => (
+                <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-all ${idx === activeBanner ? 'bg-white w-4' : 'bg-white/50'}`} />
+              ))}
             </div>
-            <div>
-              <p className="text-3xl font-black text-gray-900 tracking-tight">{stats.announcements}</p>
-              <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">Announcements</p>
-            </div>
-            <Link to="/student/announcements" className="text-xs font-bold text-blue-600 mt-4 inline-flex items-center gap-1 hover:text-blue-800 transition-colors">
-              View all <ArrowRight size={12} />
+          )}
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-bold text-gray-900 text-sm md:text-base">Quick Actions</h2>
+            <Link className="text-xs text-blue-600 font-bold flex items-center hover:text-blue-800 transition-colors">
+              View All <ChevronRight size={14} className="ml-0.5"/>
             </Link>
           </div>
-
-          <div className="bg-white rounded-[24px] p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-green-50 rounded-bl-[40px] opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl flex items-center justify-center shadow-sm border border-white">
-                <FileText size={20} className="text-green-600" />
-              </div>
-            </div>
-            <div>
-              <p className="text-3xl font-black text-gray-900 tracking-tight">{stats.resources}</p>
-              <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">Resources</p>
-            </div>
-            <Link to="/student/resources" className="text-xs font-bold text-green-600 mt-4 inline-flex items-center gap-1 hover:text-green-800 transition-colors">
-              Browse <ArrowRight size={12} />
-            </Link>
-          </div>
-
-          <div className="bg-white rounded-[24px] p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-purple-50 rounded-bl-[40px] opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-50 to-fuchsia-100 rounded-2xl flex items-center justify-center shadow-sm border border-white">
-                <Calendar size={20} className="text-purple-600" />
-              </div>
-            </div>
-            <div>
-              <p className="text-3xl font-black text-gray-900 tracking-tight">{stats.events}</p>
-              <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">Events</p>
-            </div>
-            <Link to="/student/calendar" className="text-xs font-bold text-purple-600 mt-4 inline-flex items-center gap-1 hover:text-purple-800 transition-colors">
-              Calendar <ArrowRight size={12} />
-            </Link>
-          </div>
-
-          <div className="bg-white rounded-[24px] p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-orange-50 rounded-bl-[40px] opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-50 to-amber-100 rounded-2xl flex items-center justify-center shadow-sm border border-white relative">
-                <Bell size={20} className="text-orange-600" />
-              </div>
-              {stats.unreadNotifications > 0 && (
-                <span className="bg-red-500 text-white text-[10px] md:text-xs px-2.5 py-1 rounded-full font-bold shadow-sm">
-                  {stats.unreadNotifications} New
+          <div className="flex justify-between md:justify-start gap-4 md:gap-8 overflow-x-auto [&::-webkit-scrollbar]:hidden pb-2">
+            {[
+              { label: 'Timetable', icon: <Calendar size={22}/>, color: 'text-blue-600', bg: 'bg-blue-50', link: '/student/timetable' },
+              { label: 'Faculty Connect', icon: <UserCheck size={22}/>, color: 'text-green-600', bg: 'bg-green-50', link: '/student/faculty-connect' },
+              { label: 'My QR Pass', icon: <CreditCard size={22}/>, color: 'text-orange-500', bg: 'bg-orange-50', link: '#' },
+              { label: 'Announcements', icon: <Megaphone size={22}/>, color: 'text-pink-500', bg: 'bg-pink-50', link: '/student/announcements' },
+              { label: 'More', icon: <Grid size={22}/>, color: 'text-blue-500', bg: 'bg-blue-50', link: '#' }
+            ].map((action, idx) => (
+              <Link key={idx} to={action.link} className="flex flex-col items-center gap-2 min-w-[70px] group">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${action.bg} ${action.color} group-hover:-translate-y-1 transition-transform border border-white`}>
+                  {action.icon}
+                </div>
+                <span className="text-[10px] md:text-xs font-bold text-gray-700 text-center leading-tight">
+                  {action.label.split(' ').map((word, i) => <React.Fragment key={i}>{word}<br/></React.Fragment>)}
                 </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* 2-Column Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Today's Schedule */}
+          <div className="bg-white rounded-3xl p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col h-full">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
+                <Calendar size={18} className="text-blue-500"/> Today's Schedule
+              </h3>
+              <ChevronRight size={16} className="text-gray-400"/>
+            </div>
+            <div className="flex-1 flex flex-col gap-3">
+              {todaySchedule.map((item, idx) => (
+                <div key={idx} className={`p-4 rounded-2xl border-l-4 bg-${item.color}-50/50 border-${item.color}-500 flex gap-4`}>
+                  <div className={`text-${item.color}-600 font-bold text-xs whitespace-nowrap pt-1`}>{item.time}</div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-sm">{item.subject}</h4>
+                    <div className="text-xs text-gray-500 mt-1">{item.class}</div>
+                    <div className="text-[10px] font-semibold text-blue-600 mt-1 flex items-center gap-1">
+                      <MapPin size={12}/> {item.room}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Link to="/student/timetable" className="mt-5 text-center text-xs font-bold text-blue-600 block hover:text-blue-800 transition-colors">
+              View Full Timetable
+            </Link>
+          </div>
+
+          {/* Latest Announcements */}
+          <div className="bg-white rounded-3xl p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col h-full">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
+                <Megaphone size={18} className="text-blue-500"/> Latest Announcements
+              </h3>
+              <ChevronRight size={16} className="text-gray-400"/>
+            </div>
+            <div className="flex-1 flex flex-col gap-3">
+              {recentAnnouncements.length === 0 ? (
+                <div className="text-sm text-gray-400 text-center py-6">No announcements today</div>
+              ) : (
+                recentAnnouncements.map((item, idx) => (
+                  <Link key={item._id} to={`/announcement/${item._id}`} className="p-4 rounded-2xl border border-gray-100 flex gap-3 hover:bg-gray-50 transition-colors">
+                    <div className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded h-fit whitespace-nowrap mt-0.5">
+                      {item.priority === 'urgent' ? 'Important' : 'New'}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-sm line-clamp-2 leading-snug">{item.title}</h4>
+                      <div className="text-xs text-gray-400 mt-2 flex items-center gap-2 font-medium">
+                        {new Date(item.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        <span className="w-1 h-1 rounded-full bg-gray-300"></span> Admin
+                      </div>
+                    </div>
+                  </Link>
+                ))
               )}
             </div>
-            <div>
-              <p className="text-3xl font-black text-gray-900 tracking-tight">{stats.unreadNotifications}</p>
-              <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">Alerts</p>
-            </div>
-            <Link to="/student/notifications" className="text-xs font-bold text-orange-600 mt-4 inline-flex items-center gap-1 hover:text-orange-800 transition-colors">
-              Check <ArrowRight size={12} />
+            <Link to="/student/announcements" className="mt-5 text-center text-xs font-bold text-blue-600 block hover:text-blue-800 transition-colors">
+              View All Announcements
             </Link>
           </div>
         </div>
 
-        {/* Assigned Faculty Section */}
-        {assignedFaculty && (assignedFaculty.classTeacher || assignedFaculty.proctor) && (
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Award size={20} className="text-indigo-600" />
-              <h2 className="text-lg font-bold text-gray-900">My Assigned Faculty</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {assignedFaculty.classTeacher && (
-                <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] hover:shadow-lg transition-all duration-300 flex items-center gap-5 group">
-                  <div className="relative">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 flex items-center justify-center font-black text-2xl shadow-sm border-2 border-white group-hover:scale-105 transition-transform">
-                      {assignedFaculty.classTeacher.name?.charAt(0)}
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Class Faculty</p>
-                    <h3 className="font-bold text-gray-900 text-lg truncate group-hover:text-blue-600 transition-colors">{assignedFaculty.classTeacher.name}</h3>
-                    <p className="text-sm text-gray-500 truncate font-medium">{assignedFaculty.classTeacher.department}</p>
-                  </div>
-                  <Link to={`/student/messages?userId=${assignedFaculty.classTeacher._id}`} className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:shadow-md transition-all duration-300" title="Chat with Class Teacher">
-                    <MessageSquare size={18} />
-                  </Link>
-                </div>
-              )}
-              {assignedFaculty.proctor && (
-                <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] hover:shadow-lg transition-all duration-300 flex items-center gap-5 group">
-                  <div className="relative">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 text-purple-700 flex items-center justify-center font-black text-2xl shadow-sm border-2 border-white group-hover:scale-105 transition-transform">
-                      {assignedFaculty.proctor.name?.charAt(0)}
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-1">Proctor</p>
-                    <h3 className="font-bold text-gray-900 text-lg truncate group-hover:text-purple-600 transition-colors">{assignedFaculty.proctor.name}</h3>
-                    <p className="text-sm text-gray-500 truncate font-medium">{assignedFaculty.proctor.department}</p>
-                  </div>
-                  <Link to={`/student/messages?userId=${assignedFaculty.proctor._id}`} className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center hover:bg-purple-600 hover:text-white hover:shadow-md transition-all duration-300" title="Chat with Proctor">
-                    <MessageSquare size={18} />
-                  </Link>
-                </div>
-              )}
-            </div>
+        {/* Upcoming Events */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-bold text-gray-900 text-sm md:text-base">Upcoming Events</h2>
+            <Link to="/student/calendar" className="text-xs text-blue-600 font-bold flex items-center hover:text-blue-800 transition-colors">
+              View Calendar <ChevronRight size={14} className="ml-0.5"/>
+            </Link>
           </div>
-        )}
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Announcements */}
-          <div className="bg-white rounded-2xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden flex flex-col">
-            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-sm">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-50 rounded-xl">
-                  <Megaphone size={18} className="text-blue-600" />
-                </div>
-                <h2 className="font-bold text-gray-900">Recent Announcements</h2>
+          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4">
+            {upcomingEvents.length === 0 ? (
+              <div className="text-sm text-gray-500 p-4 border border-gray-200 border-dashed rounded-2xl w-full text-center">
+                No upcoming events this month
               </div>
-              <Link to="/student/announcements" className="text-sm font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
-                See all
-              </Link>
+            ) : (
+              upcomingEvents.map((event, idx) => {
+                const colors = ['purple', 'green', 'orange'];
+                const c = colors[idx % colors.length];
+                return (
+                  <Link key={event._id} to={`/activity/${event._id}`} className={`min-w-[240px] w-[240px] snap-center bg-${c}-50 rounded-3xl p-5 border border-${c}-100 relative group hover:shadow-md transition-all`}>
+                    <Bookmark size={16} className={`absolute top-5 right-5 text-${c}-300`} />
+                    <div className={`text-3xl font-black text-${c}-600 mb-1`}>{new Date(event.startDate).getDate()}</div>
+                    <div className={`text-xs font-black text-${c}-400 uppercase tracking-widest mb-4`}>{new Date(event.startDate).toLocaleString('default', { month: 'short' })}</div>
+                    <h3 className="font-bold text-gray-900 text-sm mb-3 line-clamp-2 h-10">{event.title}</h3>
+                    <div className="space-y-1.5">
+                      <div className="text-[10px] font-bold text-gray-500 flex items-center gap-1.5">
+                        <MapPin size={12}/> {event.venue || 'TBA'}
+                      </div>
+                      <div className="text-[10px] font-bold text-gray-500 flex items-center gap-1.5">
+                        <Clock size={12}/> {new Date(event.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* Placement Readiness */}
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-bold text-gray-900 text-sm md:text-base">Placement Readiness</h2>
+            <Link to="/student/placement-readiness" className="text-xs text-blue-600 font-bold flex items-center hover:text-blue-800 transition-colors">
+              View Progress <ChevronRight size={14} className="ml-0.5"/>
+            </Link>
+          </div>
+          
+          <div className="bg-white rounded-3xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col md:flex-row items-center gap-6 md:gap-10">
+            <div className="flex items-center gap-6">
+              {/* Circular Progress Ring Mock */}
+              <div className="relative w-24 h-24 flex items-center justify-center">
+                <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="45" stroke="#f3f4f6" strokeWidth="8" fill="none" />
+                  <circle cx="50" cy="50" r="45" stroke="#22c55e" strokeWidth="8" fill="none" strokeDasharray="283" strokeDashoffset="50" className="drop-shadow-md" />
+                </svg>
+                <div className="absolute flex flex-col items-center">
+                  <span className="text-xl font-black text-gray-900">82%</span>
+                  <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest text-center leading-tight mt-1">Overall<br/>Score</span>
+                </div>
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 flex items-center gap-1">Great Progress 🚀</h3>
+                <p className="text-xs text-gray-500 font-medium mt-1 mb-3 max-w-[150px] leading-relaxed">
+                  Keep it up! You're doing better than 78% of students.
+                </p>
+                <button className="bg-green-500 text-white text-[10px] font-bold px-4 py-1.5 rounded-full shadow-sm hover:bg-green-600 transition-colors">
+                  Improve Now
+                </button>
+              </div>
             </div>
             
-            <div className="flex-1 divide-y divide-gray-50">
-              {recentAnnouncements.length === 0 ? (
-                <div className="py-16 flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                    <Megaphone size={28} className="text-gray-300" />
+            <div className="flex-1 w-full flex flex-col gap-4 border-t border-gray-100 pt-5 md:border-t-0 md:pt-0 md:border-l md:pl-10">
+              {[
+                { label: 'Aptitude', val: 88, color: 'bg-green-500' },
+                { label: 'DSA', val: 70, color: 'bg-orange-500' },
+                { label: 'Core Subjects', val: 90, color: 'bg-green-500' },
+                { label: 'Communication', val: 75, color: 'bg-yellow-500' }
+              ].map((skill, idx) => (
+                <div key={idx} className="flex items-center gap-4">
+                  <span className="text-[10px] font-bold text-gray-600 w-24">{skill.label}</span>
+                  <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className={`h-full ${skill.color} rounded-full`} style={{ width: `${skill.val}%` }}></div>
                   </div>
-                  <p className="text-gray-500 font-medium">No announcements yet</p>
+                  <span className="text-[10px] font-bold text-gray-400 w-6 text-right">{skill.val}%</span>
                 </div>
-              ) : (
-                recentAnnouncements.map((item) => (
-                  <Link 
-                    key={item._id} 
-                    to={`/announcement/${item._id}`}
-                    className="block px-6 py-4 hover:bg-gray-50/80 transition-colors group"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-1 h-12 bg-blue-400 rounded-full flex-shrink-0 mt-1 opacity-50 group-hover:opacity-100 transition-opacity" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-1.5">
-                          {item.priority && item.priority !== 'normal' && (
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ${getPriorityClass(item.priority)}`}>
-                              {item.priority}
-                            </span>
-                          )}
-                          <span className="text-xs text-gray-400 flex items-center gap-1 font-medium">
-                            <Clock size={12} />
-                            {new Date(item.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <h3 className="font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">{item.title}</h3>
-                        <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
-                      </div>
-                      <div className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 group-hover:border-blue-200 group-hover:text-blue-600 group-hover:bg-blue-50 transition-all shadow-sm">
-                        <ChevronRight size={16} />
-                      </div>
-                    </div>
-                  </Link>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Recent Resources */}
-          <div className="bg-white rounded-2xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden flex flex-col">
-            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-sm">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-50 rounded-xl">
-                  <FileText size={18} className="text-green-600" />
-                </div>
-                <h2 className="font-bold text-gray-900">Recent Resources</h2>
-              </div>
-              <Link to="/student/resources" className="text-sm font-semibold text-green-600 hover:text-green-800 bg-green-50 px-3 py-1.5 rounded-lg transition-colors">
-                Browse all
-              </Link>
-            </div>
-            
-            <div className="flex-1 divide-y divide-gray-50">
-              {recentResources.length === 0 ? (
-                <div className="py-16 flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                    <FileText size={28} className="text-gray-300" />
-                  </div>
-                  <p className="text-gray-500 font-medium">No resources yet</p>
-                </div>
-              ) : (
-                recentResources.map((item) => (
-                  <Link 
-                    key={item._id} 
-                    to={`/resource/${item._id}`}
-                    className="block px-6 py-4 hover:bg-gray-50/80 transition-colors group"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center flex-shrink-0 shadow-inner border border-gray-200 group-hover:border-green-300 transition-colors">
-                        <FileText size={20} className="text-gray-500 group-hover:text-green-600 transition-colors" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-1">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider bg-gray-100 text-gray-600">{item.category}</span>
-                          <span className="text-xs font-medium text-gray-400">
-                            {item.downloads || 0} downloads
-                          </span>
-                        </div>
-                        <h3 className="font-bold text-gray-900 text-sm mb-0.5 group-hover:text-green-600 transition-colors truncate">{item.title}</h3>
-                        <p className="text-xs text-gray-500 line-clamp-1">{item.description}</p>
-                      </div>
-                      <div className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 group-hover:border-green-200 group-hover:text-green-600 group-hover:bg-green-50 transition-all shadow-sm">
-                        <Download size={14} />
-                      </div>
-                    </div>
-                  </Link>
-                ))
-              )}
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Upcoming Events Section */}
-        {upcomingEvents.length > 0 && (
-          <div className="mt-8 bg-white rounded-2xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-sm">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-50 rounded-xl">
-                  <Calendar size={18} className="text-purple-600" />
-                </div>
-                <h2 className="font-bold text-gray-900">Upcoming Events</h2>
-              </div>
-              <Link to="/student/calendar" className="text-sm font-semibold text-purple-600 hover:text-purple-800 bg-purple-50 px-3 py-1.5 rounded-lg transition-colors">
-                View Calendar
-              </Link>
-            </div>
-            
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {upcomingEvents.slice(0, 3).map((event) => (
-                  <Link 
-                    key={event._id} 
-                    to={`/activity/${event._id}`}
-                    className="block p-5 rounded-2xl border border-gray-100 hover:border-purple-200 hover:shadow-lg transition-all duration-300 group bg-white relative overflow-hidden"
-                  >
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-bl-full opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-                    <div className="flex items-start gap-4">
-                      <div className="text-center min-w-[65px] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group-hover:border-purple-200 transition-colors">
-                        <div className="bg-purple-600 text-white text-[10px] font-bold uppercase tracking-widest py-1">
-                          {new Date(event.startDate).toLocaleString('default', { month: 'short' })}
-                        </div>
-                        <div className="text-2xl font-black text-gray-800 py-2">
-                          {new Date(event.startDate).getDate()}
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 uppercase tracking-wider mb-2">
-                          {event.type}
-                        </span>
-                        <h3 className="font-bold text-gray-900 text-base line-clamp-1 group-hover:text-purple-700 transition-colors">{event.title}</h3>
-                        <p className="text-sm text-gray-500 mt-1 line-clamp-1 flex items-center gap-1.5 font-medium">
-                          <Star size={14} className="text-amber-400" />
-                          {event.venue || 'Location TBA'}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default StudentDashboard
+export default StudentDashboard;

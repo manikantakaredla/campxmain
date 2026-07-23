@@ -48,10 +48,10 @@ const StudentDetails = () => {
             <p className="text-gray-500">{student.rollNumber}</p>
             <p className="text-sm text-gray-400 capitalize">{student.course}</p>
           </div>
-          <Link to={`/faculty/messages?userId=${student._id}`} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap">
+          {/* <Link to={`/faculty/messages?userId=${student._id}`} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap">
             <MessageSquare size={18} />
             <span className="hidden sm:inline">Message</span>
-          </Link>
+          </Link> */}
         </div>
         
         <div className="p-6 space-y-4">

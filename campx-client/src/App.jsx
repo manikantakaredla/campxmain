@@ -37,7 +37,7 @@ const PlacementReadiness = lazy(() => import('./pages/student/PlacementReadiness
 const AnnouncementDetails = lazy(() => import('./pages/shared/AnnouncementDetails'))
 const ResourceDetails = lazy(() => import('./pages/shared/ResourceDetails'))
 const ActivityDetails = lazy(() => import('./pages/shared/ActivityDetails'))
-const Messages = lazy(() => import('./pages/shared/Messages'))
+// const Messages = lazy(() => import('./pages/shared/Messages'))
 const AnalyticsDashboard = lazy(() => import('./pages/shared/AnalyticsDashboard'))
 const NotificationDebug = lazy(() => import('./pages/shared/NotificationDebug'))
 const ComplaintsPortal = lazy(() => import('./pages/shared/ComplaintsPortal'))
@@ -140,7 +140,7 @@ function App() {
           <Route path="/student/notifications" element={wrapSuspense(StudentNotifications)} />
           <Route path="/student/opportunities" element={wrapSuspense(OpportunitiesDashboard)} />
           <Route path="/student/class-updates" element={wrapSuspense(ClassUpdates)} />
-          <Route path="/student/messages" element={wrapSuspense(Messages)} />
+          {/* <Route path="/student/messages" element={wrapSuspense(Messages)} /> */}
           <Route path="/student/placement-readiness" element={wrapSuspense(PlacementReadiness)} />
           <Route path="/student/complaints" element={wrapSuspense(ComplaintsPortal)} />
           <Route path="/student/events" element={wrapSuspense(EventsPortal)} />
@@ -177,7 +177,7 @@ function App() {
           <Route path="/faculty/activities/edit/:id" element={wrapSuspense(EditActivity)} />
           <Route path="/faculty/profile" element={wrapSuspense(FacultyProfile)} />
           <Route path="/faculty/notifications" element={wrapSuspense(FacultyNotifications)} />
-          <Route path="/faculty/messages" element={wrapSuspense(Messages)} />
+          {/* <Route path="/faculty/messages" element={wrapSuspense(Messages)} /> */}
           <Route path="/faculty/analytics" element={wrapSuspense(AnalyticsDashboard)} />
           <Route path="/faculty/complaints" element={wrapSuspense(ComplaintsPortal)} />
           <Route path="/faculty/events" element={wrapSuspense(EventsPortal)} />

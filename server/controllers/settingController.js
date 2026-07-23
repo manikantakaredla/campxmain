@@ -62,7 +62,8 @@ exports.updateSettings = async (req, res) => {
       maintenanceMode,
       facultyRegistrationEnabled,
       emailDomain,
-      branchConfigs
+      branchConfigs,
+      homeBanners
     } = req.body;
     
     console.log("Incoming settings", JSON.stringify(req.body, null, 2));
@@ -78,6 +79,7 @@ exports.updateSettings = async (req, res) => {
     if (facultyRegistrationEnabled !== undefined) updateData.facultyRegistrationEnabled = facultyRegistrationEnabled;
     if (emailDomain !== undefined) updateData.emailDomain = emailDomain;
     if (branchConfigs !== undefined) updateData.branchConfigs = branchConfigs;
+    if (homeBanners !== undefined) updateData.homeBanners = homeBanners;
 
     let updated = await Setting.findOneAndUpdate(
       {},

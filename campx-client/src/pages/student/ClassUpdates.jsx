@@ -103,9 +103,9 @@ const ClassUpdates = () => {
               </div>
               {faculty?.classTeacher && (
                 <div className="ml-auto">
-                  <Link to={`/student/messages?userId=${faculty.classTeacher._id}`} className="w-8 h-8 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors">
+                  {/* <Link to={`/student/messages?userId=${faculty.classTeacher._id}`} className="w-8 h-8 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors">
                     <MessageSquare size={14} />
-                  </Link>
+                  </Link> */}
                 </div>
               )}
             </div>
@@ -128,9 +128,9 @@ const ClassUpdates = () => {
               </div>
               {faculty?.proctor && (
                 <div className="ml-auto">
-                  <Link to={`/student/messages?userId=${faculty.proctor._id}`} className="w-8 h-8 flex items-center justify-center bg-purple-50 text-purple-600 rounded-full hover:bg-purple-100 transition-colors">
+                  {/* <Link to={`/student/messages?userId=${faculty.proctor._id}`} className="w-8 h-8 flex items-center justify-center bg-purple-50 text-purple-600 rounded-full hover:bg-purple-100 transition-colors">
                     <MessageSquare size={14} />
-                  </Link>
+                  </Link> */}
                 </div>
               )}
             </div>
@@ -165,9 +165,9 @@ const ClassUpdates = () => {
                     </div>
                     {tf.facultyId && (
                       <div className="ml-auto flex items-center">
-                        <Link to={`/student/messages?userId=${tf.facultyId._id}`} className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors">
+                        {/* <Link to={`/student/messages?userId=${tf.facultyId._id}`} className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors">
                           <MessageSquare size={14} />
-                        </Link>
+                        </Link> */}
                       </div>
                     )}
                   </div>

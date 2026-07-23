@@ -21,7 +21,8 @@ const SystemSettings = () => {
     maintenanceMode: false,
     facultyRegistrationEnabled: true,
     emailDomain: '@adityauniversity.in',
-    branchConfigs: []
+    branchConfigs: [],
+    homeBanners: []
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -152,6 +153,7 @@ const SystemSettings = () => {
   const tabs = [
     ...(user?.role === 'admin' ? [{ id: 'general', label: 'General', icon: Settings }] : []),
     ...(user?.role === 'admin' ? [{ id: 'academic', label: 'Academic Master', icon: Layers }] : []),
+    ...(user?.role === 'admin' ? [{ id: 'banners', label: 'Home Banners', icon: Image }] : []),
     { id: 'subjects', label: 'Subjects Master', icon: BookOpen },
   ];
 
@@ -614,6 +616,175 @@ const SystemSettings = () => {
             </p>
           </div>
         </div>
+
+        {/* Home Banners Tab */}
+        {activeTab === 'banners' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white flex items-center justify-between">
+              <div>
+                <h2 className="font-semibold text-gray-800 flex items-center gap-2 text-lg">
+                  <Image className="w-5 h-5 text-indigo-600" />
+                  Home Screen Banners
+                </h2>
+                <p className="text-sm text-gray-500 mt-0.5">Manage the carousel images shown on the student home screen.</p>
+              </div>
+              <button
+                onClick={() => {
+                  setSettings(prev => ({
+                    ...prev,
+                    homeBanners: [
+                      ...(prev.homeBanners || []),
+                      { id: Date.now().toString(), tag: 'Upcoming Event', title: 'New Event', date: '', time: '', location: '', image: '', link: '', isActive: true }
+                    ]
+                  }));
+                }}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all flex items-center gap-2 text-sm font-medium shadow-sm hover:shadow-md"
+              >
+                <Plus className="w-4 h-4" />
+                Add Banner
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {(settings.homeBanners || []).length === 0 ? (
+                <div className="text-center py-10">
+                  <Image className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">No banners added yet.</p>
+                </div>
+              ) : (
+                (settings.homeBanners || []).map((banner, index) => (
+                  <div key={banner.id || index} className="bg-gray-50 border border-gray-200 rounded-xl p-5 relative group">
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Delete this banner?')) {
+                          setSettings(prev => {
+                            const newBanners = [...prev.homeBanners];
+                            newBanners.splice(index, 1);
+                            return { ...prev, homeBanners: newBanners };
+                          });
+                        }
+                      }}
+                      className="absolute top-4 right-4 p-2 bg-white rounded-lg text-gray-400 hover:text-red-500 shadow-sm border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Tag (e.g., Upcoming Event)</label>
+                        <input
+                          type="text"
+                          value={banner.tag || ''}
+                          onChange={(e) => {
+                            const newBanners = [...settings.homeBanners];
+                            newBanners[index].tag = e.target.value;
+                            setSettings(prev => ({ ...prev, homeBanners: newBanners }));
+                          }}
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Title</label>
+                        <input
+                          type="text"
+                          value={banner.title || ''}
+                          onChange={(e) => {
+                            const newBanners = [...settings.homeBanners];
+                            newBanners[index].title = e.target.value;
+                            setSettings(prev => ({ ...prev, homeBanners: newBanners }));
+                          }}
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Date</label>
+                        <input
+                          type="text"
+                          value={banner.date || ''}
+                          onChange={(e) => {
+                            const newBanners = [...settings.homeBanners];
+                            newBanners[index].date = e.target.value;
+                            setSettings(prev => ({ ...prev, homeBanners: newBanners }));
+                          }}
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-indigo-500"
+                          placeholder="e.g. 15 May 2025"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Time</label>
+                        <input
+                          type="text"
+                          value={banner.time || ''}
+                          onChange={(e) => {
+                            const newBanners = [...settings.homeBanners];
+                            newBanners[index].time = e.target.value;
+                            setSettings(prev => ({ ...prev, homeBanners: newBanners }));
+                          }}
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-indigo-500"
+                          placeholder="e.g. 10:00 AM"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Location</label>
+                        <input
+                          type="text"
+                          value={banner.location || ''}
+                          onChange={(e) => {
+                            const newBanners = [...settings.homeBanners];
+                            newBanners[index].location = e.target.value;
+                            setSettings(prev => ({ ...prev, homeBanners: newBanners }));
+                          }}
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Background Image / Illustration URL</label>
+                        <input
+                          type="text"
+                          value={banner.image || ''}
+                          onChange={(e) => {
+                            const newBanners = [...settings.homeBanners];
+                            newBanners[index].image = e.target.value;
+                            setSettings(prev => ({ ...prev, homeBanners: newBanners }));
+                          }}
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Action Link URL (optional)</label>
+                        <input
+                          type="text"
+                          value={banner.link || ''}
+                          onChange={(e) => {
+                            const newBanners = [...settings.homeBanners];
+                            newBanners[index].link = e.target.value;
+                            setSettings(prev => ({ ...prev, homeBanners: newBanners }));
+                          }}
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+                      <div className="flex items-end pb-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={banner.isActive !== false}
+                            onChange={(e) => {
+                              const newBanners = [...settings.homeBanners];
+                              newBanners[index].isActive = e.target.checked;
+                              setSettings(prev => ({ ...prev, homeBanners: newBanners }));
+                            }}
+                            className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4"
+                          />
+                          <span className="text-sm font-medium text-gray-700">Banner is Active</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Subjects Master Tab */}
         {activeTab === 'subjects' && (

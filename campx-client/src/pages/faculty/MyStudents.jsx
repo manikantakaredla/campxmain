@@ -221,13 +221,13 @@ const MyStudents = () => {
                           </p>
                         )}
                       </div>
-                      <button 
+                      {/* <button 
                         onClick={(e) => { e.preventDefault(); navigate(`/faculty/messages?userId=${student._id}`); }} 
                         className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors ml-auto" 
                         title="Message Student"
                       >
                         <MessageSquare size={18} />
-                      </button>
+                      </button> */}
                     </div>
                   </Link>
                 ))}

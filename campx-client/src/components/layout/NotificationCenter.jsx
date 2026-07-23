@@ -23,7 +23,8 @@ const NotificationCenter = ({ isOpen, onClose }) => {
       if (notif.relatedId?.startsWith('class_') || notif.relatedId?.startsWith('subjectGroup_') || notif.relatedId?.startsWith('proctor_')) {
         queryParam = 'groupId=';
       }
-      navigate(`/${user?.role === 'admin' ? 'admin' : user?.role}/messages?${queryParam}${notif.relatedId}`);
+      // navigate(`/${user?.role === 'admin' ? 'admin' : user?.role}/messages?${queryParam}${notif.relatedId}`);
+      navigate(`/${user?.role === 'admin' ? 'admin' : user?.role}/notifications`);
     } else {
       navigate(`/${user?.role === 'admin' ? 'admin' : user?.role}/notifications`);
     }

@@ -58,6 +58,20 @@ const settingSchema = new mongoose.Schema({
       { branch: "B.Tech. - Mining Engineering", years: { "1": ["A", "B", "C"], "2": ["A", "B", "C"], "3": ["A", "B", "C"], "4": ["A", "B", "C"] } },
       { branch: "B.Tech. - Petroleum Technology", years: { "1": ["A", "B", "C"], "2": ["A", "B", "C"], "3": ["A", "B", "C"], "4": ["A", "B", "C"] } }
     ]
+  },
+  homeBanners: {
+    type: [{
+      id: { type: String, default: () => new mongoose.Types.ObjectId().toString() },
+      tag: String,
+      title: String,
+      date: String,
+      time: String,
+      location: String,
+      image: String,
+      link: String,
+      isActive: { type: Boolean, default: true }
+    }],
+    default: []
   }
 }, { timestamps: true });
 
