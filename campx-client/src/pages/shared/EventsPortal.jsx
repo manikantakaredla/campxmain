@@ -6,7 +6,6 @@ import toast from 'react-hot-toast';
 const StudentEvents = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [activeCategory, setActiveCategory] = useState('all');
-  const [activeView, setActiveView] = useState('categories');
   const [showQR, setShowQR] = useState(false);
   const [registered, setRegistered] = useState(false);
 
@@ -16,18 +15,13 @@ const StudentEvents = () => {
   };
 
   const categories = [
-    { id: 'all', name: 'All Events', icon: Calendar, color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-100 hover:border-blue-300' },
-    { id: 'hackathons', name: 'Hackathons', icon: Terminal, color: 'text-indigo-600', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-100 hover:border-indigo-300' },
-    { id: 'quizzes', name: 'Quizzes', icon: Lightbulb, color: 'text-yellow-600', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-100 hover:border-yellow-300' },
-    { id: 'workshops', name: 'Workshops', icon: PenTool, color: 'text-purple-600', bgColor: 'bg-purple-50', borderColor: 'border-purple-100 hover:border-purple-300' },
-    { id: 'sabl', name: 'SABL Events', icon: BookOpen, color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-100 hover:border-green-300' },
-    { id: 'cultural', name: 'Cultural', icon: Music, color: 'text-pink-600', bgColor: 'bg-pink-50', borderColor: 'border-pink-100 hover:border-pink-300' },
+    { id: 'all', name: 'All Events', icon: Calendar, color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-100' },
+    { id: 'hackathons', name: 'Hackathons', icon: Terminal, color: 'text-indigo-600', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-100' },
+    { id: 'quizzes', name: 'Quizzes', icon: Lightbulb, color: 'text-yellow-600', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-100' },
+    { id: 'workshops', name: 'Workshops', icon: PenTool, color: 'text-purple-600', bgColor: 'bg-purple-50', borderColor: 'border-purple-100' },
+    { id: 'sabl', name: 'SABL Events', icon: BookOpen, color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-100' },
+    { id: 'cultural', name: 'Cultural', icon: Music, color: 'text-pink-600', bgColor: 'bg-pink-50', borderColor: 'border-pink-100' },
   ];
-
-  const handleCategoryClick = (catId) => {
-    setActiveCategory(catId);
-    setActiveView('events');
-  };
 
   return (
     <div className="space-y-6">
@@ -44,108 +38,114 @@ const StudentEvents = () => {
       </div>
 
       {activeTab === 'upcoming' && (
-        <div className="space-y-6 animate-fade-in">
-          {activeView === 'categories' ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+        <div className="space-y-8 animate-fade-in">
+          
+          {/* Categories / Resources Grid */}
+          <div>
+            <h3 className="text-lg font-extrabold text-gray-900 mb-4 tracking-tight">Categories</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {categories.map((cat) => {
                 const Icon = cat.icon;
+                const isActive = activeCategory === cat.id;
                 return (
                   <button
                     key={cat.id}
-                    onClick={() => handleCategoryClick(cat.id)}
-                    className={`flex flex-col items-center justify-center p-4 rounded-2xl border ${cat.borderColor} ${cat.bgColor} transition-all duration-300 hover:shadow-lg group text-center cursor-pointer h-full`}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`flex flex-col items-start p-4 rounded-2xl border transition-all duration-300 text-left ${
+                      isActive 
+                        ? 'border-blue-500 bg-blue-50 shadow-sm scale-[1.02]' 
+                        : `${cat.borderColor} ${cat.bgColor} hover:shadow-md hover:scale-[1.02]`
+                    }`}
                   >
-                    <div className="scale-75 md:scale-100">
-                      <Icon className={`w-6 h-6 mb-3 ${cat.color} group-hover:scale-110 transition-transform`} />
+                    <div className="w-10 h-10 rounded-xl bg-white/60 flex items-center justify-center mb-3 shadow-sm">
+                      <Icon className={`w-5 h-5 ${cat.color}`} />
                     </div>
-                    <h3 className="font-bold text-gray-800 text-[10px] md:text-xs group-hover:text-blue-700 transition-colors uppercase tracking-wider">{cat.name}</h3>
+                    <h3 className="font-extrabold text-gray-800 text-sm tracking-tight">{cat.name}</h3>
                   </button>
                 );
               })}
             </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-2">
-                <button
-                  onClick={() => setActiveView('categories')}
-                  className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2 text-sm font-medium border border-gray-200 bg-white"
-                >
-                  <ArrowLeft className="w-4 h-4" /> Back to Categories
-                </button>
-                <h2 className="text-xl font-bold text-gray-800">
-                  {categories.find(c => c.id === activeCategory)?.name || 'Events'}
-                </h2>
-              </div>
+          </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Luma-style Event Card */}
-            <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col h-full relative">
-              
-              {/* Image Section */}
-              <div className="h-48 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"></div>
-                <img 
-                  src="https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=800&auto=format&fit=crop&q=60" 
-                  alt="Workshop" 
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                />
-                
-                {/* Top Tags */}
-                <div className="absolute top-4 left-4 z-20 flex gap-2">
-                  <span className="px-3 py-1 bg-white/90 backdrop-blur-md text-gray-900 text-xs font-bold rounded-full shadow-sm">
-                    Workshop
-                  </span>
-                  <span className="px-3 py-1 bg-indigo-600/90 backdrop-blur-md text-white text-xs font-bold rounded-full shadow-sm flex items-center gap-1">
-                    <Ticket size={12} /> Free
-                  </span>
-                </div>
+          {/* Events List */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-extrabold text-gray-900 tracking-tight">
+                {activeCategory === 'all' ? 'All Events' : categories.find(c => c.id === activeCategory)?.name}
+              </h3>
+            </div>
 
-                {/* Date Badge Overlay */}
-                <div className="absolute bottom-4 left-4 z-20">
-                  <h3 className="text-xl font-bold text-white leading-tight mb-1">Advanced AI & ML Workshop</h3>
-                </div>
-              </div>
-
-              {/* Content Section */}
-              <div className="p-5 flex-1 flex flex-col">
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                  <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Date & Time</span>
-                    <span className="font-medium text-gray-900 mt-0.5">Oct 25, 2023 • 10:00 AM</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Event Card */}
+              <div className="bg-white rounded-[24px] shadow-[0_2px_15px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col h-full">
+                {/* Image Section */}
+                <div className="h-44 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-10"></div>
+                  <img 
+                    src="https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=800&auto=format&fit=crop&q=60" 
+                    alt="Workshop" 
+                    className="w-full h-full object-cover"
+                  />
+                  
+                  {/* Top Tags */}
+                  <div className="absolute top-4 left-4 z-20 flex gap-2">
+                    <span className="px-3 py-1.5 bg-white/95 text-gray-900 text-xs font-bold rounded-full shadow-sm">
+                      Workshop
+                    </span>
                   </div>
-                  <div className="w-px h-8 bg-gray-100"></div>
-                  <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Location</span>
-                    <span className="font-medium text-gray-900 mt-0.5">Seminar Hall A</span>
+
+                  <div className="absolute bottom-4 left-4 z-20 pr-4">
+                    <h3 className="text-xl font-extrabold text-white leading-tight line-clamp-2">Advanced AI & ML Workshop</h3>
                   </div>
                 </div>
-                
-                <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed mb-6">Learn the basics of building generative AI applications using modern frameworks and APIs. Perfect for beginners and intermediate developers.</p>
-                
-                <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-4">
-                  {/* Attendees Avatars */}
-                  <div className="flex items-center">
-                    <div className="flex -space-x-2">
-                      <img className="w-8 h-8 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=1" alt="Attendee" />
-                      <img className="w-8 h-8 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=2" alt="Attendee" />
-                      <img className="w-8 h-8 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=3" alt="Attendee" />
+
+                {/* Content Section */}
+                <div className="p-5 flex-1 flex flex-col">
+                  <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                        <Calendar size={14} />
+                      </div>
+                      <div>
+                        <span className="block text-xs font-semibold text-gray-900">Oct 25, 2023</span>
+                        <span className="block text-[10px] text-gray-500 font-medium uppercase">10:00 AM</span>
+                      </div>
                     </div>
-                    <span className="text-xs font-medium text-gray-500 ml-3">+117 attending</span>
+                    
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <MapPin size={14} />
+                      </div>
+                      <div>
+                        <span className="block text-xs font-semibold text-gray-900 truncate max-w-[100px]">Seminar Hall A</span>
+                        <span className="block text-[10px] text-gray-500 font-medium uppercase">Venue</span>
+                      </div>
+                    </div>
                   </div>
                   
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); handleRegister(); }}
-                    disabled={registered}
-                    className={`px-5 py-2 rounded-full text-sm font-bold transition-all shadow-sm ${registered ? 'bg-green-50 text-green-700 cursor-default border border-green-200' : 'bg-gray-900 hover:bg-black text-white hover:shadow-md'}`}
-                  >
-                    {registered ? 'Joined' : 'Join'}
-                  </button>
-                </div>
+                  <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed mb-6 font-medium">Learn the basics of building generative AI applications using modern frameworks and APIs. Perfect for beginners and intermediate developers.</p>
+                  
+                  <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-4">
+                    <div className="flex items-center">
+                      <div className="flex -space-x-2">
+                        <img className="w-7 h-7 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=1" alt="Attendee" />
+                        <img className="w-7 h-7 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=2" alt="Attendee" />
+                      </div>
+                      <span className="text-[11px] font-bold text-gray-500 ml-2">+117</span>
+                    </div>
+                    
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleRegister(); }}
+                      disabled={registered}
+                      className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm ${registered ? 'bg-green-50 text-green-700 cursor-default border border-green-200' : 'bg-blue-800 hover:bg-blue-900 text-white'}`}
+                    >
+                      {registered ? 'Joined' : 'Join'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        )}
         </div>
       )}
 

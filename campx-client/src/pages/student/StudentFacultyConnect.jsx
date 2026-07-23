@@ -1316,292 +1316,93 @@ const StudentFacultyConnect = () => {
 
   return (
     <div className="bg-[#f8f9fa] min-h-screen font-sans pb-12 relative overflow-hidden">
-      
-      {/* Top Header & Smart Search */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 flex items-center gap-2">
-                <Users className="text-blue-600" size={28} />
-                Smart Faculty Connect
-              </h1>
-              <p className="text-gray-500 font-medium mt-1">
-                Find faculty availability, book appointments, and submit requests seamlessly.
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button className="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold rounded-xl border border-gray-200 transition-colors flex items-center gap-2 shadow-sm">
-                <Calendar size={18} />
-                My Appointments
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-            <div className="relative w-full md:w-96 flex-shrink-0">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-              <input 
-                type="text" 
-                placeholder="Search faculty, subject, department..." 
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm bg-gray-50/50 text-gray-900"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            <div className="flex-1 w-full overflow-x-auto pb-2 scrollbar-hide flex gap-2 min-w-max items-center">
-              <Filter className="text-gray-400 mr-2" size={18} />
-              {filters.map(filter => (
-                <button
-                  key={filter}
-                  onClick={() => setActiveFilter(filter)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 border ${
-                    activeFilter === filter 
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20' 
-                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-                  }`}
-                >
-                  {filter}
-                </button>
-              ))}
-            </div>
-          </div>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 relative z-20">
+        
+        {/* Simple Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-extrabold tracking-tight">Connect</h1>
+          <button className="text-gray-900 hover:bg-gray-100 p-2 rounded-full transition-colors">
+            <Search size={24} />
+          </button>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Main Content Area (Left 2 Columns) */}
-          <div className="lg:col-span-2 space-y-8">
-            
-            {/* Smart Insights */}
-            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-              <div className="flex-shrink-0 bg-blue-50/50 border border-blue-100 rounded-[20px] p-4 flex items-center gap-3 w-80">
-                <div className="p-2 bg-blue-100 rounded-xl text-blue-600"><Lightbulb size={20} /></div>
-                <p className="text-sm font-medium text-blue-900 leading-tight">You and Dr. Rao are both free between 3:00–3:30 PM today.</p>
-              </div>
-              <div className="flex-shrink-0 bg-purple-50/50 border border-purple-100 rounded-[20px] p-4 flex items-center gap-3 w-80">
-                <div className="p-2 bg-purple-100 rounded-xl text-purple-600"><Clock size={20} /></div>
-                <p className="text-sm font-medium text-purple-900 leading-tight">Project approvals typically take less than 24 hours.</p>
-              </div>
-            </div>
+        {/* Search Bar */}
+        <div className="relative mb-4 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-blue-800 transition-colors" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search faculty or department..."
+            className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-[16px] text-sm font-semibold focus:outline-none focus:border-blue-800 focus:ring-1 focus:ring-blue-800 transition-all shadow-sm placeholder-gray-400"
+          />
+        </div>
 
-            {/* Virtual Queue Widget */}
-            <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
-                    <Users className="text-indigo-500" size={20} />
-                    Virtual Queue
-                  </h2>
-                  <p className="text-sm text-gray-500 font-medium">Currently waiting for Prof. Anita Sharma</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-black text-indigo-600">12 Min</p>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Estimated Wait</p>
-                </div>
-              </div>
-              
-              <div className="relative pt-2 mb-8">
-                <div className="flex justify-between text-xs font-bold text-gray-400 mb-2 px-1">
-                  <span>In Session</span>
-                  <span>Next</span>
-                  <span className="text-indigo-600">You (3rd)</span>
-                  <span>4th</span>
-                </div>
-                <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 w-[60%] rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <button className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 px-4 rounded-xl transition-colors border border-red-100">
-                  Leave Queue
-                </button>
-                <button className="flex-1 bg-white hover:bg-gray-50 text-gray-700 font-bold py-2.5 px-4 rounded-xl transition-colors border border-gray-200">
-                  Join Another
-                </button>
-              </div>
-            </div>
+        {/* Horizontal Pills Filter */}
+        <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 mb-4">
+          <button
+            onClick={() => setActiveFilter('All')}
+            className={`flex-shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+              activeFilter === 'All' ? 'bg-blue-100 text-blue-900' : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            All
+          </button>
+          {filters.map(filter => (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              className={`flex-shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+                activeFilter === filter ? 'bg-blue-100 text-blue-900' : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
 
-            {/* Faculty Cards */}
-            <div>
-              <h2 className="text-lg font-extrabold text-gray-900 mb-4">Recommended Faculty</h2>
-              <div className="space-y-6">
-                {MOCK_FACULTY.map(faculty => (
-                  <div key={faculty.id} className="bg-white rounded-[20px] p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                    <div className="flex flex-col sm:flex-row justify-between gap-6">
-                      
-                      {/* Left: Info */}
-                      <div className="flex gap-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center border border-blue-200 shrink-0 shadow-sm">
-                          <span className="text-xl font-black text-blue-700">{faculty.photo}</span>
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="text-xl font-bold text-gray-900">{faculty.name}</h3>
-                            <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border ${getStatusColor(faculty.status)}`}>
-                              {faculty.status}
-                            </span>
-                          </div>
-                          <p className="text-sm font-semibold text-gray-600">{faculty.designation} • {faculty.department}</p>
-                          <div className="flex items-center gap-1.5 mt-2 text-sm font-medium text-gray-500">
-                            <MapPin size={14} className="text-gray-400" />
-                            {faculty.cabin}
-                          </div>
-                          {faculty.phoneNumber && (
-                            <div className="flex items-center gap-1.5 mt-1 text-sm font-medium text-gray-500">
-                              <Phone size={14} className="text-gray-400" />
-                              {faculty.phoneNumber}
-                            </div>
-                          )}
-                          <div className="flex flex-wrap gap-1.5 mt-3">
-                            {faculty.subjects.map(sub => (
-                              <span key={sub} className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs font-semibold">
-                                {sub}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
+        <div className="flex flex-col space-y-4">
 
-                      {/* Right: AI Match & Actions */}
-                      <div className="sm:text-right flex flex-col items-start sm:items-end justify-between min-w-[200px]">
-                        <div className="bg-green-50 border border-green-100 rounded-xl p-3 text-left w-full sm:w-auto">
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-xs font-bold text-green-700 uppercase">Best Time</span>
-                            <span className="text-xs font-black text-green-600">{faculty.aiMatch}% Match</span>
-                          </div>
-                          <p className="text-sm font-bold text-gray-900">{faculty.bestTime}</p>
-                          <p className="text-[11px] text-gray-500 mt-1 font-medium">{faculty.aiReason}</p>
-                        </div>
-                        <div className="flex gap-2 mt-4 w-full">
-                          <button 
-                            onClick={() => handleProfileClick(faculty)}
-                            className="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl text-sm transition-colors"
-                          >
-                            Profile
-                          </button>
-                          <button 
-                            onClick={() => handleBookClick(faculty)}
-                            className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-colors shadow-md shadow-blue-600/20"
-                          >
-                            Book
-                          </button>
-                        </div>
-                      </div>
+              {MOCK_FACULTY.map((faculty, idx) => {
+                // Color palette for icons based on index
+                const colors = [
+                  'bg-purple-100 text-purple-700',
+                  'bg-orange-100 text-orange-600',
+                  'bg-blue-100 text-blue-700',
+                  'bg-green-100 text-green-700'
+                ];
+                const iconColor = colors[idx % colors.length];
+                
+                return (
+                  <div 
+                    key={faculty.id} 
+                    onClick={() => handleProfileClick(faculty)}
+                    className="flex items-center gap-4 bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
+                  >
+                    {/* Left Icon Block */}
+                    <div className={`w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-[14px] ${iconColor}`}>
+                      <span className="font-extrabold text-sm">{faculty.photo}</span>
                     </div>
-
-                    {/* Timeline */}
-                    <div className="mt-6 pt-5 border-t border-gray-100">
-                      <p className="text-xs font-bold text-gray-400 uppercase mb-3">Today's Timeline</p>
-                      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                        {faculty.timeline.map((slot, idx) => (
-                          <div key={idx} className={`flex-shrink-0 px-3 py-2 rounded-xl border ${slot.title === 'Free' ? 'bg-green-50/50 border-green-100' : 'bg-gray-50 border-gray-200'}`}>
-                            <p className="text-xs font-bold text-gray-900">{slot.time}</p>
-                            <p className={`text-xs font-medium ${slot.title === 'Free' ? 'text-green-600' : 'text-gray-500'}`}>{slot.title}</p>
-                          </div>
-                        ))}
-                      </div>
+                    
+                    {/* Middle Content */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-extrabold text-gray-900 truncate mb-0.5">
+                        {faculty.name}
+                      </h3>
+                      <p className="text-xs font-semibold text-gray-500 truncate">
+                        {faculty.designation}, {faculty.department}
+                      </p>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Digital Requests Grid */}
-            <div>
-              <div className="flex justify-between items-end mb-4">
-                <h2 className="text-lg font-extrabold text-gray-900">Digital Requests</h2>
-                <button className="text-sm font-bold text-blue-600 hover:text-blue-700">View All</button>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {MOCK_REQUESTS.map(req => (
-                  <div key={req.id} className="bg-white rounded-[20px] p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 group hover:shadow-lg transition-all duration-300">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl group-hover:scale-110 transition-transform"><FileText size={20} /></div>
-                      <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${getRequestStatusColor(req.status)}`}>
-                        {req.status}
-                      </span>
-                    </div>
-                    <h3 className="font-bold text-gray-900 mb-4">{req.title}</h3>
-                    <div className="flex gap-2">
-                      <button className="flex-1 py-2 text-xs font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 flex items-center justify-center gap-1.5">
-                        <Upload size={14} /> Upload
-                      </button>
-                      <button className="flex-1 py-2 text-xs font-bold text-white bg-gray-900 hover:bg-black rounded-lg transition-colors shadow-sm">
-                        Submit
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-          </div>
-
-          {/* Right Sidebar Widgets */}
-          <div className="space-y-6">
-            
-            <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100">
-              <h3 className="text-base font-extrabold text-gray-900 mb-4 flex items-center gap-2">
-                <CheckCircle2 className="text-green-500" size={18} />
-                Available Right Now
-              </h3>
-              <div className="space-y-4">
-                {MOCK_FACULTY.filter(f => f.status === 'Available' || f.status === 'Office Hours').map(f => (
-                  <div key={f.id} className="flex items-center justify-between group cursor-pointer">
+                    
+                    {/* Right Chevron */}
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-sm font-bold text-gray-600">{f.photo}</div>
-                      <div>
-                        <p className="font-bold text-sm text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">{f.name}</p>
-                        <p className="text-[11px] font-semibold text-gray-500 mt-0.5">{f.cabin}</p>
-                      </div>
+                      <ChevronRight size={18} className="text-gray-400" />
                     </div>
-                    <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                      <ChevronRight size={16} />
-                    </button>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[20px] p-6 text-white shadow-[0_8px_20px_-6px_rgba(37,99,235,0.4)] relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-20"><Calendar size={80} /></div>
-              <h3 className="text-base font-extrabold mb-2 relative z-10">Upcoming Appointment</h3>
-              <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 relative z-10 mt-4">
-                <p className="text-sm font-bold text-blue-100 mb-1">Today, 2:30 PM</p>
-                <p className="text-base font-extrabold text-white">Dr. Ramesh Kumar</p>
-                <p className="text-xs text-blue-200 mt-1">Project Review • Cabin 204</p>
-                <div className="mt-4 flex gap-2">
-                  <button className="flex-1 bg-white text-blue-700 font-bold py-2 rounded-lg text-xs hover:bg-blue-50 transition-colors">Reschedule</button>
-                  <button className="flex-1 bg-white/10 text-white font-bold py-2 rounded-lg text-xs hover:bg-white/20 transition-colors">Cancel</button>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100">
-              <h3 className="text-base font-extrabold text-gray-900 mb-4 flex items-center gap-2">
-                <MessageSquare className="text-purple-500" size={18} />
-                Faculty Announcements
-              </h3>
-              <div className="space-y-4">
-                <div className="border-l-2 border-purple-400 pl-3">
-                  <p className="font-bold text-sm text-gray-900 leading-tight">Project submission deadline extended to Friday.</p>
-                  <p className="text-[11px] font-semibold text-gray-500 mt-1">Dr. Ramesh Kumar • 2 hours ago</p>
-                </div>
-                <div className="border-l-2 border-gray-300 pl-3">
-                  <p className="font-bold text-sm text-gray-900 leading-tight">No lab session today due to maintenance.</p>
-                  <p className="text-[11px] font-semibold text-gray-500 mt-1">Prof. Anita Sharma • Yesterday</p>
-                </div>
-              </div>
-            </div>
-
           </div>
-        </div>
-      </div>
 
       {/* Appointment Booking Modal */}
       {isBookingModalOpen && (

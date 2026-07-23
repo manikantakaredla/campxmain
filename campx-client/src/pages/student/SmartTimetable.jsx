@@ -112,6 +112,8 @@ const StudentTimetable = () => {
     return initial
   })
 
+  const [selectedDay, setSelectedDay] = useState('Tue')
+
   const [isConfigOpen, setIsConfigOpen] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
   
@@ -207,68 +209,75 @@ const StudentTimetable = () => {
           </div>
         </div>
 
-        {/* Dynamic Timetable Grid (All Devices - Zoomed out on mobile) */}
-        <div className="bg-white rounded-[24px] shadow-sm border border-gray-200 overflow-x-auto relative">
-          <div className="min-w-[800px] md:min-w-[1000px] p-4 md:p-6 origin-top-left">
-            <div className="grid grid-cols-[80px_repeat(8,1fr)] md:grid-cols-[100px_repeat(8,1fr)] gap-1.5 md:gap-2 mb-4">
-              <div className="flex items-center justify-center font-black text-gray-400 uppercase text-[10px] md:text-xs tracking-wider">Day \ Time</div>
-              {TIMESLOTS.map(slot => (
-                <div key={slot.id} className="bg-gray-50 rounded-lg md:rounded-xl py-2 md:py-3 px-1 md:px-2 text-center border border-gray-100">
-                  <p className="text-[10px] md:text-xs font-bold text-gray-900 whitespace-nowrap">{slot.time}</p>
-                </div>
+        {/* Dynamic Timetable Timeline (Mockup Style) */}
+        <div className="bg-white rounded-[32px] shadow-[0_2px_20px_rgb(0,0,0,0.04)] p-4 md:p-8 mb-8 pb-10">
+          
+          {/* Header & Date Selector */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="text-sm font-extrabold text-gray-900 mb-6 cursor-pointer hover:bg-gray-50 px-4 py-2 rounded-lg flex items-center gap-2">
+              12 May – 18 May 2025 <span className="text-gray-400 text-lg leading-none mt-1">⌄</span>
+            </div>
+            
+            <div className="flex gap-3 overflow-x-auto w-full pb-2 no-scrollbar">
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
+                <button
+                  key={day}
+                  onClick={() => setSelectedDay(day)}
+                  className={`flex-shrink-0 px-5 py-3 rounded-2xl text-sm font-bold transition-all duration-300 ${
+                    selectedDay === day 
+                    ? 'bg-blue-800 text-white shadow-lg shadow-blue-900/20 scale-105' 
+                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                  }`}
+                >
+                  {day} {12 + i}
+                </button>
               ))}
             </div>
+          </div>
 
-            <div className="space-y-1.5 md:space-y-2">
-              {Object.entries(SCHEDULE_GRID).map(([day, classes]) => (
-                <div key={day} className="grid grid-cols-[80px_repeat(8,1fr)] md:grid-cols-[100px_repeat(8,1fr)] gap-1.5 md:gap-2">
-                  <div className="bg-indigo-50 text-indigo-800 rounded-[14px] flex items-center justify-center font-black text-[11px] md:text-sm uppercase tracking-wider border border-indigo-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
-                    {day}
+          {/* Timeline List */}
+          <div className="flex flex-col space-y-3">
+            {SCHEDULE_GRID[selectedDay]?.map((sub, idx) => {
+              if (!sub) return null; // Skip empty slots
+
+              const slot = TIMESLOTS[idx];
+              const room = getRoomForSubject(sub) || FIXED_SUBJECTS[sub]?.room || '';
+              
+              // Map old colors to pastel colors shown in mockup
+              const getSubjectStyle = (s) => {
+                if (['CD', 'AI', 'DAA', 'CN', 'FDS'].includes(s)) return 'bg-purple-50 text-purple-700'; // Like Data Structures
+                if (['SS', 'APT', 'Lunch', 'EEM'].includes(s)) return 'bg-orange-50 text-orange-600'; // Like DBMS
+                if (['Minor', 'Honors', 'OOAD'].includes(s)) return 'bg-blue-50 text-blue-700'; // Like OOP
+                return 'bg-green-50 text-green-700'; // Like Operating Systems & CN
+              }
+              
+              const style = getSubjectStyle(sub);
+              
+              // Parse time to split '09:00' and 'AM' for styling
+              const timeParts = slot.time.split(' - ')[0].split(':');
+              const hour = parseInt(timeParts[0]);
+              const ampm = hour >= 12 && hour < 24 ? 'PM' : 'AM';
+              const displayHour = hour > 12 ? hour - 12 : hour;
+              const timeString = `${displayHour < 10 ? '0'+displayHour : displayHour}:${timeParts[1]}`;
+
+              return (
+                <div key={idx} className="flex gap-6 w-full items-start">
+                  <div className="w-12 flex-shrink-0 flex flex-col pt-4 text-left">
+                    <span className="text-sm font-extrabold text-gray-900">{timeString}</span>
+                    <span className="text-xs font-bold text-gray-400 mt-0.5">{ampm}</span>
                   </div>
                   
-                  {day === 'Sat' ? (
-                    <div className="col-span-8 bg-pink-50 text-pink-600 rounded-[14px] flex items-center justify-center font-black text-xs md:text-sm uppercase tracking-widest border border-pink-100 py-3 md:py-4 shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
-                      Activity Day
-                    </div>
-                  ) : (
-                    classes.map((sub, idx) => {
-                      if (sub === 'Lunch') {
-                        return (
-                          <div key={idx} className="bg-gray-50/80 text-gray-400 rounded-[14px] flex items-center justify-center font-bold text-[10px] md:text-xs border border-gray-100">
-                            Lunch
-                          </div>
-                        )
-                      }
-                      if (!sub) {
-                        return <div key={idx} className="bg-transparent rounded-[14px] border border-dashed border-gray-200 opacity-50"></div>
-                      }
-                      
-                      const room = getRoomForSubject(sub)
-                      
-                      // Dynamic Pastel Colors
-                      const getSubjectStyle = (s) => {
-                        if (['CD', 'AI', 'DAA', 'CN'].includes(s)) return { card: 'bg-blue-50/80 border-blue-100 text-blue-900', badge: 'bg-blue-500' };
-                        if (['SS', 'APT'].includes(s)) return { card: 'bg-amber-50/80 border-amber-100 text-amber-900', badge: 'bg-amber-500' };
-                        if (['Minor', 'Honors'].includes(s)) return { card: 'bg-purple-50/80 border-purple-100 text-purple-900', badge: 'bg-purple-500' };
-                        if (['P&S', 'WT', 'Project'].includes(s)) return { card: 'bg-emerald-50/80 border-emerald-100 text-emerald-900', badge: 'bg-emerald-500' };
-                        return { card: 'bg-indigo-50/80 border-indigo-100 text-indigo-900', badge: 'bg-indigo-500' };
-                      }
-                      
-                      const style = getSubjectStyle(sub);
-                      
-                      return (
-                        <div key={idx} className={`rounded-[14px] flex flex-col items-center justify-center p-1.5 md:p-2 text-center border transition-all duration-300 hover:shadow-[0_8px_20px_rgb(0,0,0,0.06)] hover:-translate-y-1 ${style.card}`}>
-                          <p className={`font-black text-[11px] md:text-sm tracking-tight`}>{sub}</p>
-                          <p className={`text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 px-1.5 md:px-2 py-0.5 rounded-full text-white shadow-sm ${style.badge}`}>
-                            {room}
-                          </p>
-                        </div>
-                      )
-                    })
-                  )}
+                  <div className={`flex-1 p-5 rounded-[20px] transition-all duration-300 hover:scale-[1.01] hover:shadow-md cursor-pointer ${style}`}>
+                    <h4 className="font-extrabold text-base mb-1 tracking-tight">{sub}</h4>
+                    {room && <p className="text-sm font-semibold opacity-80">Room {room}</p>}
+                  </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
+            
+            {SCHEDULE_GRID[selectedDay]?.length === 0 && (
+              <div className="text-center text-gray-400 py-10 font-bold">No classes scheduled.</div>
+            )}
           </div>
         </div>
 
