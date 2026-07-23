@@ -144,27 +144,36 @@ const StudentDashboard = () => {
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-bold text-gray-900 text-sm md:text-base">Quick Actions</h2>
-            <Link className="text-xs text-blue-600 font-bold flex items-center hover:text-blue-800 transition-colors">
+            <button 
+              onClick={(e) => { e.preventDefault(); window.dispatchEvent(new Event('openMobileDrawer')); }}
+              className="text-xs text-blue-600 font-bold flex items-center hover:text-blue-800 transition-colors"
+            >
               View All <ChevronRight size={14} className="ml-0.5"/>
-            </Link>
+            </button>
           </div>
           <div className="flex justify-between md:justify-start gap-4 md:gap-8 overflow-x-auto [&::-webkit-scrollbar]:hidden pb-2">
             {[
               { label: 'Timetable', icon: <Calendar size={22}/>, color: 'text-blue-600', bg: 'bg-blue-50', link: '/student/timetable' },
               { label: 'Faculty Connect', icon: <UserCheck size={22}/>, color: 'text-green-600', bg: 'bg-green-50', link: '/student/faculty-connect' },
-              { label: 'My QR Pass', icon: <CreditCard size={22}/>, color: 'text-orange-500', bg: 'bg-orange-50', link: '#' },
               { label: 'Announcements', icon: <Megaphone size={22}/>, color: 'text-pink-500', bg: 'bg-pink-50', link: '/student/announcements' },
-              { label: 'More', icon: <Grid size={22}/>, color: 'text-blue-500', bg: 'bg-blue-50', link: '#' }
-            ].map((action, idx) => (
-              <Link key={idx} to={action.link} className="flex flex-col items-center gap-2 min-w-[70px] group">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${action.bg} ${action.color} group-hover:-translate-y-1 transition-transform border border-white`}>
-                  {action.icon}
-                </div>
-                <span className="text-[10px] md:text-xs font-bold text-gray-700 text-center leading-tight">
-                  {action.label.split(' ').map((word, i) => <React.Fragment key={i}>{word}<br/></React.Fragment>)}
-                </span>
-              </Link>
-            ))}
+              { label: 'More', icon: <Grid size={22}/>, color: 'text-blue-500', bg: 'bg-blue-50', link: '#', isMore: true }
+            ].map((action, idx) => {
+              const Component = action.isMore ? 'button' : Link;
+              const props = action.isMore ? { 
+                onClick: () => window.dispatchEvent(new Event('openMobileDrawer'))
+              } : { to: action.link };
+
+              return (
+                <Component key={idx} {...props} className="flex flex-col items-center gap-2 min-w-[70px] group">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${action.bg} ${action.color} group-hover:-translate-y-1 transition-transform border border-white`}>
+                    {action.icon}
+                  </div>
+                  <span className="text-[10px] md:text-xs font-bold text-gray-700 text-center leading-tight">
+                    {action.label.split(' ').map((word, i) => <React.Fragment key={i}>{word}<br/></React.Fragment>)}
+                  </span>
+                </Component>
+              );
+            })}
           </div>
         </div>
 

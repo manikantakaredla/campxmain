@@ -121,8 +121,8 @@ const StudentAnnouncements = () => {
             <Sparkles size={14} className="text-blue-300" />
             <span>Stay Informed</span>
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-sm">Announcements</h1>
-          <p className="text-blue-100/90 max-w-xl text-sm md:text-base leading-relaxed font-medium">
+          <h1 className="text-xl md:text-3xl font-extrabold text-white mb-2 tracking-tight drop-shadow-sm">Announcements</h1>
+          <p className="text-blue-100/90 max-w-xl text-xs md:text-sm font-medium">
             Get the latest updates on academics, events, and opportunities directly from the university.
           </p>
         </div>
@@ -312,9 +312,9 @@ const StudentAnnouncements = () => {
                     'bg-indigo-400 group-hover:bg-indigo-500'
                   }`} />
                   
-                  <div className="p-5 md:p-6 flex gap-4 md:gap-5 w-full">
+                  <div className="p-4 md:p-5 flex gap-3 md:gap-4 w-full">
                     {/* Calendar Date Block */}
-                    <div className="flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 md:w-16 md:h-18 rounded-xl bg-gray-50 border border-gray-100 shadow-sm group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors">
+                    <div className="flex-shrink-0 flex flex-col items-center justify-center w-12 h-14 md:w-14 md:h-16 rounded-xl bg-gray-50 border border-gray-100 shadow-sm group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors">
                       <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest group-hover:text-indigo-500 transition-colors">{month}</span>
                       <span className="text-xl md:text-2xl font-black text-gray-800 group-hover:text-indigo-700 transition-colors">{day}</span>
                     </div>
@@ -322,8 +322,8 @@ const StudentAnnouncements = () => {
                     {/* Content */}
                     <div className="flex-1 min-w-0 flex flex-col justify-between">
                       <div>
-                        <div className="flex items-start justify-between gap-3 mb-1.5">
-                          <h2 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-indigo-700 line-clamp-2 transition-colors pr-2">
+                        <div className="flex items-start justify-between gap-3 mb-1">
+                          <h2 className="text-sm font-bold text-gray-900 group-hover:text-indigo-700 line-clamp-1 transition-colors pr-2">
                             {item.title}
                           </h2>
                           {isRecent && (
@@ -336,7 +336,7 @@ const StudentAnnouncements = () => {
                           )}
                         </div>
                         
-                        <p className="text-gray-500 text-sm line-clamp-2 mb-4 leading-relaxed">
+                        <p className="text-gray-500 text-xs line-clamp-2 mb-3">
                           {item.description}
                         </p>
                       </div>

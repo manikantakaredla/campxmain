@@ -138,14 +138,14 @@ const StudentResources = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="px-4 py-6 max-w-7xl mx-auto space-y-5 bg-[#f8f9fa] min-h-screen">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
-            <BookOpen className="w-8 h-8 text-blue-600 animate-pulse" /> Resources Dashboard
+          <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+            <BookOpen className="w-6 h-6 text-blue-600 animate-pulse" /> Resources Dashboard
           </h1>
-          <p className="text-gray-500 mt-1">Organized subject-wise learning materials uploaded by your faculty</p>
+          <p className="text-xs text-gray-500 mt-1 font-medium">Organized subject-wise learning materials uploaded by your faculty</p>
         </div>
       </div>
 
@@ -155,10 +155,10 @@ const StudentResources = () => {
             <button
               key={card.id}
               onClick={() => handleCategoryClick(card.value)}
-              className={`flex flex-col items-center justify-center p-6 rounded-2xl border ${card.borderColor} ${card.bgColor} ${card.hoverBorder} transition-all duration-300 hover:shadow-lg group text-center cursor-pointer h-full`}
+              className={`flex flex-col items-center justify-center p-4 rounded-2xl border ${card.borderColor} ${card.bgColor} ${card.hoverBorder} transition-all duration-300 hover:shadow-lg group text-center cursor-pointer h-full`}
             >
-              {card.icon}
-              <h3 className="font-bold text-gray-800 text-sm group-hover:text-blue-700 transition-colors">{card.title}</h3>
+              <div className="scale-75 md:scale-100">{card.icon}</div>
+              <h3 className="font-bold text-gray-800 text-[10px] md:text-xs group-hover:text-blue-700 transition-colors uppercase tracking-wider">{card.title}</h3>
             </button>
           ))}
         </div>
@@ -250,10 +250,10 @@ const StudentResources = () => {
                     {/* Resources List */}
                     <div className="divide-y divide-gray-50 flex-1">
                       {groupedResources[semesterKey][subjectName].map(resource => (
-                        <div key={resource._id} className="p-5 hover:bg-gray-50/50 transition-colors flex flex-col md:flex-row justify-between gap-4">
-                          <div className="space-y-2 flex-1 min-w-0">
+                        <div key={resource._id} className="p-4 hover:bg-gray-50/50 transition-colors flex flex-col md:flex-row justify-between gap-4">
+                          <div className="space-y-1.5 flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-gray-100 text-gray-600">
+                              <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 uppercase tracking-widest">
                                 {getFileIcon(resource.fileType, resource.fileName)}
                               </span>
                               {resource.unitNumber && (

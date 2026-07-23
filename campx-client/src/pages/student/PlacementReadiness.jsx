@@ -32,15 +32,15 @@ const PlacementReadiness = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 animate-fade-in">
+    <div className="px-4 py-6 max-w-7xl mx-auto space-y-5 animate-fade-in bg-[#f8f9fa] min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Placement Readiness Profile</h1>
-          <p className="text-gray-600 mt-1">Track your progress and identify areas for improvement before placement season.</p>
+          <h1 className="text-xl md:text-2xl font-extrabold text-gray-900">Placement Readiness Profile</h1>
+          <p className="text-xs text-gray-500 mt-1 font-medium">Track your progress and identify areas for improvement before placement season.</p>
         </div>
-        <div className="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-3 bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex flex-col">
-            <span className="text-sm text-gray-500">Overall Score</span>
+            <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Overall Score</span>
             <span className="text-2xl font-bold text-blue-600">78%</span>
           </div>
           <div className="h-10 w-px bg-gray-200"></div>
@@ -53,19 +53,19 @@ const PlacementReadiness = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800">Readiness Breakdown</h2>
+      <div className="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden">
+        <div className="p-4 md:p-5 border-b border-gray-100">
+          <h2 className="text-sm font-bold text-gray-800">Readiness Breakdown</h2>
         </div>
         
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="py-4 px-6 text-sm font-medium text-gray-500">Category</th>
-                <th className="py-4 px-6 text-sm font-medium text-gray-500 text-center">Weight</th>
-                <th className="py-4 px-6 text-sm font-medium text-gray-500">Status</th>
-                <th className="py-4 px-6 text-sm font-medium text-gray-500">Action Plan</th>
+              <tr className="bg-gray-50/50 border-b border-gray-100">
+                <th className="py-3 px-4 text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider">Category</th>
+                <th className="py-3 px-4 text-[10px] md:text-xs font-bold text-gray-500 text-center uppercase tracking-wider">Weight</th>
+                <th className="py-3 px-4 text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="py-3 px-4 text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider">Action Plan</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -105,41 +105,41 @@ const PlacementReadiness = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-          <h3 className="text-lg font-bold text-blue-900 mb-2">Recommended Next Steps</h3>
-          <ul className="space-y-3 mt-4">
-            <li className="flex gap-3 text-blue-800">
-              <div className="mt-1"><ArrowRight size={16} /></div>
-              <span>Solve 50 more LeetCode Medium problems to boost your <strong>DSA</strong> score.</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-4 md:p-5 border border-blue-100 shadow-sm">
+          <h3 className="text-sm font-bold text-blue-900 mb-2">Recommended Next Steps</h3>
+          <ul className="space-y-2 mt-3">
+            <li className="flex gap-2.5 text-blue-800 text-[10px] md:text-xs">
+              <div className="mt-0.5"><ArrowRight size={14} /></div>
+              <span>Solve 50 more LeetCode Medium problems to boost your <strong className="font-bold">DSA</strong> score.</span>
             </li>
-            <li className="flex gap-3 text-blue-800">
-              <div className="mt-1"><ArrowRight size={16} /></div>
-              <span>Update your Codeforces/CodeChef handles in your <strong>Coding Profile</strong>.</span>
+            <li className="flex gap-2.5 text-blue-800 text-[10px] md:text-xs">
+              <div className="mt-0.5"><ArrowRight size={14} /></div>
+              <span>Update your Codeforces/CodeChef handles in your <strong className="font-bold">Coding Profile</strong>.</span>
             </li>
-            <li className="flex gap-3 text-blue-800">
-              <div className="mt-1"><ArrowRight size={16} /></div>
-              <span>Schedule a mock interview to improve your <strong>Communication</strong> rating.</span>
+            <li className="flex gap-2.5 text-blue-800 text-[10px] md:text-xs">
+              <div className="mt-0.5"><ArrowRight size={14} /></div>
+              <span>Schedule a mock interview to improve your <strong className="font-bold">Communication</strong> rating.</span>
             </li>
           </ul>
         </div>
         
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">Mock Interview History</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center p-3 rounded-lg border border-gray-100 hover:bg-gray-50">
+        <div className="bg-white rounded-2xl p-4 md:p-5 border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)]">
+          <h3 className="text-sm font-bold text-gray-800 mb-3">Mock Interview History</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center p-2.5 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
               <div>
-                <p className="font-semibold text-gray-800">Technical Interview (SDE)</p>
-                <p className="text-sm text-gray-500">Conducted on Oct 12, 2023</p>
+                <p className="font-bold text-[10px] md:text-xs text-gray-800">Technical Interview (SDE)</p>
+                <p className="text-[9px] font-semibold text-gray-400 mt-0.5">Conducted on Oct 12, 2023</p>
               </div>
-              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium border border-green-200">Cleared</span>
+              <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[9px] font-bold border border-green-200 uppercase tracking-widest">Cleared</span>
             </div>
-            <div className="flex justify-between items-center p-3 rounded-lg border border-gray-100 hover:bg-gray-50">
+            <div className="flex justify-between items-center p-2.5 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
               <div>
-                <p className="font-semibold text-gray-800">HR & Behavioral</p>
-                <p className="text-sm text-gray-500">Conducted on Nov 05, 2023</p>
+                <p className="font-bold text-[10px] md:text-xs text-gray-800">HR & Behavioral</p>
+                <p className="text-[9px] font-semibold text-gray-400 mt-0.5">Conducted on Nov 05, 2023</p>
               </div>
-              <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium border border-yellow-200">Feedback Given</span>
+              <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-[9px] font-bold border border-yellow-200 uppercase tracking-widest">Feedback Given</span>
             </div>
           </div>
         </div>

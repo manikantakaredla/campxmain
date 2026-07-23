@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Users, Ticket, CheckCircle2, QrCode, Plus, Download, Filter, Search, Award, BarChart3, Edit, Trash2, Terminal, Lightbulb, PenTool, BookOpen, Music } from 'lucide-react';
+import { Calendar, MapPin, Users, Ticket, CheckCircle2, QrCode, Plus, Download, Filter, Search, Award, BarChart3, Edit, Trash2, Terminal, Lightbulb, PenTool, BookOpen, Music, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
 
 const StudentEvents = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [activeCategory, setActiveCategory] = useState('all');
+  const [activeView, setActiveView] = useState('categories');
   const [showQR, setShowQR] = useState(false);
   const [registered, setRegistered] = useState(false);
 
@@ -15,13 +16,18 @@ const StudentEvents = () => {
   };
 
   const categories = [
-    { id: 'all', name: 'All Events', icon: Calendar, color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
-    { id: 'hackathons', name: 'Hackathons', icon: Terminal, color: 'bg-blue-50 text-blue-600 hover:bg-blue-100' },
-    { id: 'quizzes', name: 'Quizzes', icon: Lightbulb, color: 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100' },
-    { id: 'workshops', name: 'Workshops', icon: PenTool, color: 'bg-purple-50 text-purple-600 hover:bg-purple-100' },
-    { id: 'sabl', name: 'SABL Events', icon: BookOpen, color: 'bg-green-50 text-green-600 hover:bg-green-100' },
-    { id: 'cultural', name: 'Cultural', icon: Music, color: 'bg-pink-50 text-pink-600 hover:bg-pink-100' },
+    { id: 'all', name: 'All Events', icon: Calendar, color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-100 hover:border-blue-300' },
+    { id: 'hackathons', name: 'Hackathons', icon: Terminal, color: 'text-indigo-600', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-100 hover:border-indigo-300' },
+    { id: 'quizzes', name: 'Quizzes', icon: Lightbulb, color: 'text-yellow-600', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-100 hover:border-yellow-300' },
+    { id: 'workshops', name: 'Workshops', icon: PenTool, color: 'text-purple-600', bgColor: 'bg-purple-50', borderColor: 'border-purple-100 hover:border-purple-300' },
+    { id: 'sabl', name: 'SABL Events', icon: BookOpen, color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-100 hover:border-green-300' },
+    { id: 'cultural', name: 'Cultural', icon: Music, color: 'text-pink-600', bgColor: 'bg-pink-50', borderColor: 'border-pink-100 hover:border-pink-300' },
   ];
+
+  const handleCategoryClick = (catId) => {
+    setActiveCategory(catId);
+    setActiveView('events');
+  };
 
   return (
     <div className="space-y-6">
@@ -38,36 +44,41 @@ const StudentEvents = () => {
       </div>
 
       {activeTab === 'upcoming' && (
-        <div className="space-y-8 animate-fade-in">
-          {/* Categories Section */}
-          <div>
-            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Browse by Category</h3>
-            <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+        <div className="space-y-6 animate-fade-in">
+          {activeView === 'categories' ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
               {categories.map((cat) => {
-                const isSelected = activeCategory === cat.id;
                 const Icon = cat.icon;
                 return (
                   <button
                     key={cat.id}
-                    onClick={() => setActiveCategory(cat.id)}
-                    className={`flex flex-col items-center justify-center min-w-[100px] h-24 rounded-2xl border transition-all duration-300 flex-shrink-0 ${
-                      isSelected 
-                        ? 'border-indigo-600 bg-indigo-50 shadow-sm scale-105' 
-                        : 'border-transparent bg-white hover:border-gray-200 shadow-sm'
-                    }`}
+                    onClick={() => handleCategoryClick(cat.id)}
+                    className={`flex flex-col items-center justify-center p-4 rounded-2xl border ${cat.borderColor} ${cat.bgColor} transition-all duration-300 hover:shadow-lg group text-center cursor-pointer h-full`}
                   >
-                    <div className={`p-2.5 rounded-xl mb-2 transition-colors ${isSelected ? 'bg-indigo-600 text-white' : cat.color}`}>
-                      <Icon size={20} />
+                    <div className="scale-75 md:scale-100">
+                      <Icon className={`w-6 h-6 mb-3 ${cat.color} group-hover:scale-110 transition-transform`} />
                     </div>
-                    <span className={`text-xs font-bold ${isSelected ? 'text-indigo-900' : 'text-gray-600'}`}>{cat.name}</span>
+                    <h3 className="font-bold text-gray-800 text-[10px] md:text-xs group-hover:text-blue-700 transition-colors uppercase tracking-wider">{cat.name}</h3>
                   </button>
                 );
               })}
             </div>
-          </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-2">
+                <button
+                  onClick={() => setActiveView('categories')}
+                  className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2 text-sm font-medium border border-gray-200 bg-white"
+                >
+                  <ArrowLeft className="w-4 h-4" /> Back to Categories
+                </button>
+                <h2 className="text-xl font-bold text-gray-800">
+                  {categories.find(c => c.id === activeCategory)?.name || 'Events'}
+                </h2>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Luma-style Event Card */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Luma-style Event Card */}
             <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col h-full relative">
               
               {/* Image Section */}
@@ -132,7 +143,7 @@ const StudentEvents = () => {
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -316,11 +327,11 @@ const EventsPortal = () => {
   const { user } = useAuth();
   
   return (
-    <div className="p-6 max-w-7xl mx-auto animate-fade-in">
-      <div className="mb-8 flex justify-between items-center">
+    <div className="px-4 py-6 max-w-7xl mx-auto animate-fade-in bg-[#f8f9fa] min-h-screen">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Campus Events Hub</h1>
-          <p className="text-gray-600 mt-1">Discover, register, and manage campus events and workshops.</p>
+          <h1 className="text-xl md:text-2xl font-extrabold text-gray-900">Campus Events Hub</h1>
+          <p className="text-xs text-gray-500 mt-1 font-medium">Discover, register, and manage campus events and workshops.</p>
         </div>
         {user?.role !== 'student' && (
           <button className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition">

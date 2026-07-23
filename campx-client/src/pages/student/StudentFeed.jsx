@@ -110,39 +110,39 @@ const StudentFeed = () => {
 
   return (
     <div className="bg-[#f8f9fa] min-h-screen font-sans pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
         {/* Top Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 rounded-xl">
-              <Sparkles className="text-blue-600" size={24} />
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-1.5 bg-blue-100 rounded-lg">
+              <Sparkles className="text-blue-600" size={18} />
             </div>
             <div>
-              <h1 className="text-3xl font-extrabold text-gray-900">My Feed</h1>
-              <p className="text-gray-500 font-medium mt-1">Opportunities and updates tailored for you.</p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-gray-900">My Feed</h1>
             </div>
           </div>
+          <p className="text-xs text-gray-500 font-medium ml-9">Opportunities and updates tailored for you.</p>
           
-          <div className="mt-6 flex flex-col md:flex-row gap-4 items-center">
-            <div className="relative w-full md:w-96">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <div className="mt-4 flex flex-col md:flex-row gap-3 items-center">
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
               <input 
                 type="text" 
-                placeholder="Search opportunities, clubs, events..." 
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm bg-white text-gray-900"
+                placeholder="Search events, clubs..." 
+                className="w-full pl-9 pr-3 py-2 rounded-xl text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm bg-white"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             
-            <div className="flex-1 w-full overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex-1 w-full overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
               <div className="flex gap-2 min-w-max">
                 {filters.map(filter => (
                   <button
                     key={filter}
                     onClick={() => setActiveFilter(filter)}
-                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm ${
                       activeFilter === filter 
                         ? 'bg-blue-600 text-white border-blue-600' 
                         : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
@@ -157,49 +157,49 @@ const StudentFeed = () => {
         </div>
 
         {/* Main Layout Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          {/* Left Column - Feed Area (takes 2 columns on large screens) */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* Left Column - Feed Area */}
+          <div className="lg:col-span-2 space-y-5">
             
             {/* Interests Section */}
-            <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <Target size={20} className="text-blue-500" />
+            <div className="bg-white rounded-2xl p-4 md:p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100">
+              <div className="flex justify-between items-center mb-3">
+                <h2 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                  <Target size={16} className="text-blue-500" />
                   Your Interests
                 </h2>
                 <button 
                   onClick={() => setIsEditingInterests(!isEditingInterests)}
-                  className="text-sm text-blue-600 font-semibold hover:text-blue-700 flex items-center gap-1"
+                  className="text-[10px] md:text-xs text-blue-600 font-bold hover:text-blue-700 flex items-center gap-1"
                 >
-                  <Settings size={16} />
-                  {isEditingInterests ? 'Done Editing' : 'Edit Interests'}
+                  <Settings size={12} />
+                  {isEditingInterests ? 'Done Editing' : 'Edit'}
                 </button>
               </div>
               
               {selectedInterests.length === 0 && !isEditingInterests ? (
-                <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                  <p className="text-gray-500 mb-3 font-medium">Choose your interests to receive personalized recommendations.</p>
+                <div className="text-center py-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                  <p className="text-[10px] md:text-xs text-gray-500 mb-2 font-medium">Choose your interests to receive personalized recommendations.</p>
                   <button 
                     onClick={() => setIsEditingInterests(true)}
-                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold shadow-sm hover:bg-gray-50 text-gray-700"
+                    className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-[10px] md:text-xs font-bold shadow-sm hover:bg-gray-50 text-gray-700"
                   >
                     Select Interests
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {(isEditingInterests ? ALL_INTERESTS : selectedInterests).map(interest => {
                     const isSelected = selectedInterests.includes(interest);
                     return (
                       <button
                         key={interest}
                         onClick={() => isEditingInterests && toggleInterest(interest)}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                        className={`px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold transition-colors ${
                           isSelected 
-                            ? 'bg-blue-100 text-blue-700 border border-blue-200' 
-                            : 'bg-gray-100 text-gray-600 border border-transparent hover:bg-gray-200'
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                            : 'bg-gray-50 text-gray-600 border border-transparent hover:bg-gray-100'
                         } ${!isEditingInterests && 'cursor-default'}`}
                       >
                         {interest} {isEditingInterests && (isSelected ? '×' : '+')}
@@ -211,69 +211,64 @@ const StudentFeed = () => {
             </div>
 
             {/* Feed Cards List */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               {MOCK_FEED.map((item) => (
                 <div 
                   key={item.id} 
-                  className="bg-white rounded-[20px] p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300"
+                  className="bg-white rounded-2xl p-4 md:p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100 hover:shadow-md transition-all duration-300"
                 >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl flex items-center justify-center border border-blue-100 shrink-0">
-                        <span className="text-lg font-bold text-blue-600">{item.logo}</span>
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl flex items-center justify-center border border-blue-100 shrink-0 shadow-sm">
+                        <span className="text-base font-black text-blue-600">{item.logo}</span>
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-gray-900 leading-tight">{item.title}</h3>
-                        <p className="text-sm text-gray-500 font-medium mt-0.5">{item.org}</p>
+                        <h3 className="text-sm font-bold text-gray-900 leading-tight line-clamp-1">{item.title}</h3>
+                        <p className="text-[10px] md:text-xs text-gray-500 font-bold mt-0.5">{item.org}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 bg-green-50 text-green-700 px-2.5 py-1 rounded-lg text-xs font-bold border border-green-100 shrink-0">
-                      <Sparkles size={12} />
-                      {item.matchScore}% Match
+                    <div className="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-0.5 rounded flex-shrink-0">
+                      <Sparkles size={10} />
+                      <span className="text-[10px] font-black">{item.matchScore}%</span>
                     </div>
                   </div>
                   
-                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                  <p className="text-gray-500 text-[11px] md:text-xs mb-3 line-clamp-2">
                     {item.description}
                   </p>
                   
-                  <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-4 text-sm bg-gray-50/50 p-3 rounded-xl border border-gray-100">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Calendar size={16} className="text-gray-400 shrink-0" />
-                      <span className="font-medium text-gray-800">{item.date}</span>
+                  <div className="flex flex-wrap gap-x-4 gap-y-2 mb-3 text-[10px] md:text-xs bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+                    <div className="flex items-center gap-1.5 text-gray-600">
+                      <Calendar size={12} className="text-gray-400" />
+                      <span className="font-semibold text-gray-800">{item.date}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Clock size={16} className="text-red-400 shrink-0" />
-                      <span>Deadline: <span className="font-medium text-red-600">{item.deadline}</span></span>
+                    <div className="flex items-center gap-1.5 text-gray-600">
+                      <Clock size={12} className="text-red-400" />
+                      <span className="font-semibold text-red-600">{item.deadline}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600 col-span-2">
-                      <MapPin size={16} className="text-gray-400 shrink-0" />
-                      <span className="font-medium text-gray-800">{item.location}</span>
+                    <div className="flex items-center gap-1.5 text-gray-600 w-full sm:w-auto">
+                      <MapPin size={12} className="text-gray-400" />
+                      <span className="font-semibold text-gray-800 line-clamp-1">{item.location}</span>
                     </div>
                   </div>
                   
-                  <div className="flex flex-wrap gap-2 mb-5">
+                  <div className="flex flex-wrap gap-1.5 mb-3">
                     {item.tags.map(tag => (
-                      <span key={tag} className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-semibold">
+                      <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-wider">
                         {tag}
                       </span>
                     ))}
                   </div>
                   
-                  <div className="flex items-center gap-2 mb-5 p-3 bg-blue-50/50 rounded-xl border border-blue-100/50 text-sm">
-                    <Sparkles size={16} className="text-blue-500 shrink-0" />
-                    <span className="text-gray-700 font-medium">{item.matchReason}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                    <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors duration-200">
-                      Register Now
+                  <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
+                    <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded-xl transition-colors">
+                      Register
                     </button>
-                    <button className="flex-1 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 font-semibold py-2.5 px-4 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2">
-                      View Details
+                    <button className="flex-1 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 text-xs font-bold py-2 px-3 rounded-xl transition-colors text-center">
+                      Details
                     </button>
-                    <button className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors border border-gray-200">
-                      <Bookmark size={20} />
+                    <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors border border-gray-200">
+                      <Bookmark size={14} />
                     </button>
                   </div>
                 </div>
@@ -282,23 +277,23 @@ const StudentFeed = () => {
           </div>
 
           {/* Right Column - Widgets Area */}
-          <div className="space-y-6">
+          <div className="space-y-5">
             
             {/* Trending Widget */}
-            <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <TrendingUp className="text-blue-500" size={20} />
+            <div className="bg-white rounded-2xl p-4 md:p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100">
+              <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1.5">
+                <TrendingUp className="text-blue-500" size={16} />
                 Trending on Campus
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {MOCK_TRENDING.map((item, i) => (
-                  <div key={item.id} className="flex gap-3 group cursor-pointer">
-                    <span className="text-gray-300 font-bold text-xl leading-none mt-0.5">0{i + 1}</span>
+                  <div key={item.id} className="flex gap-2 group cursor-pointer items-start">
+                    <span className="text-gray-200 font-black text-lg leading-none mt-0.5">0{i + 1}</span>
                     <div>
-                      <p className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
+                      <p className="font-bold text-xs text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
                         {item.title}
                       </p>
-                      <p className="text-xs font-medium text-gray-500 mt-1">{item.type}</p>
+                      <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-1">{item.type}</p>
                     </div>
                   </div>
                 ))}
@@ -306,84 +301,46 @@ const StudentFeed = () => {
             </div>
 
             {/* Upcoming Deadlines */}
-            <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Clock className="text-red-500" size={20} />
-                Upcoming Deadlines
+            <div className="bg-white rounded-2xl p-4 md:p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-gray-100">
+              <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1.5">
+                <Clock className="text-red-500" size={16} />
+                Deadlines
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {MOCK_DEADLINES.map((item) => (
-                  <div key={item.id} className="border-l-[3px] border-red-400 pl-3">
-                    <p className="font-semibold text-gray-900 text-sm leading-tight mb-1">{item.title}</p>
-                    <p className="text-xs font-bold text-red-500">{item.date}</p>
+                  <div key={item.id} className="border-l-2 border-red-400 pl-2.5">
+                    <p className="font-bold text-gray-800 text-xs leading-tight mb-0.5">{item.title}</p>
+                    <p className="text-[10px] font-bold text-red-500">{item.date}</p>
                   </div>
                 ))}
               </div>
-              <button className="w-full mt-5 py-2 text-sm text-gray-600 hover:text-gray-900 font-bold border-t border-gray-100 pt-4 flex items-center justify-center gap-1 transition-colors">
-                View All <ChevronRight size={16} />
+              <button className="w-full mt-4 py-1.5 text-[10px] md:text-xs text-gray-500 hover:text-gray-900 font-bold border-t border-gray-100 pt-3 flex items-center justify-center gap-1 transition-colors">
+                View All <ChevronRight size={12} />
               </button>
             </div>
 
             {/* Weekly Goal */}
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[20px] p-6 text-white shadow-[0_8px_20px_-6px_rgba(37,99,235,0.4)]">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <Trophy size={20} className="text-yellow-300" />
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-4 md:p-5 text-white shadow-lg">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-sm font-bold flex items-center gap-1.5">
+                  <Trophy size={16} className="text-yellow-300" />
                   Weekly Goal
                 </h3>
               </div>
-              <p className="text-blue-100 text-sm mb-5 font-medium leading-relaxed">Participate in 2 events this week to keep your learning streak alive!</p>
+              <p className="text-blue-100 text-[10px] md:text-xs mb-4 font-medium leading-relaxed">Participate in 2 events to keep your streak alive!</p>
               
-              <div className="space-y-2 mb-5">
-                <div className="flex justify-between text-sm font-bold">
+              <div className="space-y-1.5 mb-4">
+                <div className="flex justify-between text-[10px] font-bold">
                   <span>Progress</span>
                   <span>1/2</span>
                 </div>
-                <div className="h-2.5 bg-blue-900/40 rounded-full overflow-hidden">
+                <div className="h-2 bg-blue-900/40 rounded-full overflow-hidden">
                   <div className="h-full bg-yellow-400 w-1/2 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.5)]"></div>
                 </div>
               </div>
-              <button className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 rounded-xl transition-colors text-sm backdrop-blur-sm">
+              <button className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded-xl transition-colors text-xs backdrop-blur-sm">
                 Explore Events
               </button>
-            </div>
-
-            {/* Recommended Clubs */}
-            <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Users className="text-indigo-500" size={20} />
-                Recommended Clubs
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between group cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold shrink-0 group-hover:scale-105 transition-transform">
-                      RC
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm text-gray-900 leading-tight">Robotics Club</p>
-                      <p className="text-xs font-medium text-gray-500 mt-0.5">120 Members</p>
-                    </div>
-                  </div>
-                  <button className="text-sm font-bold text-blue-600 hover:text-white hover:bg-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
-                    Join
-                  </button>
-                </div>
-                <div className="flex items-center justify-between group cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600 font-bold shrink-0 group-hover:scale-105 transition-transform">
-                      CC
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm text-gray-900 leading-tight">Coding Club</p>
-                      <p className="text-xs font-medium text-gray-500 mt-0.5">350 Members</p>
-                    </div>
-                  </div>
-                  <button className="text-sm font-bold text-blue-600 hover:text-white hover:bg-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
-                    Join
-                  </button>
-                </div>
-              </div>
             </div>
 
           </div>

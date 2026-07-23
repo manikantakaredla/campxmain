@@ -14,6 +14,12 @@ const MobileBottomNav = () => {
   const { user } = useAuth();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   
+  React.useEffect(() => {
+    const handleOpenDrawer = () => setIsDrawerOpen(true);
+    window.addEventListener('openMobileDrawer', handleOpenDrawer);
+    return () => window.removeEventListener('openMobileDrawer', handleOpenDrawer);
+  }, []);
+  
   if (!user) return null;
 
   const role = user.role;
