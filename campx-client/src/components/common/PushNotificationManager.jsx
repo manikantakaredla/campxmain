@@ -11,9 +11,35 @@ const PushNotificationManager = () => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      // Don't repeatedly request if denied
-      if (Notification.permission !== 'denied') {
+      if (Notification.permission === 'granted') {
         registerFCMToken();
+      } else if (Notification.permission === 'default') {
+        // Show a prompt to ask for permission since silent request on load is often blocked
+        toast.custom((t) => (
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 flex flex-col gap-3 max-w-sm">
+            <div>
+              <p className="font-semibold text-gray-800">Enable Notifications</p>
+              <p className="text-sm text-gray-600 mt-1">Don't miss important messages and announcements.</p>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button 
+                onClick={() => toast.dismiss(t.id)}
+                className="px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 rounded-lg transition"
+              >
+                Later
+              </button>
+              <button 
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  registerFCMToken();
+                }}
+                className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+              >
+                Enable
+              </button>
+            </div>
+          </div>
+        ), { duration: 10000, id: 'push-prompt' });
       }
       setupForegroundListener();
     }
