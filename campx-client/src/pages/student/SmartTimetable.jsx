@@ -207,8 +207,8 @@ const StudentTimetable = () => {
           </div>
         </div>
 
-        {/* Dynamic Timetable Grid */}
-        <div className="bg-white rounded-[24px] shadow-sm border border-gray-200 overflow-x-auto">
+        {/* Dynamic Timetable Grid (Desktop) */}
+        <div className="hidden md:block bg-white rounded-[24px] shadow-sm border border-gray-200 overflow-x-auto">
           <div className="min-w-[1000px] p-6">
             <div className="grid grid-cols-[100px_repeat(8,1fr)] gap-2 mb-4">
               <div className="flex items-center justify-center font-black text-gray-400 uppercase text-xs tracking-wider">Day \ Time</div>
@@ -262,6 +262,56 @@ const StudentTimetable = () => {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Dynamic Timetable (Mobile) */}
+        <div className="md:hidden space-y-4">
+          {Object.entries(SCHEDULE_GRID).map(([day, classes]) => (
+            <div key={day} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+              <h3 className="font-bold text-gray-900 text-base mb-3 flex items-center gap-2 border-b border-gray-100 pb-2">
+                <Calendar size={18} className="text-indigo-600" />
+                {day}
+              </h3>
+              {day === 'Sat' ? (
+                 <div className="bg-pink-50 text-pink-600 rounded-xl flex items-center justify-center font-black text-sm uppercase tracking-widest border border-pink-100 py-4">
+                   Activity Day
+                 </div>
+              ) : (
+                <div className="space-y-2">
+                  {classes.map((sub, idx) => {
+                    if (!sub) return null;
+                    const slot = TIMESLOTS[idx];
+                    
+                    if (sub === 'Lunch') {
+                      return (
+                        <div key={idx} className="bg-gray-50 flex items-center justify-between p-3 rounded-xl border border-gray-100">
+                          <span className="text-gray-500 font-bold text-sm">Lunch Break</span>
+                          <span className="text-xs font-semibold text-gray-400">{slot.time}</span>
+                        </div>
+                      )
+                    }
+                    
+                    const room = getRoomForSubject(sub)
+                    const isSpecial = ['SS', 'APT'].includes(sub)
+
+                    return (
+                      <div key={idx} className={`flex items-center justify-between p-3 rounded-xl border ${isSpecial ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-gray-100'}`}>
+                        <div>
+                          <p className={`font-black text-sm ${isSpecial ? 'text-yellow-800' : 'text-gray-900'}`}>{sub}</p>
+                          <p className="text-xs font-medium text-gray-500 mt-0.5 flex items-center gap-1">
+                            <Clock size={12} /> {slot.time}
+                          </p>
+                        </div>
+                        <p className={`text-[10px] font-bold px-2 py-1 rounded-md text-white ${isSpecial ? 'bg-yellow-600' : 'bg-indigo-600'}`}>
+                          {room}
+                        </p>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
 
       </div>

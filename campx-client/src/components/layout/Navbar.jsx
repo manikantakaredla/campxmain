@@ -39,9 +39,6 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
           <NotificationCenter 
             isOpen={showNotifications} 
             onClose={() => setShowNotifications(false)} 
-            notifications={notifications} 
-            unreadCount={unreadCount} 
-            markAsRead={markAsRead} 
           />
 
           <div className="w-px h-6 bg-gray-200 hidden sm:block mx-1"></div>

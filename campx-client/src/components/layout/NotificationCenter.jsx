@@ -2,10 +2,12 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { X, Bell, CheckCheck } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useNotifications } from '../../hooks/useNotifications';
 
-const NotificationCenter = ({ isOpen, onClose, notifications, unreadCount, markAsRead }) => {
+const NotificationCenter = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, setNotifications, setUnreadCount } = useNotifications();
 
   const handleNotificationClick = (notif) => {
     onClose();
@@ -28,10 +30,12 @@ const NotificationCenter = ({ isOpen, onClose, notifications, unreadCount, markA
   };
 
   const handleMarkAllRead = () => {
-    // Basic optimistic update if needed, but the actual logic usually is on the page
-    // For now we just route to notifications page where they can do it
+    import('../../services/api').then(({ default: api }) => {
+      api.put('/notifications/mark-all-read').catch(err => console.error(err));
+    });
+    setNotifications([]);
+    setUnreadCount(0);
     onClose();
-    navigate(`/${user?.role === 'admin' ? 'admin' : user?.role}/notifications`);
   };
 
   return (
