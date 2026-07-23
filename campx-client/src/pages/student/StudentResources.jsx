@@ -143,9 +143,8 @@ const StudentResources = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-blue-600 animate-pulse" /> Resources Dashboard
+            <BookOpen className="w-6 h-6 text-blue-600 animate-pulse" /> Resources
           </h1>
-          <p className="text-xs text-gray-500 mt-1 font-medium">Organized subject-wise learning materials uploaded by your faculty</p>
         </div>
       </div>
 
