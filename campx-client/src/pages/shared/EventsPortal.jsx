@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Users, Ticket, CheckCircle2, QrCode, Plus, Download, Filter, Search, Award, BarChart3, Edit, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, Users, Ticket, CheckCircle2, QrCode, Plus, Download, Filter, Search, Award, BarChart3, Edit, Trash2, Terminal, Lightbulb, PenTool, BookOpen, Music } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
 
 const StudentEvents = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
+  const [activeCategory, setActiveCategory] = useState('all');
   const [showQR, setShowQR] = useState(false);
   const [registered, setRegistered] = useState(false);
 
@@ -12,6 +13,15 @@ const StudentEvents = () => {
     toast.success('Successfully registered for Tech Symposium 2023!');
     setRegistered(true);
   };
+
+  const categories = [
+    { id: 'all', name: 'All Events', icon: Calendar, color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
+    { id: 'hackathons', name: 'Hackathons', icon: Terminal, color: 'bg-blue-50 text-blue-600 hover:bg-blue-100' },
+    { id: 'quizzes', name: 'Quizzes', icon: Lightbulb, color: 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100' },
+    { id: 'workshops', name: 'Workshops', icon: PenTool, color: 'bg-purple-50 text-purple-600 hover:bg-purple-100' },
+    { id: 'sabl', name: 'SABL Events', icon: BookOpen, color: 'bg-green-50 text-green-600 hover:bg-green-100' },
+    { id: 'cultural', name: 'Cultural', icon: Music, color: 'bg-pink-50 text-pink-600 hover:bg-pink-100' },
+  ];
 
   return (
     <div className="space-y-6">
@@ -28,31 +38,71 @@ const StudentEvents = () => {
       </div>
 
       {activeTab === 'upcoming' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Mock Event Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
-            <div className="h-40 bg-blue-600 p-6 flex flex-col justify-end relative overflow-hidden">
-              <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-              <div className="relative z-10">
-                <span className="px-2.5 py-1 bg-white/20 backdrop-blur text-white text-xs font-medium rounded-full mb-2 inline-block">Workshop</span>
-                <h3 className="text-xl font-bold text-white leading-tight">Advanced AI & ML Workshop</h3>
-              </div>
+        <div className="space-y-8 animate-fade-in">
+          {/* Categories Section */}
+          <div>
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Browse by Category</h3>
+            <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+              {categories.map((cat) => {
+                const isSelected = activeCategory === cat.id;
+                const Icon = cat.icon;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`flex flex-col items-center justify-center min-w-[100px] h-24 rounded-2xl border transition-all duration-300 flex-shrink-0 ${
+                      isSelected 
+                        ? 'border-indigo-600 bg-indigo-50 shadow-sm scale-105' 
+                        : 'border-transparent bg-white hover:border-gray-200 shadow-sm'
+                    }`}
+                  >
+                    <div className={`p-2.5 rounded-xl mb-2 transition-colors ${isSelected ? 'bg-indigo-600 text-white' : cat.color}`}>
+                      <Icon size={20} />
+                    </div>
+                    <span className={`text-xs font-bold ${isSelected ? 'text-indigo-900' : 'text-gray-600'}`}>{cat.name}</span>
+                  </button>
+                );
+              })}
             </div>
-            <div className="p-5 space-y-4">
-              <div className="space-y-2 text-sm text-gray-600">
-                <div className="flex items-center gap-2"><Calendar size={16} /> Oct 25, 2023 • 10:00 AM</div>
-                <div className="flex items-center gap-2"><MapPin size={16} /> Seminar Hall A, CS Block</div>
-                <div className="flex items-center gap-2"><Users size={16} /> 120 / 150 Seats Filled</div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Mock Event Card */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 group">
+              <div className="h-40 bg-gradient-to-br from-blue-600 to-indigo-800 p-6 flex flex-col justify-end relative overflow-hidden">
+                <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+                
+                {/* Decorative circles */}
+                <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-blue-400/20 rounded-full blur-xl"></div>
+                
+                <div className="relative z-10">
+                  <span className="px-2.5 py-1 bg-white/20 backdrop-blur-md border border-white/30 text-white text-[10px] uppercase font-bold tracking-wider rounded-full mb-2 inline-block">Workshop</span>
+                  <h3 className="text-xl font-bold text-white leading-tight">Advanced AI & ML Workshop</h3>
+                </div>
               </div>
-              <p className="text-sm text-gray-500 line-clamp-2">Learn the basics of building generative AI applications using modern frameworks and APIs.</p>
-              
-              <button 
-                onClick={handleRegister}
-                disabled={registered}
-                className={`w-full py-2.5 rounded-lg text-sm font-medium transition-all ${registered ? 'bg-green-100 text-green-700 cursor-default' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'}`}
-              >
-                {registered ? 'Registered' : 'Register Now'}
-              </button>
+              <div className="p-5 space-y-4">
+                <div className="space-y-2 text-sm text-gray-600 font-medium">
+                  <div className="flex items-center gap-2"><Calendar size={16} className="text-indigo-500" /> Oct 25, 2023 • 10:00 AM</div>
+                  <div className="flex items-center gap-2"><MapPin size={16} className="text-red-500" /> Seminar Hall A, CS Block</div>
+                  <div className="flex items-center gap-2">
+                    <Users size={16} className="text-green-500" /> 
+                    <div className="flex-1 ml-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-green-500 w-[80%] rounded-full"></div>
+                    </div>
+                    <span className="text-xs ml-2">120/150</span>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">Learn the basics of building generative AI applications using modern frameworks and APIs.</p>
+                
+                <button 
+                  onClick={handleRegister}
+                  disabled={registered}
+                  className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm ${registered ? 'bg-green-50 text-green-700 cursor-default border border-green-200' : 'bg-gray-900 hover:bg-black text-white hover:shadow-md'}`}
+                >
+                  {registered ? 'Registered' : 'Register Now'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
