@@ -23,7 +23,10 @@ import {
   MessageSquare,
   Sparkles,
   ShieldAlert,
-  MapPin
+  MapPin,
+  Target,
+  AlertCircle,
+  Ticket
 } from 'lucide-react'
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -57,13 +60,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     // Common items for all roles
     const commonItems = [
       { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-       { path: '/announcements', icon: <UserCircle size={20} />, label: 'Announcements' },
+      { path: '/announcements', icon: <UserCircle size={20} />, label: 'Announcements' },
       { path: '/class-updates', icon: <BookOpen size={20} />, label: 'Class Updates' },
       { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
       { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
       { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
       { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' },
-     
     ]
 
     // Student specific
@@ -74,12 +76,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         { path: '/sos', icon: <ShieldAlert size={20} className="text-red-500" />, label: 'Campus SOS' },
         { path: '/feed', icon: <Sparkles size={20} />, label: 'My Feed' },
         { path: '/faculty-connect', icon: <Users size={20} />, label: 'Smart Faculty Connect' },
+        { path: '/events', icon: <Ticket size={20} />, label: 'Events' },
         { path: '/announcements', icon: <UserCircle size={20} />, label: 'Announcements' },
         { path: '/class-updates', icon: <BookOpen size={20} />, label: 'Class Updates' },
         { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
         { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
         { path: '/opportunities', icon: <Briefcase size={20} />, label: 'Opportunities' },
+        { path: '/placement-readiness', icon: <Target size={20} />, label: 'Placement Readiness' },
         { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
+        { path: '/complaints', icon: <AlertCircle size={20} />, label: 'Complaints & Grievances' },
         { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
         { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' }
       ]
@@ -90,10 +95,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       return [
         { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
         { path: '/students', icon: <Users size={20} />, label: 'Students' },
+        { path: '/events', icon: <Ticket size={20} />, label: 'Events Management' },
         { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
         { path: '/resources', icon: <FileText size={20} />, label: ' Resources' },
         { path: '/analytics', icon: <TrendingUp size={20} />, label: 'Analytics' },
         { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
+        { path: '/complaints', icon: <AlertCircle size={20} />, label: 'Complaints Portal' },
         { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
         { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' },
       ]
@@ -105,6 +112,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
         { path: '/users', icon: <Users size={20} />, label: 'User Management' },
         { path: '/faculty-management', icon: <Briefcase size={20} />, label: 'Faculty Management' },
+        { path: '/events', icon: <Ticket size={20} />, label: 'Events Management' },
         { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
         { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
         { path: '/analytics', icon: <TrendingUp size={20} />, label: 'Analytics' },
@@ -122,6 +130,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         items.push({ path: '/upload-data', icon: <Upload size={20} />, label: 'Upload Data' })
       }
 
+      items.push({ path: '/complaints', icon: <AlertCircle size={20} />, label: 'Complaints Portal' })
       items.push({ path: '/settings', icon: <Settings size={20} />, label: 'Settings' })
 
       return items

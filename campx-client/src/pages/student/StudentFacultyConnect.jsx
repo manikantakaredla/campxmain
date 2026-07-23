@@ -4,6 +4,7 @@ import {
   Filter,
   Users,
   MapPin,
+  Phone,
   Clock,
   Calendar,
   CheckCircle2,
@@ -87,10 +88,1181 @@ const MOCK_FACULTY = [
     researchAreas: ['Distributed Systems', 'Cloud Security'],
     avgResponse: '4 hours',
     rating: '4.5'
-  }
-]
-
-const MOCK_REQUESTS = [
+  },
+{
+  "id": 4,
+  "name": "Dr. A Phani Sridhar",
+  "designation": "HoD",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB First Floor, HoD Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 86,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "AP",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.7",
+  "phoneNumber": "9491792022"
+},
+{
+  "id": 5,
+  "name": "Dr. K Chandra Sekhar",
+  "designation": "Dy. HoD - I",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB Second Floor, HoD Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 99,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "KC",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.8",
+  "phoneNumber": "9989178278"
+},
+{
+  "id": 6,
+  "name": "Dr. Hari Jyothula",
+  "designation": "Dy. HoD - II",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "JWD First Floor, Staff Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 85,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "HJ",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "9966998144"
+},
+{
+  "id": 7,
+  "name": "Dr. P Siva Satya Prasad",
+  "designation": "Dy. HoD - III",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB First Floor, R & C 1",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 99,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "PS",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.5",
+  "phoneNumber": "8099452329"
+},
+{
+  "id": 8,
+  "name": "Dr. Nagaraju Katta",
+  "designation": "Coursera Coordinator - V Semester",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 3, JWB First Floor, Staff Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 86,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "NK",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.7",
+  "phoneNumber": "9989442311"
+},
+{
+  "id": 9,
+  "name": "M Kalyan Ram",
+  "designation": "Coursera Coordinator - III Semester",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB First Floor, Room No. 119",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 99,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "MK",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.8",
+  "phoneNumber": "9959683117"
+},
+{
+  "id": 10,
+  "name": "Alla Devi Prasanthi",
+  "designation": "Coursera",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Table 2, RB First Floor, SERVER ROOM",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 97,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "AD",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.8",
+  "phoneNumber": "6302027178"
+},
+{
+  "id": 11,
+  "name": "Kavitapu Nagasivasankara Varaprasad",
+  "designation": "LinkedIn Learning Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 3, RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 81,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "KN",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.9",
+  "phoneNumber": "7898363337"
+},
+{
+  "id": 12,
+  "name": "Koneti Durga Bhavani",
+  "designation": "Social Media / LinkedIn Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 81,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "KD",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "7396607418"
+},
+{
+  "id": 13,
+  "name": "Nalla Siva Kumar",
+  "designation": "Infosys Springboard & NPTEL Student Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 3, JWB First Floor, Staff Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 83,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "NS",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "9959686733"
+},
+{
+  "id": 14,
+  "name": "Anil Kumar Prathipati",
+  "designation": "NPTEL / Infosys Springboard",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 2, JWB First Floor, Staff Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 99,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "AK",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.7",
+  "phoneNumber": "9299997794"
+},
+{
+  "id": 15,
+  "name": "Dr. Tirukoti Sudha Rani",
+  "designation": "Google Cloud & SAP Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 83,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "TS",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "9963742714"
+},
+{
+  "id": 16,
+  "name": "Dr. Appalaraju Grandhi",
+  "designation": "Student Certifications Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB First Floor, Room No. 119",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 97,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "AG",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.9",
+  "phoneNumber": "9059644613"
+},
+{
+  "id": 17,
+  "name": "Dr. Nagaraju Katta",
+  "designation": "M.Tech Project Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 3, JWB First Floor, Staff Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 82,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "NK",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.8",
+  "phoneNumber": "9989442311"
+},
+{
+  "id": 18,
+  "name": "Dr. S Ram Chandra Polisetty",
+  "designation": "UG Project Coordinator - 1",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB First Floor",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 86,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "SR",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.8",
+  "phoneNumber": "9949862634"
+},
+{
+  "id": 19,
+  "name": "Dr. Sindhu B",
+  "designation": "UG Project Coordinator - 2",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB First Floor",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 85,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "SB",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.5",
+  "phoneNumber": "9010283046"
+},
+{
+  "id": 20,
+  "name": "Dr. Abbireddy Sridhar Reddy",
+  "designation": "UG Project Coordinator - 3",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB First Floor",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 87,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "AS",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.9",
+  "phoneNumber": "9010893336"
+},
+{
+  "id": 21,
+  "name": "Ponnada Latha Sree",
+  "designation": "Internship Coordinator - III Semester",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "JWB First Floor, Staff Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 81,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "PL",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.5",
+  "phoneNumber": "7569807582"
+},
+{
+  "id": 22,
+  "name": "Surimalli Koteswara Rao",
+  "designation": "Internships",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Table 6, RB Second Floor, SERVER ROOM",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 81,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "SK",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.7",
+  "phoneNumber": "8341541957"
+},
+{
+  "id": 23,
+  "name": "Motupalli Kiran Bhagavan",
+  "designation": "Internship Coordinator - V Semester",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Table 5, RB First Floor, Room No. 102",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 91,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "MK",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "9494412911"
+},
+{
+  "id": 24,
+  "name": "Ummidisetti Veera Ramesh",
+  "designation": "Training and Placement Coordinator - 1",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 3, RB First Floor, Room No. 119",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 94,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "UV",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.7",
+  "phoneNumber": "6303412651"
+},
+{
+  "id": 25,
+  "name": "Kaki Ashok Teja",
+  "designation": "Training and Placement Coordinator - 2",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Table 4, RB Second Floor, SERVER ROOM",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 91,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "KA",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "8074137179"
+},
+{
+  "id": 26,
+  "name": "Kagithapu Rajendra",
+  "designation": "Overall Proctoring Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 1, RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 84,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "KR",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "8008287177"
+},
+{
+  "id": 27,
+  "name": "Kagithapu Rajendra",
+  "designation": "2nd Year Proctoring Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 1, RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 84,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "KR",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.7",
+  "phoneNumber": "8008287177"
+},
+{
+  "id": 28,
+  "name": "Shaik Vahida",
+  "designation": "3rd Year Proctoring Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "JWB First Floor, Staff Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 86,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "SV",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.5",
+  "phoneNumber": "9542478645"
+},
+{
+  "id": 29,
+  "name": "Dr. Appalaraju Grandhi",
+  "designation": "Final Year Proctoring Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB First Floor, Room No. 119",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 94,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "AG",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.9",
+  "phoneNumber": "9059644613"
+},
+{
+  "id": 30,
+  "name": "Dr. M V B Murali Krishna M",
+  "designation": "Department Exam Cell - 1 (Overall)",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 92,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "MV",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.8",
+  "phoneNumber": "9949200996"
+},
+{
+  "id": 31,
+  "name": "B Satya Lakshmi",
+  "designation": "Department Exam Cell - 2 (III Semester)",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 1, RB First Floor, Room No. 119",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 90,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "BS",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.5",
+  "phoneNumber": "8179559055"
+},
+{
+  "id": 32,
+  "name": "Ravikumar Inakoti",
+  "designation": "Department Exam Cell - 3 (V Semester)",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "JWB First Floor, Staff Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 97,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "RI",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "7989063182"
+},
+{
+  "id": 33,
+  "name": "Rananki Padma Sri",
+  "designation": "Department Exam Cell - 4 (VII Semester & M.Tech)",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 4, RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 97,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "RP",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.9",
+  "phoneNumber": "9573880590"
+},
+{
+  "id": 34,
+  "name": "U P Kumar Chaturvedula",
+  "designation": "Student Achievements Coordinators",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 2, RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 87,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "UP",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "9494054363"
+},
+{
+  "id": 35,
+  "name": "Kolaparthi Sai Meenakshi",
+  "designation": "Student Achievements",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Table 1, RB Second Floor, SERVER ROOM",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 89,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "KS",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.7",
+  "phoneNumber": "6300919709"
+},
+{
+  "id": 36,
+  "name": "Rapaka Rahul",
+  "designation": "Student Achievements",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Table 4, RB First Floor, Room No. 102",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 91,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "RR",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "9182826298"
+},
+{
+  "id": 37,
+  "name": "Dr. Appawala Jayanthi",
+  "designation": "PG Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 1, JWB First Floor, Staff Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 87,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "AJ",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.9",
+  "phoneNumber": "8886390660"
+},
+{
+  "id": 38,
+  "name": "Dr. Appawala Jayanthi",
+  "designation": "CSI Student Chapter Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 1, JWB First Floor, Staff Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 96,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "AJ",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.8",
+  "phoneNumber": "8886390660"
+},
+{
+  "id": 39,
+  "name": "Kasichainula Vydehi",
+  "designation": "Higher Education & Alumni Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 84,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "KV",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.5",
+  "phoneNumber": "8790112092"
+},
+{
+  "id": 40,
+  "name": "Dr. Jalaiah Saikam",
+  "designation": "Industrial Visits and ALA",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "JWB First Floor, Staff Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 94,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "JS",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.5",
+  "phoneNumber": "9502910792"
+},
+{
+  "id": 41,
+  "name": "Konala Padmavathi",
+  "designation": "Industry Visit Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 1, JWB First Floor, Staff Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 80,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "KP",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "7093466940"
+},
+{
+  "id": 42,
+  "name": "Dodda Venkata Reddy",
+  "designation": "SABL Coordinator - 1",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 93,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "DV",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "9494089211"
+},
+{
+  "id": 43,
+  "name": "Chikkala Lova Lakshmi",
+  "designation": "SABL Coordinator - 2",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Table 4, RB First Floor, SERVER ROOM",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 86,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "CL",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.5",
+  "phoneNumber": "9381797790"
+},
+{
+  "id": 44,
+  "name": "Dr. Vinjamuri Venkata Kamesh",
+  "designation": "Time Table Incharge",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 1, RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 87,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "VV",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.5",
+  "phoneNumber": "9948566975"
+},
+{
+  "id": 45,
+  "name": "Arasada Rakesh",
+  "designation": "Time Table Coordinator - 2",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 94,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "AR",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "8978478196"
+},
+{
+  "id": 46,
+  "name": "Gandhikota Umamahesh",
+  "designation": "Overall Discipline Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "JWB First Floor, Staff Room",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 94,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "GU",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.9",
+  "phoneNumber": "6303412651"
+},
+{
+  "id": 47,
+  "name": "Jyothula Vidya",
+  "designation": "NSS Program Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 83,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "JV",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.7",
+  "phoneNumber": "8143857336"
+},
+{
+  "id": 48,
+  "name": "Malakala Mani Ratnam",
+  "designation": "Smart Interview Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB First Floor, Room No. 119",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 82,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "MM",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.8",
+  "phoneNumber": "8790439298"
+},
+{
+  "id": 49,
+  "name": "Rajendra Kumar Mahanta",
+  "designation": "Grievance Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB Second Floor, Room No. 226",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 89,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "RK",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.8",
+  "phoneNumber": "8895873809"
+},
+{
+  "id": 50,
+  "name": "Talluri Hari Babu",
+  "designation": "Co-Curricular Activities Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "RB First Floor, Room No. 119",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 88,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "TH",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.5",
+  "phoneNumber": "9100898100"
+},
+{
+  "id": 51,
+  "name": "Kalyana Chakravarthi G",
+  "designation": "Workshop Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Cabin 2, RB First Floor, Room No. 119",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 91,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "KC",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.9",
+  "phoneNumber": "6300355119"
+},
+{
+  "id": 52,
+  "name": "Boya Lingaiahgari Soma Naidu",
+  "designation": "Extension Activities Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Table 7, RB First Floor, Room No. 102",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 89,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "BL",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.6",
+  "phoneNumber": "9951407799"
+},
+{
+  "id": 53,
+  "name": "Nookala Jaya Pavani",
+  "designation": "Re-registration & Summer Semester Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Table 2, RB Second Floor, SERVER ROOM",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 89,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "NJ",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.7",
+  "phoneNumber": "6304454954"
+},
+{
+  "id": 54,
+  "name": "J Lalu Prasad",
+  "designation": "Admission Cell Coordinator",
+  "department": "Computer Science",
+  "subjects": [],
+  "cabin": "Table 5, RB Second Floor, SERVER ROOM",
+  "status": "Available",
+  "timeline": [
+    {
+      "time": "10:00 - 12:00",
+      "title": "Office Hours"
+    }
+  ],
+  "aiMatch": 95,
+  "aiReason": "Available in cabin based on timetable.",
+  "bestTime": "Anytime today",
+  "photo": "JL",
+  "researchAreas": [],
+  "avgResponse": "2 hours",
+  "rating": "4.7",
+  "phoneNumber": "7981891901"
+}
+] [
   { id: 1, title: 'Bonafide Certificate', status: 'Pending' },
   { id: 2, title: 'Project Approval', status: 'Approved' },
   { id: 3, title: 'Internship NOC', status: 'In Review' },
@@ -277,6 +1449,12 @@ const StudentFacultyConnect = () => {
                             <MapPin size={14} className="text-gray-400" />
                             {faculty.cabin}
                           </div>
+                          {faculty.phoneNumber && (
+                            <div className="flex items-center gap-1.5 mt-1 text-sm font-medium text-gray-500">
+                              <Phone size={14} className="text-gray-400" />
+                              {faculty.phoneNumber}
+                            </div>
+                          )}
                           <div className="flex flex-wrap gap-1.5 mt-3">
                             {faculty.subjects.map(sub => (
                               <span key={sub} className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs font-semibold">

@@ -32,12 +32,16 @@ const StudentNotifications = lazy(() => import('./pages/student/StudentNotificat
 const ClassUpdates = lazy(() => import('./pages/student/ClassUpdates'))
 const OpportunitiesDashboard = lazy(() => import('./pages/student/Opportunities/OpportunitiesDashboard'))
 
+const PlacementReadiness = lazy(() => import('./pages/student/PlacementReadiness'))
+
 const AnnouncementDetails = lazy(() => import('./pages/shared/AnnouncementDetails'))
 const ResourceDetails = lazy(() => import('./pages/shared/ResourceDetails'))
 const ActivityDetails = lazy(() => import('./pages/shared/ActivityDetails'))
 const Messages = lazy(() => import('./pages/shared/Messages'))
 const AnalyticsDashboard = lazy(() => import('./pages/shared/AnalyticsDashboard'))
 const NotificationDebug = lazy(() => import('./pages/shared/NotificationDebug'))
+const ComplaintsPortal = lazy(() => import('./pages/shared/ComplaintsPortal'))
+const EventsPortal = lazy(() => import('./pages/shared/EventsPortal'))
 
 const FacultyDashboard = lazy(() => import('./pages/faculty/FacultyDashboard'))
 const MyStudents = lazy(() => import('./pages/faculty/MyStudents'))
@@ -137,6 +141,9 @@ function App() {
           <Route path="/student/opportunities" element={wrapSuspense(OpportunitiesDashboard)} />
           <Route path="/student/class-updates" element={wrapSuspense(ClassUpdates)} />
           <Route path="/student/messages" element={wrapSuspense(Messages)} />
+          <Route path="/student/placement-readiness" element={wrapSuspense(PlacementReadiness)} />
+          <Route path="/student/complaints" element={wrapSuspense(ComplaintsPortal)} />
+          <Route path="/student/events" element={wrapSuspense(EventsPortal)} />
           
           <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
           <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
@@ -172,6 +179,8 @@ function App() {
           <Route path="/faculty/notifications" element={wrapSuspense(FacultyNotifications)} />
           <Route path="/faculty/messages" element={wrapSuspense(Messages)} />
           <Route path="/faculty/analytics" element={wrapSuspense(AnalyticsDashboard)} />
+          <Route path="/faculty/complaints" element={wrapSuspense(ComplaintsPortal)} />
+          <Route path="/faculty/events" element={wrapSuspense(EventsPortal)} />
           
           <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
           <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
@@ -207,6 +216,8 @@ function App() {
           <Route path="/admin/placements/analytics" element={wrapSuspense(PlacementAnalytics)} />
           <Route path="/admin/faculty-management" element={wrapSuspense(AdminFacultyManagement)} />
           <Route path="/admin/analytics" element={wrapSuspense(AnalyticsDashboard)} />
+          <Route path="/admin/complaints" element={wrapSuspense(ComplaintsPortal)} />
+          <Route path="/admin/events" element={wrapSuspense(EventsPortal)} />
           
           <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
           <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
