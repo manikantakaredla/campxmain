@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import QuickActions from '../../components/layout/QuickActions'
 
 const StudentDashboard = () => {
   const { user } = useAuth()
@@ -135,6 +136,14 @@ const StudentDashboard = () => {
             </p>
           </div>
         </div>
+
+        <QuickActions actions={[
+          { label: 'Register Event', icon: <Calendar size={18} />, path: '/student/events', className: 'bg-purple-50 hover:bg-purple-100 border-purple-200', iconClassName: 'text-purple-600', textClassName: 'text-purple-900' },
+          { label: 'View Timetable', icon: <Clock size={18} />, path: '/student/timetable', className: 'bg-blue-50 hover:bg-blue-100 border-blue-200', iconClassName: 'text-blue-600', textClassName: 'text-blue-900' },
+          { label: 'Book Faculty', icon: <Briefcase size={18} />, path: '/student/faculty-connect', className: 'bg-green-50 hover:bg-green-100 border-green-200', iconClassName: 'text-green-600', textClassName: 'text-green-900' },
+          { label: 'Placement Dashboard', icon: <TrendingUp size={18} />, path: '/student/placement-readiness', className: 'bg-orange-50 hover:bg-orange-100 border-orange-200', iconClassName: 'text-orange-600', textClassName: 'text-orange-900' },
+          { label: 'Raise Complaint', icon: <MessageSquare size={18} />, path: '/student/complaints', className: 'bg-red-50 hover:bg-red-100 border-red-200', iconClassName: 'text-red-600', textClassName: 'text-red-900' },
+        ]} />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

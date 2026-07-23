@@ -21,6 +21,7 @@ import {
   Briefcase
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import QuickActions from '../../components/layout/QuickActions'
 
 const FacultyDashboard = () => {
   const { user } = useAuth()
@@ -230,6 +231,13 @@ const FacultyDashboard = () => {
             </Link>
           </div>
         </div>
+
+        <QuickActions actions={[
+          { label: 'Upload Resource', icon: <FileText size={18} />, path: '/faculty/resources/upload', className: 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200', iconClassName: 'text-emerald-600', textClassName: 'text-emerald-900' },
+          { label: 'New Announcement', icon: <Megaphone size={18} />, path: '/faculty/announcements/create', className: 'bg-blue-50 hover:bg-blue-100 border-blue-200', iconClassName: 'text-blue-600', textClassName: 'text-blue-900' },
+          { label: 'View Students', icon: <Users size={18} />, path: '/faculty/students', className: 'bg-purple-50 hover:bg-purple-100 border-purple-200', iconClassName: 'text-purple-600', textClassName: 'text-purple-900' },
+          { label: 'Class Analytics', icon: <TrendingUp size={18} />, path: '/faculty/analytics', className: 'bg-orange-50 hover:bg-orange-100 border-orange-200', iconClassName: 'text-orange-600', textClassName: 'text-orange-900' },
+        ]} />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">

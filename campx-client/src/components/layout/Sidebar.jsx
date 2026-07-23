@@ -1,8 +1,9 @@
 import React, { useContext, useEffect } from 'react'
-import { NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { SocketContext } from '../../context/SocketContext'
 import toast from 'react-hot-toast'
+import SidebarSection from './SidebarSection'
 import {
   LayoutDashboard,
   Megaphone,
@@ -26,7 +27,8 @@ import {
   MapPin,
   Target,
   AlertCircle,
-  Ticket
+  Ticket,
+  Database
 } from 'lucide-react'
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -57,81 +59,196 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const getMenuItems = () => {
     const role = user?.role
     
-    // Common items for all roles
+    // Common items for all roles if fallback needed
     const commonItems = [
-      { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-      { path: '/announcements', icon: <UserCircle size={20} />, label: 'Announcements' },
-      { path: '/class-updates', icon: <BookOpen size={20} />, label: 'Class Updates' },
-      { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
-      { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
-      { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
-      { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' },
+      { type: 'item', path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
     ]
 
     // Student specific
     if (role === 'student') {
       return [
-        { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-        { path: '/timetable', icon: <MapPin size={20} />, label: 'Smart Timetable' },
-        { path: '/sos', icon: <ShieldAlert size={20} className="text-red-500" />, label: 'Campus SOS' },
-        { path: '/feed', icon: <Sparkles size={20} />, label: 'My Feed' },
-        { path: '/faculty-connect', icon: <Users size={20} />, label: 'Smart Faculty Connect' },
-        { path: '/events', icon: <Ticket size={20} />, label: 'Events' },
-        { path: '/announcements', icon: <UserCircle size={20} />, label: 'Announcements' },
-        { path: '/class-updates', icon: <BookOpen size={20} />, label: 'Class Updates' },
-        { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
-        { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
-        { path: '/opportunities', icon: <Briefcase size={20} />, label: 'Opportunities' },
-        { path: '/placement-readiness', icon: <Target size={20} />, label: 'Placement Readiness' },
-        { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
-        { path: '/complaints', icon: <AlertCircle size={20} />, label: 'Complaints & Grievances' },
-        { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
-        { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' }
+        { type: 'item', path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
+        {
+          type: 'group',
+          label: 'Academics',
+          items: [
+            { path: '/timetable', icon: <MapPin size={20} />, label: 'Smart Timetable' },
+            { path: '/class-updates', icon: <BookOpen size={20} />, label: 'Class Updates' },
+            { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
+            { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
+          ]
+        },
+        {
+          type: 'group',
+          label: 'Campus',
+          items: [
+            { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
+            { path: '/events', icon: <Ticket size={20} />, label: 'Events' },
+            { path: '/feed', icon: <Sparkles size={20} />, label: 'My Feed' },
+            { path: '/sos', icon: <ShieldAlert size={20} className="text-red-500" />, label: 'Campus SOS' },
+          ]
+        },
+        {
+          type: 'group',
+          label: 'Career',
+          items: [
+            { path: '/opportunities', icon: <Briefcase size={20} />, label: 'Opportunities' },
+            { path: '/placement-readiness', icon: <Target size={20} />, label: 'Placement Readiness' },
+          ]
+        },
+        {
+          type: 'group',
+          label: 'Faculty Connect',
+          items: [
+            { path: '/faculty-connect', icon: <Users size={20} />, label: 'Find Faculty' }
+          ]
+        },
+        {
+          type: 'group',
+          label: 'Communication',
+          items: [
+            { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
+            { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
+          ]
+        },
+        {
+          type: 'group',
+          label: 'Support',
+          items: [
+            { path: '/complaints', icon: <AlertCircle size={20} />, label: 'Complaints & Grievances' },
+          ]
+        },
+        {
+          type: 'group',
+          label: 'Account',
+          items: [
+            { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' },
+          ]
+        }
       ]
     }
     
     // Faculty specific
     if (role === 'faculty') {
       return [
-        { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-        { path: '/students', icon: <Users size={20} />, label: 'Students' },
-        { path: '/events', icon: <Ticket size={20} />, label: 'Events Management' },
-        { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
-        { path: '/resources', icon: <FileText size={20} />, label: ' Resources' },
-        { path: '/analytics', icon: <TrendingUp size={20} />, label: 'Analytics' },
-        { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
-        { path: '/complaints', icon: <AlertCircle size={20} />, label: 'Complaints Portal' },
-        { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
-        { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' },
+        { type: 'item', path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
+        {
+          type: 'group',
+          label: 'Teaching',
+          items: [
+            { path: '/students', icon: <Users size={20} />, label: 'Students' },
+            { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
+            { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
+          ]
+        },
+        {
+          type: 'group',
+          label: 'Activities',
+          items: [
+            { path: '/events', icon: <Ticket size={20} />, label: 'Events Management' },
+            { path: '/activities', icon: <Calendar size={20} />, label: 'Academic Activities' }
+          ]
+        },
+        {
+          type: 'group',
+          label: 'Analytics',
+          items: [
+            { path: '/analytics', icon: <TrendingUp size={20} />, label: 'Analytics' },
+          ]
+        },
+        {
+          type: 'group',
+          label: 'Communication',
+          items: [
+            { path: '/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
+            { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
+          ]
+        },
+        {
+          type: 'group',
+          label: 'Support',
+          items: [
+            { path: '/complaints', icon: <AlertCircle size={20} />, label: 'Complaints Portal' },
+          ]
+        },
+        {
+          type: 'group',
+          label: 'Account',
+          items: [
+            { path: '/profile', icon: <UserCircle size={20} />, label: 'Profile' },
+          ]
+        }
       ]
     }
     
     // Admin & Management specific
     if (['admin', 'hod', 'dean', 'principal'].includes(role)) {
       const items = [
-        { path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-        { path: '/users', icon: <Users size={20} />, label: 'User Management' },
-        { path: '/faculty-management', icon: <Briefcase size={20} />, label: 'Faculty Management' },
-        { path: '/events', icon: <Ticket size={20} />, label: 'Events Management' },
-        { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
-        { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
-        { path: '/analytics', icon: <TrendingUp size={20} />, label: 'Analytics' },
-        { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
-        { path: '/opportunities', icon: <Briefcase size={20} />, label: 'Opportunities' }
+        { type: 'item', path: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
+        {
+          type: 'group',
+          label: 'User Management',
+          items: [
+            { path: '/users', icon: <Users size={20} />, label: 'Students & Staff' },
+            { path: '/faculty-management', icon: <Briefcase size={20} />, label: 'Faculty & Roles' },
+          ]
+        },
+        {
+          type: 'group',
+          label: 'Academic Management',
+          items: [
+            { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
+            { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
+            { path: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
+          ]
+        },
+        {
+          type: 'group',
+          label: 'Campus Management',
+          items: [
+            { path: '/events', icon: <Ticket size={20} />, label: 'Events' },
+            { path: '/opportunities', icon: <Briefcase size={20} />, label: 'Opportunities' },
+          ]
+        },
       ]
 
-      if (role === 'admin') {
-        items.push({ path: '/placements/upload', icon: <Upload size={20} />, label: 'Upload Placements' })
+      const analyticsGroup = {
+        type: 'group',
+        label: 'Analytics',
+        items: [
+          { path: '/analytics', icon: <TrendingUp size={20} />, label: 'Academic Analytics' },
+          { path: '/placements/analytics', icon: <TrendingUp size={20} />, label: 'Placement Analytics' }
+        ]
       }
+      items.push(analyticsGroup)
 
-      items.push({ path: '/placements/analytics', icon: <TrendingUp size={20} />, label: 'Placement Analytics' })
+      items.push({
+        type: 'group',
+        label: 'Support',
+        items: [
+          { path: '/complaints', icon: <AlertCircle size={20} />, label: 'Complaints Portal' }
+        ]
+      })
 
       if (role === 'admin') {
-        items.push({ path: '/upload-data', icon: <Upload size={20} />, label: 'Upload Data' })
+        items.push({
+          type: 'group',
+          label: 'Administration',
+          items: [
+            { path: '/upload-data', icon: <Database size={20} />, label: 'Data Management' },
+            { path: '/placements/upload', icon: <Upload size={20} />, label: 'Upload Placements' },
+            { path: '/settings', icon: <Settings size={20} />, label: 'Settings' }
+          ]
+        })
+      } else {
+        items.push({
+          type: 'group',
+          label: 'Administration',
+          items: [
+            { path: '/settings', icon: <Settings size={20} />, label: 'Settings' }
+          ]
+        })
       }
-
-      items.push({ path: '/complaints', icon: <AlertCircle size={20} />, label: 'Complaints Portal' })
-      items.push({ path: '/settings', icon: <Settings size={20} />, label: 'Settings' })
 
       return items
     }
@@ -159,83 +276,82 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
   return (
     <div
-      className={`hidden md:flex bg-gray-900 text-white transition-all duration-300 flex-col ${
+      className={`hidden md:flex bg-[#0f172a] text-white transition-all duration-300 flex-col border-r border-gray-800 shadow-xl ${
         sidebarOpen ? 'w-64' : 'w-20'
       }`}
     >
       {/* Logo */}
       <div className="flex items-center justify-between px-4 py-5 border-b border-gray-800">
         {sidebarOpen ? (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
               <span className="text-white font-bold text-lg">A</span>
             </div>
-            <span className="font-semibold text-sm">Aditya University</span>
+            <span className="font-bold text-sm tracking-wide">Aditya University</span>
           </div>
         ) : (
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mx-auto">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mx-auto shadow-lg shadow-blue-500/20">
             <span className="text-white font-bold text-lg">A</span>
           </div>
         )}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-1 rounded-lg hover:bg-gray-800 transition-all"
+          className="p-1 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
         >
           {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
         </button>
       </div>
 
-      {/* User Info */}
-      <div className={`px-4 py-4 border-b border-gray-800 ${!sidebarOpen && 'text-center'}`}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold">
-              {user?.name?.charAt(0) || 'U'}
-            </span>
-          </div>
-          {sidebarOpen && (
-            <div className="flex-1 min-w-0">
-              <p className="font-medium truncate">{user?.name}</p>
-              <p className="text-xs text-gray-400 capitalize">{user?.role}</p>
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {menuItems.map((item, index) => (
-          <NavLink
-            key={index}
-            to={`${basePath}${item.path}`}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
-                isActive
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-              } ${!sidebarOpen && 'justify-center'}`
-            }
-            title={!sidebarOpen ? item.label : ''}
-          >
-            {item.icon}
-            {sidebarOpen && <span>{item.label}</span>}
-          </NavLink>
+      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-1 custom-scrollbar">
+        {menuItems.map((section, index) => (
+          <SidebarSection key={index} section={section} basePath={basePath} sidebarOpen={sidebarOpen} />
         ))}
       </nav>
 
-      {/* Logout Button */}
-      <div className="p-3 border-t border-gray-800">
-        <button
-          onClick={handleLogout}
-          className={`flex items-center gap-3 px-3 py-2 w-full rounded-lg text-red-500 hover:bg-red-600 hover:text-white transition-all ${
-            !sidebarOpen && 'justify-center'
-          }`}
-          title={!sidebarOpen ? 'Logout' : ''}
-        >
-          <LogOut size={20} />
-          {sidebarOpen && <span>Logout</span>}
-        </button>
+      {/* User Info / Logout Button */}
+      <div className="p-3 border-t border-gray-800 bg-gray-900/50">
+        {sidebarOpen ? (
+          <div className="flex items-center justify-between px-3 py-2 bg-gray-800/50 rounded-xl">
+             <div className="flex items-center gap-3 min-w-0">
+               <div className="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                 <span className="text-white font-bold text-sm">
+                   {user?.name?.charAt(0) || 'U'}
+                 </span>
+               </div>
+               <div className="flex-1 min-w-0">
+                 <p className="font-semibold text-sm truncate text-white">{user?.name}</p>
+                 <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider truncate">{user?.role}</p>
+               </div>
+             </div>
+             <button
+                onClick={handleLogout}
+                className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors flex-shrink-0"
+                title="Logout"
+              >
+                <LogOut size={18} />
+              </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleLogout}
+            className="flex items-center justify-center w-full p-2.5 rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all group relative"
+            title="Logout"
+          >
+            <LogOut size={20} />
+            <div className="absolute left-14 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg border border-gray-800">
+              Logout
+            </div>
+          </button>
+        )}
       </div>
+      
+      <style dangerouslySetInnerHTML={{__html: `
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #475569; }
+      `}} />
     </div>
   )
 }
