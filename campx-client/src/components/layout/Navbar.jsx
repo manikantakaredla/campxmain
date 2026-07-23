@@ -6,13 +6,20 @@ import { Bell, User, LogOut, ChevronDown } from 'lucide-react'
 
 const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
   const { user, logout } = useAuth()
-  const { notifications, unreadCount } = useNotifications()
+  const { notifications, unreadCount, markAsRead } = useNotifications()
   const [showDropdown, setShowDropdown] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const navigate = useNavigate()
 
   const handleNotificationClick = (notif) => {
     setShowNotifications(false);
+    if (!notif.isRead && notif._id) {
+      import('../../services/api').then(({ default: api }) => {
+        api.put(`/notifications/${notif._id}`).catch(err => console.error(err));
+      });
+      if (typeof markAsRead === 'function') markAsRead(notif._id);
+    }
+    
     if (notif.type === 'message') {
       let queryParam = 'userId=';
       if (notif.relatedId?.startsWith('class_') || notif.relatedId?.startsWith('subjectGroup_') || notif.relatedId?.startsWith('proctor_')) {

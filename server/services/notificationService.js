@@ -147,6 +147,13 @@ const dispatchFCMJob = async (notification, targetUsers) => {
       if (category === 'announcement') targetUrl = `/announcement/${notification.relatedId}`;
       else if (category === 'resource') targetUrl = `/resource/${notification.relatedId}`;
       else if (category === 'activity') targetUrl = `/activity/${notification.relatedId}`;
+      else if (category === 'message') {
+        if (notification.relatedId.startsWith('class_') || notification.relatedId.startsWith('subjectGroup_') || notification.relatedId.startsWith('proctor_')) {
+          targetUrl = `/messages?groupId=${notification.relatedId}`;
+        } else {
+          targetUrl = `/messages?userId=${notification.relatedId}`;
+        }
+      }
     }
 
     const message = {

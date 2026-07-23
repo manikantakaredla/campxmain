@@ -6,7 +6,12 @@ import App from './App'
 import { AuthProvider } from './context/AuthContext'
 import { SocketProvider } from './context/SocketContext'
 import { NotificationProvider } from './context/NotificationContext'
+import { registerSW } from 'virtual:pwa-register'
 import './styles/globals.css'
+
+if ('serviceWorker' in navigator) {
+  registerSW({ immediate: true })
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
