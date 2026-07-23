@@ -67,41 +67,69 @@ const StudentEvents = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Mock Event Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 group">
-              <div className="h-40 bg-gradient-to-br from-blue-600 to-indigo-800 p-6 flex flex-col justify-end relative overflow-hidden">
-                <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+            {/* Luma-style Event Card */}
+            <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col h-full relative">
+              
+              {/* Image Section */}
+              <div className="h-48 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"></div>
+                <img 
+                  src="https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=800&auto=format&fit=crop&q=60" 
+                  alt="Workshop" 
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                />
                 
-                {/* Decorative circles */}
-                <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-                <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-blue-400/20 rounded-full blur-xl"></div>
-                
-                <div className="relative z-10">
-                  <span className="px-2.5 py-1 bg-white/20 backdrop-blur-md border border-white/30 text-white text-[10px] uppercase font-bold tracking-wider rounded-full mb-2 inline-block">Workshop</span>
-                  <h3 className="text-xl font-bold text-white leading-tight">Advanced AI & ML Workshop</h3>
+                {/* Top Tags */}
+                <div className="absolute top-4 left-4 z-20 flex gap-2">
+                  <span className="px-3 py-1 bg-white/90 backdrop-blur-md text-gray-900 text-xs font-bold rounded-full shadow-sm">
+                    Workshop
+                  </span>
+                  <span className="px-3 py-1 bg-indigo-600/90 backdrop-blur-md text-white text-xs font-bold rounded-full shadow-sm flex items-center gap-1">
+                    <Ticket size={12} /> Free
+                  </span>
+                </div>
+
+                {/* Date Badge Overlay */}
+                <div className="absolute bottom-4 left-4 z-20">
+                  <h3 className="text-xl font-bold text-white leading-tight mb-1">Advanced AI & ML Workshop</h3>
                 </div>
               </div>
-              <div className="p-5 space-y-4">
-                <div className="space-y-2 text-sm text-gray-600 font-medium">
-                  <div className="flex items-center gap-2"><Calendar size={16} className="text-indigo-500" /> Oct 25, 2023 • 10:00 AM</div>
-                  <div className="flex items-center gap-2"><MapPin size={16} className="text-red-500" /> Seminar Hall A, CS Block</div>
-                  <div className="flex items-center gap-2">
-                    <Users size={16} className="text-green-500" /> 
-                    <div className="flex-1 ml-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-green-500 w-[80%] rounded-full"></div>
-                    </div>
-                    <span className="text-xs ml-2">120/150</span>
+
+              {/* Content Section */}
+              <div className="p-5 flex-1 flex flex-col">
+                <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                  <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Date & Time</span>
+                    <span className="font-medium text-gray-900 mt-0.5">Oct 25, 2023 • 10:00 AM</span>
+                  </div>
+                  <div className="w-px h-8 bg-gray-100"></div>
+                  <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Location</span>
+                    <span className="font-medium text-gray-900 mt-0.5">Seminar Hall A</span>
                   </div>
                 </div>
-                <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">Learn the basics of building generative AI applications using modern frameworks and APIs.</p>
                 
-                <button 
-                  onClick={handleRegister}
-                  disabled={registered}
-                  className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm ${registered ? 'bg-green-50 text-green-700 cursor-default border border-green-200' : 'bg-gray-900 hover:bg-black text-white hover:shadow-md'}`}
-                >
-                  {registered ? 'Registered' : 'Register Now'}
-                </button>
+                <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed mb-6">Learn the basics of building generative AI applications using modern frameworks and APIs. Perfect for beginners and intermediate developers.</p>
+                
+                <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-4">
+                  {/* Attendees Avatars */}
+                  <div className="flex items-center">
+                    <div className="flex -space-x-2">
+                      <img className="w-8 h-8 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=1" alt="Attendee" />
+                      <img className="w-8 h-8 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=2" alt="Attendee" />
+                      <img className="w-8 h-8 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=3" alt="Attendee" />
+                    </div>
+                    <span className="text-xs font-medium text-gray-500 ml-3">+117 attending</span>
+                  </div>
+                  
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleRegister(); }}
+                    disabled={registered}
+                    className={`px-5 py-2 rounded-full text-sm font-bold transition-all shadow-sm ${registered ? 'bg-green-50 text-green-700 cursor-default border border-green-200' : 'bg-gray-900 hover:bg-black text-white hover:shadow-md'}`}
+                  >
+                    {registered ? 'Joined' : 'Join'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

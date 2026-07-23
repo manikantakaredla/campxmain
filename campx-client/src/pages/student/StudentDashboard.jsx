@@ -147,70 +147,70 @@ const StudentDashboard = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-bl-full opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+          <div className="bg-white rounded-[24px] p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-bl-[40px] opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
             <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shadow-sm">
-                <Megaphone size={18} className="text-blue-600" />
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl flex items-center justify-center shadow-sm border border-white">
+                <Megaphone size={20} className="text-blue-600" />
               </div>
               <TrendingUp size={16} className="text-green-500 hidden md:block" />
             </div>
             <div>
-              <p className="text-2xl font-black text-gray-900 tracking-tight">{stats.announcements}</p>
-              <p className="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wider">Announcements</p>
+              <p className="text-3xl font-black text-gray-900 tracking-tight">{stats.announcements}</p>
+              <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">Announcements</p>
             </div>
             <Link to="/student/announcements" className="text-xs font-bold text-blue-600 mt-4 inline-flex items-center gap-1 hover:text-blue-800 transition-colors">
               View all <ArrowRight size={12} />
             </Link>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-green-50 rounded-bl-full opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+          <div className="bg-white rounded-[24px] p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-green-50 rounded-bl-[40px] opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
             <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center shadow-sm">
-                <FileText size={18} className="text-green-600" />
+              <div className="w-12 h-12 bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl flex items-center justify-center shadow-sm border border-white">
+                <FileText size={20} className="text-green-600" />
               </div>
             </div>
             <div>
-              <p className="text-2xl font-black text-gray-900 tracking-tight">{stats.resources}</p>
-              <p className="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wider">Resources</p>
+              <p className="text-3xl font-black text-gray-900 tracking-tight">{stats.resources}</p>
+              <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">Resources</p>
             </div>
             <Link to="/student/resources" className="text-xs font-bold text-green-600 mt-4 inline-flex items-center gap-1 hover:text-green-800 transition-colors">
               Browse <ArrowRight size={12} />
             </Link>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-purple-50 rounded-bl-full opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+          <div className="bg-white rounded-[24px] p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-purple-50 rounded-bl-[40px] opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
             <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center shadow-sm">
-                <Calendar size={18} className="text-purple-600" />
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-50 to-fuchsia-100 rounded-2xl flex items-center justify-center shadow-sm border border-white">
+                <Calendar size={20} className="text-purple-600" />
               </div>
             </div>
             <div>
-              <p className="text-2xl font-black text-gray-900 tracking-tight">{stats.events}</p>
-              <p className="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wider">Events</p>
+              <p className="text-3xl font-black text-gray-900 tracking-tight">{stats.events}</p>
+              <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">Events</p>
             </div>
             <Link to="/student/calendar" className="text-xs font-bold text-purple-600 mt-4 inline-flex items-center gap-1 hover:text-purple-800 transition-colors">
               Calendar <ArrowRight size={12} />
             </Link>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-orange-50 rounded-bl-full opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+          <div className="bg-white rounded-[24px] p-5 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-orange-50 rounded-bl-[40px] opacity-50 -z-10 group-hover:scale-110 transition-transform duration-500"></div>
             <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center shadow-sm relative">
-                <Bell size={18} className="text-orange-600" />
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-50 to-amber-100 rounded-2xl flex items-center justify-center shadow-sm border border-white relative">
+                <Bell size={20} className="text-orange-600" />
               </div>
               {stats.unreadNotifications > 0 && (
-                <span className="bg-red-500 text-white text-[10px] md:text-xs px-2 py-1 rounded-md font-bold shadow-sm">
+                <span className="bg-red-500 text-white text-[10px] md:text-xs px-2.5 py-1 rounded-full font-bold shadow-sm">
                   {stats.unreadNotifications} New
                 </span>
               )}
             </div>
             <div>
-              <p className="text-2xl font-black text-gray-900 tracking-tight">{stats.unreadNotifications}</p>
-              <p className="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wider">Alerts</p>
+              <p className="text-3xl font-black text-gray-900 tracking-tight">{stats.unreadNotifications}</p>
+              <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">Alerts</p>
             </div>
             <Link to="/student/notifications" className="text-xs font-bold text-orange-600 mt-4 inline-flex items-center gap-1 hover:text-orange-800 transition-colors">
               Check <ArrowRight size={12} />

@@ -23,15 +23,15 @@ const SidebarSection = ({ section, basePath, sidebarOpen }) => {
       <NavLink
         to={`${basePath}${section.path}`}
         className={({ isActive }) =>
-          `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
+          `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative ${
             isActive
-              ? 'bg-blue-600 text-white font-semibold'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-bold'
               : 'text-gray-300 hover:bg-gray-800/80 hover:text-white'
           } ${!sidebarOpen && 'justify-center'}`
         }
         title={!sidebarOpen ? section.label : ''}
       >
-        <span className={`${location.pathname === `${basePath}${section.path}` ? 'text-white' : ''}`}>
+        <span className={`transition-transform duration-300 ${location.pathname === `${basePath}${section.path}` ? 'text-white scale-110' : 'group-hover:scale-110'}`}>
           {section.icon}
         </span>
         {sidebarOpen && <span className="flex-1 truncate">{section.label}</span>}
@@ -82,15 +82,15 @@ const SidebarSection = ({ section, basePath, sidebarOpen }) => {
               key={index}
               to={`${basePath}${item.path}`}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
+                `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative ${
                   isActive
-                    ? 'bg-gray-800 text-white font-semibold'
-                    : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-bold'
+                    : 'text-gray-400 hover:bg-gray-800/80 hover:text-white'
                 } ${!sidebarOpen && 'justify-center'}`
               }
               title={!sidebarOpen ? item.label : ''}
             >
-              <span className={`${isActivePath ? 'text-blue-500' : ''}`}>
+              <span className={`transition-transform duration-300 ${isActivePath ? 'text-white scale-110' : 'group-hover:scale-110'}`}>
                 {item.icon}
               </span>
               {sidebarOpen && <span className="flex-1 truncate text-sm">{item.label}</span>}

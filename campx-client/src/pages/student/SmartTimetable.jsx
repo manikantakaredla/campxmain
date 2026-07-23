@@ -222,36 +222,44 @@ const StudentTimetable = () => {
             <div className="space-y-1.5 md:space-y-2">
               {Object.entries(SCHEDULE_GRID).map(([day, classes]) => (
                 <div key={day} className="grid grid-cols-[80px_repeat(8,1fr)] md:grid-cols-[100px_repeat(8,1fr)] gap-1.5 md:gap-2">
-                  <div className="bg-indigo-50 text-indigo-800 rounded-lg md:rounded-xl flex items-center justify-center font-black text-[11px] md:text-sm uppercase tracking-wider border border-indigo-100">
+                  <div className="bg-indigo-50 text-indigo-800 rounded-[14px] flex items-center justify-center font-black text-[11px] md:text-sm uppercase tracking-wider border border-indigo-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
                     {day}
                   </div>
                   
                   {day === 'Sat' ? (
-                    <div className="col-span-8 bg-pink-50 text-pink-600 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-sm uppercase tracking-widest border border-pink-100 py-3 md:py-4">
+                    <div className="col-span-8 bg-pink-50 text-pink-600 rounded-[14px] flex items-center justify-center font-black text-xs md:text-sm uppercase tracking-widest border border-pink-100 py-3 md:py-4 shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
                       Activity Day
                     </div>
                   ) : (
                     classes.map((sub, idx) => {
                       if (sub === 'Lunch') {
                         return (
-                          <div key={idx} className="bg-gray-100 text-gray-500 rounded-lg md:rounded-xl flex items-center justify-center font-bold text-[10px] md:text-xs border border-gray-200">
+                          <div key={idx} className="bg-gray-50/80 text-gray-400 rounded-[14px] flex items-center justify-center font-bold text-[10px] md:text-xs border border-gray-100">
                             Lunch
                           </div>
                         )
                       }
                       if (!sub) {
-                        return <div key={idx} className="bg-gray-50 rounded-lg md:rounded-xl border border-dashed border-gray-200"></div>
+                        return <div key={idx} className="bg-transparent rounded-[14px] border border-dashed border-gray-200 opacity-50"></div>
                       }
                       
                       const room = getRoomForSubject(sub)
-                      const isSpecial = ['SS', 'APT'].includes(sub)
+                      
+                      // Dynamic Pastel Colors
+                      const getSubjectStyle = (s) => {
+                        if (['CD', 'AI', 'DAA', 'CN'].includes(s)) return { card: 'bg-blue-50/80 border-blue-100 text-blue-900', badge: 'bg-blue-500' };
+                        if (['SS', 'APT'].includes(s)) return { card: 'bg-amber-50/80 border-amber-100 text-amber-900', badge: 'bg-amber-500' };
+                        if (['Minor', 'Honors'].includes(s)) return { card: 'bg-purple-50/80 border-purple-100 text-purple-900', badge: 'bg-purple-500' };
+                        if (['P&S', 'WT', 'Project'].includes(s)) return { card: 'bg-emerald-50/80 border-emerald-100 text-emerald-900', badge: 'bg-emerald-500' };
+                        return { card: 'bg-indigo-50/80 border-indigo-100 text-indigo-900', badge: 'bg-indigo-500' };
+                      }
+                      
+                      const style = getSubjectStyle(sub);
                       
                       return (
-                        <div key={idx} className={`rounded-lg md:rounded-xl flex flex-col items-center justify-center p-1.5 md:p-2 text-center border transition-all hover:shadow-md hover:-translate-y-0.5 ${
-                          isSpecial ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-gray-200 hover:border-indigo-300'
-                        }`}>
-                          <p className={`font-black text-[11px] md:text-sm ${isSpecial ? 'text-yellow-800' : 'text-gray-900'}`}>{sub}</p>
-                          <p className={`text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 px-1.5 md:px-2 py-0.5 rounded text-white ${isSpecial ? 'bg-yellow-600' : 'bg-indigo-600'}`}>
+                        <div key={idx} className={`rounded-[14px] flex flex-col items-center justify-center p-1.5 md:p-2 text-center border transition-all duration-300 hover:shadow-[0_8px_20px_rgb(0,0,0,0.06)] hover:-translate-y-1 ${style.card}`}>
+                          <p className={`font-black text-[11px] md:text-sm tracking-tight`}>{sub}</p>
+                          <p className={`text-[8px] md:text-[10px] font-bold mt-0.5 md:mt-1 px-1.5 md:px-2 py-0.5 rounded-full text-white shadow-sm ${style.badge}`}>
                             {room}
                           </p>
                         </div>

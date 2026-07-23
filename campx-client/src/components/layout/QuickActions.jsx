@@ -10,7 +10,7 @@ const QuickActions = ({ actions }) => {
           <Link
             key={idx}
             to={action.path}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-all border shadow-sm hover:shadow group ${action.className || 'bg-white border-gray-200 hover:border-blue-300'}`}
+            className={`flex items-center gap-2 px-5 py-3 rounded-full whitespace-nowrap transition-all duration-300 border shadow-sm hover:shadow-md hover:-translate-y-0.5 group ${action.className || 'bg-white border-gray-200 hover:border-blue-300'}`}
           >
             <div className={`transition-colors ${action.iconClassName || 'text-gray-500 group-hover:text-blue-600'}`}>
               {action.icon}
