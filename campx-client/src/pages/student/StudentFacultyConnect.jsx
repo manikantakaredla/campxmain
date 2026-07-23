@@ -1262,7 +1262,9 @@ const MOCK_FACULTY = [
   "rating": "4.7",
   "phoneNumber": "7981891901"
 }
-] [
+]
+
+const MOCK_REQUESTS = [
   { id: 1, title: 'Bonafide Certificate', status: 'Pending' },
   { id: 2, title: 'Project Approval', status: 'Approved' },
   { id: 3, title: 'Internship NOC', status: 'In Review' },
