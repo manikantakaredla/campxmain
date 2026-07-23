@@ -440,7 +440,9 @@ exports.loginUser = async (req, res) => {
         designation: user.designation,
         staffRole: user.staffRole,
         phoneNumber: user.phoneNumber,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        resume: user.resume,
+        codingProfiles: user.codingProfiles
       }
     });
 
@@ -548,7 +550,7 @@ exports.resetPassword = async (req, res) => {
 // ==================== UPDATE PROFILE ====================
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, phoneNumber } = req.body;
+    const { name, phoneNumber, resume, codingProfiles } = req.body;
     
     const user = await User.findById(req.user.id);
     
@@ -558,6 +560,14 @@ exports.updateProfile = async (req, res) => {
     
     if (name) user.name = name;
     if (phoneNumber) user.phoneNumber = phoneNumber;
+    if (resume !== undefined) user.resume = resume;
+    if (codingProfiles) {
+      if (!user.codingProfiles) user.codingProfiles = {};
+      if (codingProfiles.leetcode !== undefined) user.codingProfiles.leetcode = codingProfiles.leetcode;
+      if (codingProfiles.github !== undefined) user.codingProfiles.github = codingProfiles.github;
+      if (codingProfiles.linkedin !== undefined) user.codingProfiles.linkedin = codingProfiles.linkedin;
+      if (codingProfiles.hackerrank !== undefined) user.codingProfiles.hackerrank = codingProfiles.hackerrank;
+    }
     
     await user.save();
     

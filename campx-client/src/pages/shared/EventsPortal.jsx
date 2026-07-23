@@ -141,9 +141,11 @@ const StudentEvents = () => {
                     {registered ? 'Joined' : 'Join'}
                   </button>
                 </div>
+                </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
         </div>
       )}
 

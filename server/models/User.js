@@ -87,6 +87,13 @@ const userSchema = new mongoose.Schema({
   currentYear: { type: Number, min: 1, max: 4 },
   currentSemester: { type: Number, min: 1, max: 8 },
   batch: { type: String },
+  resume: { type: String, default: null },
+  codingProfiles: {
+    leetcode: { type: String, default: '' },
+    github: { type: String, default: '' },
+    linkedin: { type: String, default: '' },
+    hackerrank: { type: String, default: '' }
+  },
 
   // ========== FACULTY SPECIFIC ==========
   employeeId: {

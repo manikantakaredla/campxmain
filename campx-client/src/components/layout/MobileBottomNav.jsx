@@ -5,7 +5,7 @@ import MobileMenuDrawer from './MobileMenuDrawer';
 import {
   Home,
   BookOpen,
-  Building2,
+  Rss,
   MessageSquare,
   Menu
 } from 'lucide-react';
@@ -28,23 +28,16 @@ const MobileBottomNav = () => {
     role === 'faculty' ? '/faculty' :
     ['admin', 'hod', 'dean', 'principal'].includes(role) ? '/admin' : '';
 
-  // The 5 static tabs
+  // The 4 static tabs (More is a button)
   const navItems = [
     { icon: <Home size={22} />, path: `${basePath}/dashboard`, label: 'Home' },
-    // We map 'Academics' to something generic based on role. 
-    // Student: timetable, Faculty: students, Admin: users
     { 
       icon: <BookOpen size={22} />, 
       path: role === 'student' ? `${basePath}/timetable` : role === 'faculty' ? `${basePath}/students` : `${basePath}/users`, 
       label: 'Academics' 
     },
-    // Campus usually implies Events or Announcements
-    { 
-      icon: <Building2 size={22} />, 
-      path: `${basePath}/events`, 
-      label: 'Campus' 
-    },
-    // { icon: <MessageSquare size={22} />, path: `${basePath}/messages`, label: 'Messages' },
+    { icon: <Rss size={22} />, path: `${basePath}/feed`, label: 'Feed' },
+    { icon: <MessageSquare size={22} />, path: `${basePath}/messages`, label: 'Messages' },
   ];
 
   return (
@@ -56,7 +49,7 @@ const MobileBottomNav = () => {
             to={item.path}
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center justify-center gap-1 py-3 transition-colors duration-200 ${
-                isActive ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
+                isActive ? 'text-blue-800' : 'text-gray-400 hover:text-gray-600'
               }`
             }
           >
@@ -69,7 +62,7 @@ const MobileBottomNav = () => {
         <button
           onClick={() => setIsDrawerOpen(true)}
           className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 transition-colors duration-200 ${
-            isDrawerOpen ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
+            isDrawerOpen ? 'text-blue-800' : 'text-gray-400 hover:text-gray-600'
           }`}
         >
           <Menu size={22} />

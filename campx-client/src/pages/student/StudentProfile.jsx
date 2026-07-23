@@ -31,7 +31,14 @@ const StudentProfile = () => {
   const [formData, setFormData] = useState({
     name: '',
     phoneNumber: '',
-    section: ''
+    section: '',
+    resume: '',
+    codingProfiles: {
+      leetcode: '',
+      github: '',
+      linkedin: '',
+      hackerrank: ''
+    }
   })
   
   const [preferences, setPreferences] = useState({
@@ -49,7 +56,14 @@ const StudentProfile = () => {
       setFormData({
         name: user.name || '',
         phoneNumber: user.phoneNumber || '',
-        section: user.section || ''
+        section: user.section || '',
+        resume: user.resume || '',
+        codingProfiles: {
+          leetcode: user.codingProfiles?.leetcode || '',
+          github: user.codingProfiles?.github || '',
+          linkedin: user.codingProfiles?.linkedin || '',
+          hackerrank: user.codingProfiles?.hackerrank || ''
+        }
       })
       if (user.notificationPreferences) {
         setPreferences(user.notificationPreferences)
@@ -73,7 +87,18 @@ const StudentProfile = () => {
   }
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    if (e.target.name.startsWith('coding_')) {
+      const field = e.target.name.split('_')[1];
+      setFormData({ 
+        ...formData, 
+        codingProfiles: { 
+          ...formData.codingProfiles, 
+          [field]: e.target.value 
+        } 
+      });
+    } else {
+      setFormData({ ...formData, [e.target.name]: e.target.value })
+    }
   }
 
   const handlePasswordChange = (e) => {
@@ -414,6 +439,88 @@ const StudentProfile = () => {
                         !isEditing ? 'bg-gray-50' : ''
                       }`}
                     />
+                  </div>
+                </div>
+
+                {/* Professional Section */}
+                <div className="pt-4 border-t border-gray-100 mt-6">
+                  <h3 className="text-sm font-medium text-gray-900 mb-4">Professional & Coding Profiles</h3>
+                  <div className="space-y-4">
+                    {/* Resume */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Resume URL</label>
+                      <input
+                        type="url"
+                        name="resume"
+                        value={formData.resume}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        placeholder="https://link-to-your-resume.pdf"
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 ${
+                          !isEditing ? 'bg-gray-50' : ''
+                        }`}
+                      />
+                    </div>
+                    {/* LinkedIn */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL</label>
+                      <input
+                        type="url"
+                        name="coding_linkedin"
+                        value={formData.codingProfiles.linkedin}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        placeholder="https://linkedin.com/in/username"
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 ${
+                          !isEditing ? 'bg-gray-50' : ''
+                        }`}
+                      />
+                    </div>
+                    {/* GitHub */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">GitHub URL</label>
+                      <input
+                        type="url"
+                        name="coding_github"
+                        value={formData.codingProfiles.github}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        placeholder="https://github.com/username"
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 ${
+                          !isEditing ? 'bg-gray-50' : ''
+                        }`}
+                      />
+                    </div>
+                    {/* LeetCode */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">LeetCode Username</label>
+                      <input
+                        type="text"
+                        name="coding_leetcode"
+                        value={formData.codingProfiles.leetcode}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        placeholder="username"
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 ${
+                          !isEditing ? 'bg-gray-50' : ''
+                        }`}
+                      />
+                    </div>
+                    {/* HackerRank */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">HackerRank Username</label>
+                      <input
+                        type="text"
+                        name="coding_hackerrank"
+                        value={formData.codingProfiles.hackerrank}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        placeholder="username"
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 ${
+                          !isEditing ? 'bg-gray-50' : ''
+                        }`}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

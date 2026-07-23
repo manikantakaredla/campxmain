@@ -29,7 +29,7 @@ export const usePWAInstall = () => {
   useEffect(() => {
     // Check if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    
+
     if (isStandalone) {
       setIsInstalled(true);
       return;
@@ -88,21 +88,21 @@ export const usePWAInstall = () => {
     if (!deferredPrompt) {
       return;
     }
-    
+
     // Show the install prompt
     deferredPrompt.prompt();
-    
+
     // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice;
-    
+
     if (process.env.NODE_ENV === 'development') {
       console.log(`User response to the install prompt: ${outcome}`);
     }
-    
+
     // We clear the prompt regardless of outcome as it can only be used once
     setDeferredPrompt(null);
     setShowPrompt(false);
-    
+
     if (outcome === 'accepted') {
       localStorage.setItem(HIDE_PROMPT_KEY, JSON.stringify({ timestamp: Date.now(), permanent: true }));
     }
