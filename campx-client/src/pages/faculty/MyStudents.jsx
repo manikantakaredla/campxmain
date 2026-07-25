@@ -152,7 +152,6 @@ const MyStudents = () => {
             </>
           )}
         </div>
-        </div>
       </div>
       )}
 
