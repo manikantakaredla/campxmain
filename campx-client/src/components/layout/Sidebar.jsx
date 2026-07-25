@@ -279,27 +279,27 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
   return (
     <div
-      className={`hidden md:flex bg-[#0f172a] text-white transition-all duration-300 flex-col border-r border-gray-800 shadow-xl ${
+      className={`hidden md:flex bg-white text-gray-800 transition-all duration-300 flex-col border-r border-gray-200 shadow-sm ${
         sidebarOpen ? 'w-64' : 'w-20'
       }`}
     >
       {/* Logo */}
-      <div className="flex items-center justify-between px-4 py-5 border-b border-gray-800">
+      <div className="flex items-center justify-between px-4 py-5 border-b border-gray-200">
         {sidebarOpen ? (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-white font-bold text-lg">A</span>
             </div>
-            <span className="font-bold text-sm tracking-wide">Aditya University</span>
+            <span className="font-bold text-sm tracking-wide text-gray-800">Aditya University</span>
           </div>
         ) : (
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mx-auto shadow-lg shadow-blue-500/20">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mx-auto shadow-sm">
             <span className="text-white font-bold text-lg">A</span>
           </div>
         )}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-1 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+          className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors"
         >
           {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
         </button>
@@ -313,23 +313,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       </nav>
 
       {/* User Info / Logout Button */}
-      <div className="p-3 border-t border-gray-800 bg-gray-900/50">
+      <div className="p-3 border-t border-gray-200 bg-gray-50">
         {sidebarOpen ? (
-          <div className="flex items-center justify-between px-3 py-2 bg-gray-800/50 rounded-xl">
+          <div className="flex items-center justify-between px-3 py-2 bg-white border border-gray-200 rounded-xl">
              <div className="flex items-center gap-3 min-w-0">
                <div className="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
                  <span className="text-white font-bold text-sm">
                    {user?.name?.charAt(0) || 'U'}
                  </span>
                </div>
-               <div className="flex-1 min-w-0">
-                 <p className="font-semibold text-sm truncate text-white">{user?.name}</p>
-                 <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider truncate">{user?.role}</p>
+                 <div className="flex-1 min-w-0">
+                 <p className="font-semibold text-sm truncate text-gray-800">{user?.name}</p>
+                 <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider truncate">{user?.role}</p>
                </div>
              </div>
-             <button
+              <button
                 onClick={handleLogout}
-                className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors flex-shrink-0"
+                className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
                 title="Logout"
               >
                 <LogOut size={18} />
@@ -338,11 +338,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         ) : (
           <button
             onClick={handleLogout}
-            className="flex items-center justify-center w-full p-2.5 rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all group relative"
+            className="flex items-center justify-center w-full p-2.5 rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all group relative"
             title="Logout"
           >
             <LogOut size={20} />
-            <div className="absolute left-14 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg border border-gray-800">
+            <div className="absolute left-14 bg-white text-gray-800 text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-sm border border-gray-200">
               Logout
             </div>
           </button>
@@ -352,8 +352,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #475569; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #cbd5e1; }
       `}} />
     </div>
   )

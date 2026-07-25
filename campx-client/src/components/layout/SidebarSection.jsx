@@ -25,20 +25,20 @@ const SidebarSection = ({ section, basePath, sidebarOpen }) => {
         className={({ isActive }) =>
           `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative ${
             isActive
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-bold'
-              : 'text-gray-300 hover:bg-gray-800/80 hover:text-white'
+              ? 'bg-blue-50 text-blue-700 font-bold'
+              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
           } ${!sidebarOpen && 'justify-center'}`
         }
         title={!sidebarOpen ? section.label : ''}
       >
-        <span className={`transition-transform duration-300 ${location.pathname === `${basePath}${section.path}` ? 'text-white scale-110' : 'group-hover:scale-110'}`}>
+        <span className={`transition-transform duration-300 ${location.pathname === `${basePath}${section.path}` ? 'text-blue-700 scale-110' : 'group-hover:scale-110'}`}>
           {section.icon}
         </span>
         {sidebarOpen && <span className="flex-1 truncate">{section.label}</span>}
         
         {/* Tooltip for collapsed state */}
         {!sidebarOpen && (
-          <div className="absolute left-14 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg border border-gray-700">
+          <div className="absolute left-14 bg-white text-gray-800 text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-sm border border-gray-200">
             {section.label}
           </div>
         )}
@@ -56,14 +56,14 @@ const SidebarSection = ({ section, basePath, sidebarOpen }) => {
           <span>{section.label}</span>
           <ChevronDown 
             size={14} 
-            className={`transition-transform duration-200 group-hover:text-gray-300 ${isExpanded ? 'rotate-180' : ''}`} 
+            className={`transition-transform duration-200 group-hover:text-gray-700 ${isExpanded ? 'rotate-180' : ''}`} 
           />
         </button>
       ) : (
         <div className="flex justify-center py-2 relative group cursor-pointer" onClick={() => setIsExpanded(true)}>
-           <div className="w-6 h-[2px] bg-gray-700 rounded-full group-hover:bg-gray-500 transition-colors"></div>
+           <div className="w-6 h-[2px] bg-gray-300 rounded-full group-hover:bg-gray-400 transition-colors"></div>
            {/* Tooltip for group name in collapsed mode */}
-           <div className="absolute left-14 bg-gray-900 text-gray-300 font-semibold uppercase tracking-wider text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 border border-gray-700">
+           <div className="absolute left-14 bg-white text-gray-600 font-semibold uppercase tracking-wider text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 border border-gray-200 shadow-sm">
             {section.label}
           </div>
         </div>
@@ -84,19 +84,19 @@ const SidebarSection = ({ section, basePath, sidebarOpen }) => {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative ${
                   isActive
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-bold'
-                    : 'text-gray-400 hover:bg-gray-800/80 hover:text-white'
+                    ? 'bg-blue-50 text-blue-700 font-bold'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 } ${!sidebarOpen && 'justify-center'}`
               }
               title={!sidebarOpen ? item.label : ''}
             >
-              <span className={`transition-transform duration-300 ${isActivePath ? 'text-white scale-110' : 'group-hover:scale-110'}`}>
+              <span className={`transition-transform duration-300 ${isActivePath ? 'text-blue-700 scale-110' : 'group-hover:scale-110'}`}>
                 {item.icon}
               </span>
               {sidebarOpen && <span className="flex-1 truncate text-sm">{item.label}</span>}
               
               {!sidebarOpen && (
-                <div className="absolute left-14 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg border border-gray-700">
+                <div className="absolute left-14 bg-white text-gray-800 text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-sm border border-gray-200">
                   {item.label}
                 </div>
               )}
