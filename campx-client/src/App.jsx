@@ -46,7 +46,6 @@ const EventsPortal = lazy(() => import('./pages/shared/EventsPortal'))
 const FacultyDashboard = lazy(() => import('./pages/faculty/FacultyDashboard'))
 const MyStudents = lazy(() => import('./pages/faculty/MyStudents'))
 const MyAnnouncements = lazy(() => import('./pages/faculty/MyAnnouncements'))
-const FacultyClassUpdates = lazy(() => import('./pages/faculty/ClassUpdates'))
 const FacultyCreateAnnouncement = lazy(() => import('./pages/faculty/CreateAnnouncement'))
 const FacultyEditAnnouncement = lazy(() => import('./pages/faculty/EditAnnouncement'))
 const MyResources = lazy(() => import('./pages/faculty/Myresources'))
@@ -167,7 +166,6 @@ function App() {
           <Route path="/faculty/dashboard" element={wrapSuspense(FacultyDashboard)} />
           <Route path="/faculty/students" element={wrapSuspense(MyStudents)} />
           <Route path="/faculty/students/:id" element={wrapSuspense(FacultyStudentDetails)} />
-          <Route path="/faculty/class-updates" element={wrapSuspense(FacultyClassUpdates)} />
           <Route path="/faculty/announcements" element={wrapSuspense(MyAnnouncements)} />
           <Route path="/faculty/announcements/create" element={wrapSuspense(FacultyCreateAnnouncement)} />
           <Route path="/faculty/announcements/edit/:id" element={wrapSuspense(FacultyEditAnnouncement)} />

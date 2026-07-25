@@ -140,7 +140,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           label: 'Teaching',
           items: [
             { path: '/students', icon: <Users size={20} />, label: 'Students' },
-            { path: '/class-updates', icon: <BookOpen size={20} />, label: 'Class Updates' },
             { path: '/resources', icon: <FileText size={20} />, label: 'Resources' },
             { path: '/announcements', icon: <Megaphone size={20} />, label: 'Announcements' },
           ]

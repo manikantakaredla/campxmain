@@ -5,7 +5,7 @@ import { resourceService } from '../../services/resourceService';
 import api from '../../api/axios';
 import { 
   Megaphone, FileText, Users, UserCheck, 
-  Clock, ArrowRight, AlertTriangle, MapPin, Calendar, BookOpen, MessageSquare
+  Clock, ArrowRight, AlertTriangle, MapPin, Calendar, BookOpen, MessageSquare, X, Link2, MonitorPlay, MessageCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -17,6 +17,14 @@ const ClassUpdates = () => {
   const [faculty, setFaculty] = useState({ classTeacher: null, proctor: null, teachingFaculty: [] });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('announcements');
+  const [showClassrooms, setShowClassrooms] = useState(false);
+
+  const classroomSubjects = [
+    { id: 1, name: 'Data Structures & Algorithms', code: 'CS301', faculty: 'Dr. R. Sharma', class: 'B.Tech CSE - 3rd Year (Sec A)', gClassLink: 'https://classroom.google.com/', gClassCode: 'dsa123x', whatsappLink: 'https://chat.whatsapp.com/' },
+    { id: 2, name: 'Database Management Systems', code: 'CS302', faculty: 'Prof. K. Verma', class: 'B.Tech CSE - 3rd Year (Sec A)', gClassLink: 'https://classroom.google.com/', gClassCode: 'dbms456', whatsappLink: 'https://chat.whatsapp.com/' },
+    { id: 3, name: 'Computer Networks', code: 'CS303', faculty: 'Dr. M. Singh', class: 'B.Tech CSE - 3rd Year (Sec A)', gClassLink: 'https://classroom.google.com/', gClassCode: 'cn789ab', whatsappLink: 'https://chat.whatsapp.com/' },
+    { id: 4, name: 'Operating Systems', code: 'CS304', faculty: 'Dr. T. Reddy', class: 'B.Tech CSE - 3rd Year (Sec A)', gClassLink: 'https://classroom.google.com/', gClassCode: 'os2024c', whatsappLink: 'https://chat.whatsapp.com/' },
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -238,6 +246,24 @@ const ClassUpdates = () => {
         {/* Resources Tab */}
         {activeTab === 'resources' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Google Classroom Special Card */}
+            <div
+              onClick={() => setShowClassrooms(true)}
+              className="bg-white rounded-2xl p-4 md:p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-green-100 hover:shadow-md hover:border-green-300 transition-all flex items-start gap-4 cursor-pointer group"
+            >
+              <div className="w-10 h-10 bg-green-50 border border-green-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-green-100 group-hover:text-green-600 transition-colors">
+                <MonitorPlay size={18} className="text-green-500 group-hover:text-green-600 transition-colors" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[9px] font-black bg-green-100 text-green-700 px-2 py-0.5 rounded uppercase tracking-widest">Platform</span>
+                </div>
+                <h3 className="font-bold text-gray-900 text-sm line-clamp-1 group-hover:text-green-600 transition-colors mb-0.5">Google Classrooms</h3>
+                <p className="text-[10px] md:text-xs text-gray-500 line-clamp-1">Class links, codes & WhatsApp groups</p>
+                <p className="text-[10px] font-bold text-green-500 mt-2 flex items-center gap-1">View Subjects <ArrowRight size={10} /></p>
+              </div>
+            </div>
+
             {resources.length === 0 ? (
               <div className="col-span-full bg-white border border-gray-100 rounded-3xl py-12 text-center shadow-sm">
                 <FileText size={32} className="text-gray-300 mx-auto mb-3" />
@@ -285,6 +311,68 @@ const ClassUpdates = () => {
           </div>
         )}
       </div>
+
+      {/* Google Classrooms Modal */}
+      {showClassrooms && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-5 md:p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <div>
+                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <MonitorPlay className="text-green-600" />
+                  Google Classrooms & Groups
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">Quick access to all your subject resources</p>
+              </div>
+              <button 
+                onClick={() => setShowClassrooms(false)}
+                className="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-gray-100 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="p-5 md:p-6 overflow-y-auto bg-gray-50/30 flex-1">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                 {classroomSubjects.map(subject => (
+                   <div key={subject.id} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                     <div className="flex justify-between items-start mb-3">
+                       <div>
+                         <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md uppercase tracking-wider mb-2 inline-block">{subject.code}</span>
+                         <h3 className="font-bold text-gray-900 text-base leading-tight">{subject.name}</h3>
+                       </div>
+                     </div>
+                     
+                     <div className="space-y-2 mb-5">
+                       <div className="flex items-center gap-2 text-sm text-gray-600">
+                         <UserCheck size={16} className="text-gray-400" />
+                         <span className="font-medium">{subject.faculty}</span>
+                       </div>
+                       <div className="flex items-center gap-2 text-sm text-gray-600">
+                         <MapPin size={16} className="text-gray-400" />
+                         <span>{subject.class}</span>
+                       </div>
+                     </div>
+                     
+                     <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-50">
+                       <a href={subject.gClassLink} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-1.5 bg-green-50 hover:bg-green-100 text-green-700 p-3 rounded-xl transition-colors">
+                         <Link2 size={18} />
+                         <span className="text-xs font-bold">Classroom</span>
+                         <span className="text-[10px] text-green-600 opacity-80">Code: {subject.gClassCode}</span>
+                       </a>
+                       <a href={subject.whatsappLink} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-3 rounded-xl transition-colors">
+                         <MessageCircle size={18} />
+                         <span className="text-xs font-bold">WhatsApp</span>
+                         <span className="text-[10px] text-emerald-600 opacity-80">Join Group</span>
+                       </a>
+                     </div>
+                   </div>
+                 ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

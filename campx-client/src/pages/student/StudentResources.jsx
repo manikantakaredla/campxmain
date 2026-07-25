@@ -3,7 +3,7 @@ import { resourceService } from '../../services/resourceService'
 import { SearchBar } from '../../components/common/SearchBar'
 import { Loader } from '../../components/common/Loader'
 import { EmptyState } from '../../components/common/EmptyState'
-import { FileText, Download, Eye, Clock, User, Filter, BookOpen, Layers, Calendar, ArrowLeft, File, FileSpreadsheet, FileArchive, CheckCircle, ExternalLink, MessageCircle, Copy } from 'lucide-react'
+import { FileText, Download, Eye, Clock, User, Filter, BookOpen, Layers, Calendar, ArrowLeft, File, FileSpreadsheet, FileArchive, CheckCircle } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -25,7 +25,6 @@ const StudentResources = () => {
     { id: 'lab', title: 'Lab Manuals', icon: <FileArchive className="w-8 h-8 text-teal-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-teal-50', borderColor: 'border-teal-100', hoverBorder: 'hover:border-teal-300', value: 'Lab Manual' },
     { id: 'syllabus', title: 'Syllabus', icon: <BookOpen className="w-8 h-8 text-cyan-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-cyan-50', borderColor: 'border-cyan-100', hoverBorder: 'hover:border-cyan-300', value: 'Syllabus' },
     { id: 'video', title: 'Video Links', icon: <File className="w-8 h-8 text-pink-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-pink-50', borderColor: 'border-pink-100', hoverBorder: 'hover:border-pink-300', value: 'Video Link' },
-    { id: 'gclassroom', title: 'Google Classroom', icon: <img src="https://upload.wikimedia.org/wikipedia/commons/5/59/Google_Classroom_Logo.png" alt="GC" className="w-8 h-8 mb-3 group-hover:scale-110 transition-transform object-contain" />, bgColor: 'bg-green-50', borderColor: 'border-green-200', hoverBorder: 'hover:border-green-400', value: 'GoogleClassroom' },
     { id: 'other', title: 'Other Materials', icon: <File className="w-8 h-8 text-gray-600 mb-3 group-hover:scale-110 transition-transform" />, bgColor: 'bg-gray-50', borderColor: 'border-gray-200', hoverBorder: 'hover:border-gray-400', value: 'Other' }
   ]
 
@@ -134,10 +133,6 @@ const StudentResources = () => {
   });
 
   const handleCategoryClick = (categoryValue) => {
-    if (categoryValue === 'GoogleClassroom') {
-      setActiveView('classroom')
-      return
-    }
     setFilters(prev => ({ ...prev, resourceType: categoryValue }))
     setActiveView('resources')
   }
@@ -165,60 +160,6 @@ const StudentResources = () => {
               <h3 className="font-bold text-gray-800 text-[10px] md:text-xs group-hover:text-blue-700 transition-colors uppercase tracking-wider">{card.title}</h3>
             </button>
           ))}
-        </div>
-      ) : activeView === 'classroom' ? (
-        <div className="space-y-6 animate-fade-in">
-          <div className="flex items-center gap-3 mb-6">
-            <button
-              onClick={() => setActiveView('categories')}
-              className="p-2 hover:bg-gray-100 rounded-xl text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2 text-sm font-bold border border-gray-200 bg-white"
-            >
-              <ArrowLeft className="w-4 h-4" /> Back to Categories
-            </button>
-            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-               Google Classroom Links
-            </h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { id: 1, name: 'Data Structures', faculty: 'Dr. Ramesh Kumar', classInfo: 'B.Tech CSE - 3rd Year A', link: 'https://classroom.google.com/', code: 'ds_3a_2026', whatsapp: 'https://chat.whatsapp.com/' },
-              { id: 2, name: 'Operating Systems', faculty: 'Prof. Sharma', classInfo: 'B.Tech CSE - 3rd Year A', link: 'https://classroom.google.com/', code: 'os_2026', whatsapp: 'https://chat.whatsapp.com/' },
-              { id: 3, name: 'Database Management', faculty: 'Dr. Anita Desai', classInfo: 'B.Tech CSE - 3rd Year A', link: 'https://classroom.google.com/', code: 'dbms_26', whatsapp: 'https://chat.whatsapp.com/' },
-              { id: 4, name: 'Computer Networks', faculty: 'Prof. Verma', classInfo: 'B.Tech CSE - 3rd Year A', link: 'https://classroom.google.com/', code: 'cn_3a', whatsapp: 'https://chat.whatsapp.com/' }
-            ].map((subject) => (
-              <div key={subject.id} className="bg-white rounded-[24px] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-md transition-shadow p-6 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-green-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform" />
-                <h3 className="text-lg font-bold text-gray-800 mb-1">{subject.name}</h3>
-                <p className="text-sm font-medium text-gray-500 mb-4 flex items-center gap-2">
-                  <User size={14} className="text-green-600" /> {subject.faculty}
-                </p>
-                <div className="space-y-3 mb-6 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500 font-semibold">Class:</span>
-                    <span className="text-gray-800 font-bold">{subject.classInfo}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500 font-semibold">Code:</span>
-                    <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded border border-gray-200 shadow-sm">
-                      <span className="text-gray-800 font-mono font-bold tracking-wider">{subject.code}</span>
-                      <button onClick={() => { navigator.clipboard.writeText(subject.code); toast.success('Code copied!') }} className="text-gray-400 hover:text-green-600 transition-colors" title="Copy Code">
-                        <Copy size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <a href={subject.link} target="_blank" rel="noreferrer" className="flex-1 bg-white text-gray-800 font-bold py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/59/Google_Classroom_Logo.png" alt="GC" className="w-4 h-4 object-contain" /> Join
-                  </a>
-                  <a href={subject.whatsapp} target="_blank" rel="noreferrer" className="flex-1 bg-[#25D366]/10 text-[#075E54] font-bold py-2.5 rounded-xl border border-[#25D366]/20 hover:bg-[#25D366]/20 transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
-                    <MessageCircle size={16} /> WhatsApp
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       ) : (
         <>
