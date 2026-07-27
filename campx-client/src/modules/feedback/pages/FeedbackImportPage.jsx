@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
-import api from '../../../../services/api';
+import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import { Upload, AlertCircle, FileText, CheckCircle2 } from 'lucide-react';
 

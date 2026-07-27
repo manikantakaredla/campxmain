@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth';
 import { AlertCircle, LogOut } from 'lucide-react';
 
 const FeedbackAlreadySubmitted = () => {

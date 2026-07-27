@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../../../services/api';
+import api from '../../../services/api';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth';
 import { LogOut, CheckCircle2 } from 'lucide-react';
 
 const StudentFeedbackForm = () => {

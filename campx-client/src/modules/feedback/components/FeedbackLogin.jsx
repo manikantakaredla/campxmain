@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../../hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth';
 import { User, LogIn, Mail, KeyRound } from 'lucide-react';
 import toast from 'react-hot-toast';
-import api from '../../../../services/api';
+import api from '../../../services/api';
 
 const FeedbackLogin = () => {
   const [identifier, setIdentifier] = useState('');
