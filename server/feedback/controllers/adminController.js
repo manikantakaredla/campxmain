@@ -87,7 +87,7 @@ exports.importMasterData = async (req, res) => {
 
     await FeedbackImportHistory.create([{
       fileName: fileName || "Manual Import",
-      uploadedBy: req.user._id,
+      uploadedBy: req.userId,
       rowsImported: importedCount,
       status: "success"
     }], { session });
