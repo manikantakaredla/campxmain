@@ -7,9 +7,6 @@ const mongoose = require("mongoose");
 const crypto = require("crypto");
 
 exports.importMasterData = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     const { rows, importType, fileName } = req.body;
     // importType: 'replace', 'append', 'update'
@@ -20,8 +17,8 @@ exports.importMasterData = async (req, res) => {
     }
 
     if (importType === "replace") {
-      await FeedbackStudent.deleteMany({}, { session });
-      await FeedbackAssignment.deleteMany({}, { session });
+      await FeedbackStudent.deleteMany({});
+      await FeedbackAssignment.deleteMany({});
     }
 
     let importedCount = 0;
@@ -65,11 +62,11 @@ exports.importMasterData = async (req, res) => {
       }
     }));
     if (studentOps.length > 0) {
-      await FeedbackStudent.bulkWrite(studentOps, { session });
+      await FeedbackStudent.bulkWrite(studentOps);
     }
 
     if (importType === "replace") {
-      await FeedbackAssignment.insertMany(assignments, { session });
+      await FeedbackAssignment.insertMany(assignments);
       importedCount = assignments.length;
     } else {
       const assignmentOps = assignments.map(a => ({
@@ -80,7 +77,7 @@ exports.importMasterData = async (req, res) => {
         }
       }));
       if (assignmentOps.length > 0) {
-        await FeedbackAssignment.bulkWrite(assignmentOps, { session });
+        await FeedbackAssignment.bulkWrite(assignmentOps);
         importedCount = assignments.length;
       }
     }
@@ -90,16 +87,12 @@ exports.importMasterData = async (req, res) => {
       uploadedBy: req.userId,
       rowsImported: importedCount,
       status: "success"
-    }], { session });
+    }]);
 
-    await session.commitTransaction();
     res.status(200).json({ success: true, message: `Successfully imported ${importedCount} records.`, importedCount });
   } catch (error) {
-    await session.abortTransaction();
     console.error("importMasterData error:", error);
     res.status(500).json({ success: false, message: error.message || "Server Error" });
-  } finally {
-    session.endSession();
   }
 };
 
