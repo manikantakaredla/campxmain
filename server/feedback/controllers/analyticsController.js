@@ -67,39 +67,71 @@ exports.getDashboardOverview = async (req, res) => {
 
 exports.getHeatmap = async (req, res) => {
   try {
+    const { groupBy = 'faculty' } = req.query; // 'faculty', 'timetable', 'course', 'student', 'facultyId'
+
     const allAnswers = await FeedbackAnswer.find();
     const questions = await FeedbackQuestion.find({ type: 'scale' }).sort({ order: 1 });
     
-    // facultyId -> { facultyName, questionAverages: { qId: avg } }
-    const facultyMap = {};
+    const groupMap = {};
 
     allAnswers.forEach(answerDoc => {
-      if (!facultyMap[answerDoc.facultyId]) {
-        facultyMap[answerDoc.facultyId] = {
-          facultyName: answerDoc.facultyName,
+      let key, displayName;
+      
+      switch (groupBy) {
+        case 'timetable':
+          key = answerDoc.timetable;
+          displayName = answerDoc.timetable;
+          break;
+        case 'course':
+          key = answerDoc.courseCode;
+          displayName = `${answerDoc.courseName} (${answerDoc.courseCode})`;
+          break;
+        case 'student':
+          key = answerDoc.rollNumber;
+          displayName = answerDoc.rollNumber;
+          break;
+        case 'facultyId':
+          key = answerDoc.facultyId;
+          displayName = answerDoc.facultyId;
+          break;
+        case 'faculty':
+        default:
+          key = answerDoc.facultyId;
+          displayName = `${answerDoc.facultyName} (${answerDoc.facultyId})`;
+          break;
+      }
+
+      if (!key) return; // Skip if missing data
+
+      if (!groupMap[key]) {
+        groupMap[key] = {
+          displayName,
           qStats: {}
         };
       }
       
-      const f = facultyMap[answerDoc.facultyId];
+      const g = groupMap[key];
       answerDoc.answers.forEach(ans => {
-        if (!f.qStats[ans.questionId]) {
-          f.qStats[ans.questionId] = { sum: 0, count: 0 };
+        if (!g.qStats[ans.questionId]) {
+          g.qStats[ans.questionId] = { sum: 0, count: 0 };
         }
-        f.qStats[ans.questionId].sum += ans.rating;
-        f.qStats[ans.questionId].count++;
+        g.qStats[ans.questionId].sum += ans.rating;
+        g.qStats[ans.questionId].count++;
       });
     });
 
     // Format for heatmap
-    const heatmapData = Object.values(facultyMap).map(f => {
-      const row = { facultyName: f.facultyName };
+    const heatmapData = Object.values(groupMap).map(g => {
+      const row = { name: g.displayName };
       questions.forEach(q => {
-        const stats = f.qStats[q._id];
+        const stats = g.qStats[q._id];
         row[q._id] = stats && stats.count > 0 ? (stats.sum / stats.count).toFixed(2) : null;
       });
       return row;
     });
+
+    // Sort alphabetically by name for better readability
+    heatmapData.sort((a, b) => a.name.localeCompare(b.name));
 
     res.status(200).json({ success: true, heatmapData, questions });
   } catch (error) {
