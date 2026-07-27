@@ -55,6 +55,12 @@ exports.sendOTP = async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
+    // Log OTP for easy testing
+    console.log(`\n=== FEEDBACK OTP ===`);
+    console.log(`Email: ${student.collegeEmail}`);
+    console.log(`OTP: ${otp}`);
+    console.log(`====================\n`);
+
     await FeedbackOTP.findOneAndUpdate(
       { email: student.collegeEmail },
       { otp, expiresAt },
@@ -63,11 +69,15 @@ exports.sendOTP = async (req, res) => {
 
     // Send email using existing utility
     try {
-      await sendEmail({
-        email: student.collegeEmail,
-        subject: "Your Feedback Login OTP - Aditya University",
-        message: `Your OTP for accessing the Feedback System is: ${otp}\n\nThis OTP will expire in 5 minutes.`
-      });
+      const emailSent = await sendEmail(
+        student.collegeEmail,
+        "Your Feedback Login OTP - Aditya University",
+        `Your OTP for accessing the Feedback System is: ${otp}\n\nThis OTP will expire in 5 minutes.`
+      );
+      
+      if (!emailSent) {
+        return res.status(500).json({ success: false, message: "Failed to send OTP email via Brevo. Please check backend logs." });
+      }
     } catch (err) {
       console.error("Error sending OTP email:", err);
       return res.status(500).json({ success: false, message: "Failed to send OTP email. Please try again." });
