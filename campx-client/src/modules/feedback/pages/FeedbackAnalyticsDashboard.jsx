@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../../services/api';
-import { BarChart, Users, Star, TrendingUp, Download, Filter } from 'lucide-react';
+import { BarChart, Users, Star, TrendingUp, Download, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const FeedbackAnalyticsDashboard = () => {
@@ -8,14 +9,17 @@ const FeedbackAnalyticsDashboard = () => {
   const [heatmapData, setHeatmapData] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [groupBy, setGroupBy] = useState('faculty'); // faculty, facultyId, timetable, course, student
+  const navigate = useNavigate();
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
     try {
       const [overviewRes, heatmapRes] = await Promise.all([
         api.get('/feedback/admin/analytics/overview'),
-        api.get(`/feedback/admin/analytics/heatmap?groupBy=${groupBy}`)
+        api.get('/feedback/admin/analytics/heatmap')
       ]);
       
       setStats(overviewRes.data.stats);
@@ -26,11 +30,7 @@ const FeedbackAnalyticsDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [groupBy]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  };
 
   const getHeatmapColor = (rating) => {
     if (!rating) return 'bg-gray-100 text-gray-400';
@@ -44,14 +44,7 @@ const FeedbackAnalyticsDashboard = () => {
   const exportHeatmapCSV = () => {
     if (!heatmapData.length || !questions.length) return;
 
-    let groupLabel = "Details";
-    if (groupBy === 'faculty') groupLabel = "Faculty Name";
-    if (groupBy === 'facultyId') groupLabel = "Faculty ID";
-    if (groupBy === 'timetable') groupLabel = "Timetable";
-    if (groupBy === 'course') groupLabel = "Course";
-    if (groupBy === 'student') groupLabel = "Roll Number";
-
-    const headers = [groupLabel, ...questions.map((_, i) => `Q${i + 1}`), 'Overall Avg'];
+    const headers = ['Faculty Name', ...questions.map((_, i) => `Q${i + 1}`), 'Overall Avg'];
     const rows = heatmapData.map(f => {
       let sum = 0;
       let count = 0;
@@ -64,7 +57,7 @@ const FeedbackAnalyticsDashboard = () => {
         return score || 'N/A';
       });
       const avg = count > 0 ? (sum / count).toFixed(2) : 'N/A';
-      return [f.name, ...qScores, avg];
+      return [f.facultyName, ...qScores, avg];
     });
 
     const csvContent = [
@@ -76,29 +69,37 @@ const FeedbackAnalyticsDashboard = () => {
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", `feedback_heatmap_${groupBy}.csv`);
+    link.setAttribute("download", "feedback_heatmap.csv");
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  if (loading && !stats) return <div className="p-8">Loading...</div>;
+  if (loading) return <div className="p-8">Loading...</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Feedback Analytics</h1>
-          <p className="text-gray-500">Monitor submission rates and detailed performance metrics.</p>
+          <p className="text-gray-500">Monitor submission rates and faculty performance.</p>
         </div>
-        <button
-          onClick={exportHeatmapCSV}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-        >
-          <Download size={16} />
-          Export CSV
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/admin/feedback/detailed-analytics')}
+            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm"
+          >
+            Detailed Analytics <ChevronRight size={16} />
+          </button>
+          <button
+            onClick={exportHeatmapCSV}
+            className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+          >
+            <Download size={16} />
+            Export CSV
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -149,42 +150,15 @@ const FeedbackAnalyticsDashboard = () => {
 
       {/* Heatmap */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">Performance Heatmap</h2>
-            <p className="text-sm text-gray-500 mt-1">Scores out of 5.0 for each question.</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Filter size={16} className="text-gray-400" />
-            <select
-              value={groupBy}
-              onChange={(e) => setGroupBy(e.target.value)}
-              className="border border-gray-300 rounded-md text-sm px-3 py-1.5 bg-white text-gray-700 outline-none focus:border-blue-500"
-            >
-              <option value="faculty">Group by Faculty Name</option>
-              <option value="facultyId">Group by Faculty ID</option>
-              <option value="timetable">Group by Timetable</option>
-              <option value="course">Group by Course Name</option>
-              <option value="student">Group by Student Roll Number</option>
-            </select>
-          </div>
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">Faculty Performance Heatmap</h2>
+          <p className="text-sm text-gray-500 mt-1">Scores out of 5.0 for each question.</p>
         </div>
-        <div className="overflow-x-auto relative">
-          {loading && (
-            <div className="absolute inset-0 bg-white/50 flex items-center justify-center backdrop-blur-sm z-10">
-              <div className="text-sm text-gray-500 font-medium">Updating...</div>
-            </div>
-          )}
+        <div className="overflow-x-auto">
           <table className="w-full text-sm text-left whitespace-nowrap">
             <thead className="bg-gray-50 text-gray-900 border-b border-gray-200">
               <tr>
-                <th className="p-4 font-semibold min-w-[200px]">
-                  {groupBy === 'faculty' && "Faculty Details"}
-                  {groupBy === 'facultyId' && "Faculty ID"}
-                  {groupBy === 'timetable' && "Timetable Name"}
-                  {groupBy === 'course' && "Course Details"}
-                  {groupBy === 'student' && "Student Roll Number"}
-                </th>
+                <th className="p-4 font-semibold">Faculty Name</th>
                 {questions.map((q, i) => (
                   <th key={q._id} className="p-4 font-semibold text-center" title={q.questionText}>
                     Q{i + 1}
@@ -195,7 +169,7 @@ const FeedbackAnalyticsDashboard = () => {
             <tbody className="divide-y divide-gray-100">
               {heatmapData.map((row, idx) => (
                 <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                  <td className="p-4 font-medium text-gray-900">{row.name}</td>
+                  <td className="p-4 font-medium text-gray-900">{row.facultyName}</td>
                   {questions.map(q => {
                     const score = row[q._id];
                     return (
@@ -208,7 +182,7 @@ const FeedbackAnalyticsDashboard = () => {
                   })}
                 </tr>
               ))}
-              {heatmapData.length === 0 && !loading && (
+              {heatmapData.length === 0 && (
                 <tr>
                   <td colSpan={questions.length + 1} className="p-8 text-center text-gray-500">
                     No feedback data available yet.

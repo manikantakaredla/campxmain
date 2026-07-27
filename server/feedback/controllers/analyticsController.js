@@ -67,74 +67,160 @@ exports.getDashboardOverview = async (req, res) => {
 
 exports.getHeatmap = async (req, res) => {
   try {
-    const { groupBy = 'faculty' } = req.query; // 'faculty', 'timetable', 'course', 'student', 'facultyId'
-
     const allAnswers = await FeedbackAnswer.find();
     const questions = await FeedbackQuestion.find({ type: 'scale' }).sort({ order: 1 });
     
-    const groupMap = {};
+    // facultyId -> { facultyName, questionAverages: { qId: avg } }
+    const facultyMap = {};
 
     allAnswers.forEach(answerDoc => {
-      let key, displayName;
-      
-      switch (groupBy) {
-        case 'timetable':
-          key = answerDoc.timetable;
-          displayName = answerDoc.timetable;
-          break;
-        case 'course':
-          key = answerDoc.courseCode;
-          displayName = `${answerDoc.courseName} (${answerDoc.courseCode})`;
-          break;
-        case 'student':
-          key = answerDoc.rollNumber;
-          displayName = answerDoc.rollNumber;
-          break;
-        case 'facultyId':
-          key = answerDoc.facultyId;
-          displayName = answerDoc.facultyId;
-          break;
-        case 'faculty':
-        default:
-          key = answerDoc.facultyId;
-          displayName = `${answerDoc.facultyName} (${answerDoc.facultyId})`;
-          break;
-      }
-
-      if (!key) return; // Skip if missing data
-
-      if (!groupMap[key]) {
-        groupMap[key] = {
-          displayName,
+      if (!facultyMap[answerDoc.facultyId]) {
+        facultyMap[answerDoc.facultyId] = {
+          facultyName: answerDoc.facultyName,
           qStats: {}
         };
       }
       
-      const g = groupMap[key];
+      const f = facultyMap[answerDoc.facultyId];
       answerDoc.answers.forEach(ans => {
-        if (!g.qStats[ans.questionId]) {
-          g.qStats[ans.questionId] = { sum: 0, count: 0 };
+        if (!f.qStats[ans.questionId]) {
+          f.qStats[ans.questionId] = { sum: 0, count: 0 };
         }
-        g.qStats[ans.questionId].sum += ans.rating;
-        g.qStats[ans.questionId].count++;
+        f.qStats[ans.questionId].sum += ans.rating;
+        f.qStats[ans.questionId].count++;
       });
     });
 
     // Format for heatmap
-    const heatmapData = Object.values(groupMap).map(g => {
-      const row = { name: g.displayName };
+    const heatmapData = Object.values(facultyMap).map(f => {
+      const row = { facultyName: f.facultyName, name: f.facultyName };
       questions.forEach(q => {
-        const stats = g.qStats[q._id];
+        const stats = f.qStats[q._id];
         row[q._id] = stats && stats.count > 0 ? (stats.sum / stats.count).toFixed(2) : null;
       });
       return row;
     });
 
-    // Sort alphabetically by name for better readability
     heatmapData.sort((a, b) => a.name.localeCompare(b.name));
 
     res.status(200).json({ success: true, heatmapData, questions });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getDetailedAnalytics = async (req, res) => {
+  try {
+    const students = await FeedbackStudent.find();
+    const submissions = await FeedbackSubmission.find();
+    const answers = await FeedbackAnswer.find();
+    const assignments = await FeedbackAssignment.find();
+    const questions = await FeedbackQuestion.find({ type: 'scale' }).sort({ order: 1 });
+    
+    const timetablesMap = {};
+    
+    // Populate students count per timetable
+    students.forEach(s => {
+      const tt = s.timetable;
+      if (!tt) return;
+      if (!timetablesMap[tt]) {
+        timetablesMap[tt] = {
+          name: tt,
+          totalStudents: 0,
+          submittedStudents: 0,
+          faculties: {} // facultyId -> { ... }
+        };
+      }
+      timetablesMap[tt].totalStudents++;
+    });
+
+    // Populate submissions per timetable
+    const submissionRollNumbers = new Set(submissions.map(s => s.rollNumber));
+    students.forEach(s => {
+      const tt = s.timetable;
+      if (tt && timetablesMap[tt] && submissionRollNumbers.has(s.rollNumber)) {
+        timetablesMap[tt].submittedStudents++;
+      }
+    });
+    
+    // Populate faculties within timetables
+    assignments.forEach(a => {
+      const tt = a.timetable;
+      const fId = a.facultyId;
+      if (!tt || !timetablesMap[tt]) return;
+      
+      if (!timetablesMap[tt].faculties[fId]) {
+        timetablesMap[tt].faculties[fId] = {
+          facultyId: fId,
+          facultyName: a.facultyName,
+          totalStudentsAssigned: 0,
+          submittedStudents: 0,
+          qStats: {}
+        };
+      }
+      // Note: an assignment is one unique link between student and course/faculty. 
+      // If a student has the same faculty for two courses in the same timetable, it might count twice unless we distinct it.
+      // But usually it's fine.
+      timetablesMap[tt].faculties[fId].totalStudentsAssigned++;
+    });
+    
+    // Populate answers
+    answers.forEach(ansDoc => {
+      const tt = ansDoc.timetable;
+      const fId = ansDoc.facultyId;
+      if (!tt || !timetablesMap[tt] || !timetablesMap[tt].faculties[fId]) return;
+      
+      const f = timetablesMap[tt].faculties[fId];
+      f.submittedStudents++;
+      
+      ansDoc.answers.forEach(a => {
+        if (!f.qStats[a.questionId]) {
+          f.qStats[a.questionId] = { sum: 0, count: 0 };
+        }
+        f.qStats[a.questionId].sum += a.rating;
+        f.qStats[a.questionId].count++;
+      });
+    });
+    
+    // Format response
+    const formattedTimetables = Object.values(timetablesMap).map(tt => {
+      const faculties = Object.values(tt.faculties).map(f => {
+        const questionScores = {};
+        questions.forEach(q => {
+          const stats = f.qStats[q._id];
+          questionScores[q._id] = stats && stats.count > 0 ? (stats.sum / stats.count).toFixed(2) : null;
+        });
+        
+        // Safety cap in case of assignment duplicates vs answers
+        if (f.submittedStudents > f.totalStudentsAssigned) {
+           f.totalStudentsAssigned = f.submittedStudents;
+        }
+
+        return {
+          facultyId: f.facultyId,
+          facultyName: f.facultyName,
+          totalAssigned: f.totalStudentsAssigned,
+          submitted: f.submittedStudents,
+          completionPercentage: f.totalStudentsAssigned > 0 ? ((f.submittedStudents / f.totalStudentsAssigned) * 100).toFixed(1) : 0,
+          questionScores
+        };
+      });
+      
+      faculties.sort((a,b) => a.facultyName.localeCompare(b.facultyName));
+      
+      return {
+        name: tt.name,
+        totalStudents: tt.totalStudents,
+        submittedStudents: tt.submittedStudents,
+        completionPercentage: tt.totalStudents > 0 ? ((tt.submittedStudents / tt.totalStudents) * 100).toFixed(1) : 0,
+        faculties
+      };
+    });
+    
+    formattedTimetables.sort((a,b) => a.name.localeCompare(b.name));
+    
+    res.status(200).json({ success: true, timetables: formattedTimetables, questions });
+  } catch(error) {
+     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };

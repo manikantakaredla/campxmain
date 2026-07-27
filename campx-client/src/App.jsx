@@ -80,6 +80,7 @@ const FeedbackAlreadySubmitted = lazy(() => import('./modules/feedback/pages/Fee
 const FeedbackConfigPage = lazy(() => import('./modules/feedback/pages/FeedbackConfigPage'))
 const FeedbackImportPage = lazy(() => import('./modules/feedback/pages/FeedbackImportPage'))
 const FeedbackAnalyticsDashboard = lazy(() => import('./modules/feedback/pages/FeedbackAnalyticsDashboard'))
+const DetailedAnalyticsPage = lazy(() => import('./modules/feedback/pages/DetailedAnalyticsPage'))
 
 // Role-based route guard
 const RoleBasedRedirect = ({ role }) => {
@@ -243,6 +244,7 @@ function App() {
           <Route path="/admin/events" element={wrapSuspense(EventsPortal)} />
           
           <Route path="/admin/feedback/dashboard" element={wrapSuspense(FeedbackAnalyticsDashboard)} />
+          <Route path="/admin/feedback/detailed-analytics" element={wrapSuspense(DetailedAnalyticsPage)} />
           <Route path="/admin/feedback/import" element={wrapSuspense(FeedbackImportPage)} />
           <Route path="/admin/feedback/config" element={wrapSuspense(FeedbackConfigPage)} />
 
