@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
-import { Upload, AlertCircle, FileText, CheckCircle2 } from 'lucide-react';
+import { Upload, AlertCircle, FileText, CheckCircle2, Download } from 'lucide-react';
 
 const FeedbackImportPage = () => {
   const [file, setFile] = useState(null);
@@ -116,6 +116,29 @@ const FeedbackImportPage = () => {
     }
   };
 
+  const downloadSampleTemplate = () => {
+    const headers = ['Roll No', 'Timetable', 'Course Code', 'Course Name', 'Faculty Name', 'Faculty ID'];
+    const sampleRows = [
+      ['24B11CS001', '4th Year Sec-A', 'CS401', 'Machine Learning', 'Dr. Smith', 'FAC001'],
+      ['24B11CS002', '4th Year Sec-B', 'CS402', 'Cloud Computing', 'Prof. Johnson', 'FAC002']
+    ];
+
+    const csvContent = [
+      headers.join(','),
+      ...sampleRows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "feedback_import_template.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-8">
       <div>
@@ -175,19 +198,29 @@ const FeedbackImportPage = () => {
             </div>
 
             {/* Instructions */}
-            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-3">Required Columns</h3>
-              <ul className="text-sm text-gray-600 space-y-2 mb-4 list-disc list-inside">
-                <li><span className="font-medium text-gray-900">Roll No</span> (e.g., 24B11CS002)</li>
-                <li><span className="font-medium text-gray-900">Timetable</span> (e.g., 4th Year Sec-B)</li>
-                <li><span className="font-medium text-gray-900">Course Code</span></li>
-                <li><span className="font-medium text-gray-900">Course Name</span></li>
-                <li><span className="font-medium text-gray-900">Faculty Name</span></li>
-                <li><span className="font-medium text-gray-900">Faculty ID</span> (Optional)</li>
-              </ul>
-              <div className="bg-blue-50 text-blue-800 p-3 rounded-lg text-xs">
-                <strong>Note:</strong> College emails are generated automatically from the Roll Number (e.g., 24b11cs002@adityauniversity.in).
+            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col">
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 mb-3">Required Columns</h3>
+                <ul className="text-sm text-gray-600 space-y-2 mb-4 list-disc list-inside">
+                  <li><span className="font-medium text-gray-900">Roll No</span> (e.g., 24B11CS002)</li>
+                  <li><span className="font-medium text-gray-900">Timetable</span> (e.g., 4th Year Sec-B)</li>
+                  <li><span className="font-medium text-gray-900">Course Code</span></li>
+                  <li><span className="font-medium text-gray-900">Course Name</span></li>
+                  <li><span className="font-medium text-gray-900">Faculty Name</span></li>
+                  <li><span className="font-medium text-gray-900">Faculty ID</span> (Optional)</li>
+                </ul>
+                <div className="bg-blue-50 text-blue-800 p-3 rounded-lg text-xs mb-4">
+                  <strong>Note:</strong> College emails are generated automatically from the Roll Number (e.g., 24b11cs002@adityauniversity.in).
+                </div>
               </div>
+              
+              <button 
+                onClick={downloadSampleTemplate}
+                className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors mt-auto"
+              >
+                <Download size={16} />
+                Download Sample Template
+              </button>
             </div>
           </div>
         </div>
