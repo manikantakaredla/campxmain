@@ -73,6 +73,14 @@ const PlacementUpload = lazy(() => import('./pages/admin/Opportunities/Placement
 const PlacementAnalytics = lazy(() => import('./pages/admin/Opportunities/PlacementAnalytics'))
 const AdminFacultyManagement = lazy(() => import('./pages/admin/FacultyManagement'))
 
+// Feedback Module Pages
+const StudentFeedbackForm = lazy(() => import('./modules/feedback/pages/StudentFeedbackForm'))
+const SuccessPage = lazy(() => import('./modules/feedback/pages/SuccessPage'))
+const FeedbackAlreadySubmitted = lazy(() => import('./modules/feedback/pages/FeedbackAlreadySubmitted'))
+const FeedbackConfigPage = lazy(() => import('./modules/feedback/pages/FeedbackConfigPage'))
+const FeedbackImportPage = lazy(() => import('./modules/feedback/pages/FeedbackImportPage'))
+const FeedbackAnalyticsDashboard = lazy(() => import('./modules/feedback/pages/FeedbackAnalyticsDashboard'))
+
 // Role-based route guard
 const RoleBasedRedirect = ({ role }) => {
   const redirectMap = {
@@ -157,6 +165,21 @@ function App() {
     )
   }
 
+  if (role === 'student_feedback') {
+    return (
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            <Route path="/student/feedback" element={<StudentFeedbackForm />} />
+            <Route path="/student/feedback/success" element={<SuccessPage />} />
+            <Route path="/student/feedback/already-submitted" element={<FeedbackAlreadySubmitted />} />
+            <Route path="*" element={<Navigate to="/student/feedback" replace />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
+    )
+  }
+
   if (role === 'faculty') {
     return (
       <ErrorBoundary>
@@ -219,6 +242,10 @@ function App() {
           <Route path="/admin/complaints" element={wrapSuspense(ComplaintsPortal)} />
           <Route path="/admin/events" element={wrapSuspense(EventsPortal)} />
           
+          <Route path="/admin/feedback/dashboard" element={wrapSuspense(FeedbackAnalyticsDashboard)} />
+          <Route path="/admin/feedback/import" element={wrapSuspense(FeedbackImportPage)} />
+          <Route path="/admin/feedback/config" element={wrapSuspense(FeedbackConfigPage)} />
+
           <Route path="/announcement/:id" element={wrapSuspense(AnnouncementDetails)} />
           <Route path="/resource/:id" element={wrapSuspense(ResourceDetails)} />
           <Route path="/activity/:id" element={wrapSuspense(ActivityDetails)} />

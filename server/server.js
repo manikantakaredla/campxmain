@@ -36,6 +36,7 @@ const subjectRoutes = require("./routes/subjectRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const startOpportunityCron = require("./scripts/opportunityCron");
+const feedbackRoutes = require("./feedback/routes/feedbackRoutes");
 
 const app = express();
 app.set('trust proxy', 1)
@@ -135,6 +136,7 @@ app.use("/api/success-stories", successStoryRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 app.get("/test-brevo", async (req, res) => {
   try {

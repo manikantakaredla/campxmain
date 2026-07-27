@@ -227,6 +227,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
       items.push({
         type: 'group',
+        label: 'Feedback System',
+        items: [
+          { path: '/feedback/dashboard', icon: <TrendingUp size={20} />, label: 'Feedback Analytics' },
+          { path: '/feedback/import', icon: <Upload size={20} />, label: 'Import Data' },
+          { path: '/feedback/config', icon: <Settings size={20} />, label: 'Configuration' }
+        ]
+      })
+
+      items.push({
+        type: 'group',
         label: 'Support',
         items: [
           { path: '/complaints', icon: <AlertCircle size={20} />, label: 'Complaints Portal' }

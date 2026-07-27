@@ -7,6 +7,7 @@ import StudentRegisterForm from "../../components/auth/StudentRegisterForm";
 import FacultyRegisterForm from "../../components/auth/FacultyRegisterForm";
 import VerifyOTPForm from "../../components/auth/VerifyOTPForm";
 import toast from "react-hot-toast";
+import FeedbackLogin from "../../modules/feedback/components/FeedbackLogin";
 
 function LandingPage() {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ function LandingPage() {
   const [email, setEmail] = useState("");
   const [registrationData, setRegistrationData] = useState(null);
   const [showVerifyOTP, setShowVerifyOTP] = useState(false);
+  const [loginType, setLoginType] = useState("student"); // student or faculty
+  const isFeedbackMode = import.meta.env.VITE_ENABLE_FEEDBACK_MODE === 'true';
 
   return (
     <div 
@@ -105,18 +108,54 @@ function LandingPage() {
           <div className="p-6">
             {!showRegister && !showVerifyOTP ? (
               <div>
-                <LoginForm />
-                <div className="mt-6 text-center">
-                  <p className="text-sm text-gray-600">
-                    Don't have an account?{' '}
+                {isFeedbackMode && (
+                  <div className="flex gap-2 mb-6">
                     <button
-                      onClick={() => setShowRegister(true)}
-                      className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
+                      type="button"
+                      onClick={() => setLoginType("student")}
+                      className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${
+                        loginType === "student"
+                          ? "bg-blue-600 text-white shadow-sm"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
                     >
-                      Register now
+                      Student
                     </button>
-                  </p>
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => setLoginType("faculty")}
+                      className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${
+                        loginType === "faculty"
+                          ? "bg-blue-600 text-white shadow-sm"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Faculty/Staff
+                    </button>
+                  </div>
+                )}
+
+                {isFeedbackMode && loginType === "student" ? (
+                  <FeedbackLogin />
+                ) : (
+                  <>
+                    <LoginForm />
+                    <div className="mt-6 text-center">
+                      <p className="text-sm text-gray-600">
+                        Don't have an account?{' '}
+                        <button
+                          onClick={() => {
+                            setShowRegister(true);
+                            setRegisterType(isFeedbackMode ? "faculty" : "student");
+                          }}
+                          className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
+                        >
+                          Register now
+                        </button>
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             ) : showVerifyOTP ? (
               <VerifyOTPForm
@@ -129,32 +168,34 @@ function LandingPage() {
             ) : (
               <div>
                 {/* Register Type Tabs */}
-                <div className="flex gap-2 mb-6">
-                  <button
-                    type="button"
-                    onClick={() => setRegisterType("student")}
-                    className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${
-                      registerType === "student"
-                        ? "bg-blue-600 text-white shadow-sm"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    Student
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRegisterType("faculty")}
-                    className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${
-                      registerType === "faculty"
-                        ? "bg-blue-600 text-white shadow-sm"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    Faculty
-                  </button>
-                </div>
+                {!isFeedbackMode && (
+                  <div className="flex gap-2 mb-6">
+                    <button
+                      type="button"
+                      onClick={() => setRegisterType("student")}
+                      className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${
+                        registerType === "student"
+                          ? "bg-blue-600 text-white shadow-sm"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Student
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRegisterType("faculty")}
+                      className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${
+                        registerType === "faculty"
+                          ? "bg-blue-600 text-white shadow-sm"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Faculty
+                    </button>
+                  </div>
+                )}
 
-                {registerType === "student" ? (
+                {registerType === "student" && !isFeedbackMode ? (
                   <StudentRegisterForm
                     setActiveTab={(tab) => {
                       if (tab === "verifyOtp") {
