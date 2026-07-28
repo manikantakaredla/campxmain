@@ -17,7 +17,8 @@ const {
 const {
   getDashboardOverview,
   getHeatmap,
-  getDetailedAnalytics
+  getDetailedAnalytics,
+  getFacultyStudentResponses
 } = require("../controllers/analyticsController");
 
 router.use(protect, authorizeRoles("admin", "principal"));
@@ -40,5 +41,6 @@ router.delete("/questions/:id", deleteQuestion);
 router.get("/analytics/overview", getDashboardOverview);
 router.get("/analytics/heatmap", getHeatmap);
 router.get("/analytics/detailed", getDetailedAnalytics);
+router.get("/analytics/faculty-students", getFacultyStudentResponses);
 
 module.exports = router;

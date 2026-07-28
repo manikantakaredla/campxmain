@@ -230,3 +230,83 @@ exports.getDetailedAnalytics = async (req, res) => {
      res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
+exports.getFacultyStudentResponses = async (req, res) => {
+  try {
+    const { timetable, facultyId } = req.query;
+    if (!timetable || !facultyId) {
+      return res.status(400).json({ success: false, message: 'Timetable and facultyId required' });
+    }
+
+    // 1. Get all questions to map questionId -> Text, and get max scale for percentage/text mapping
+    const questions = await FeedbackQuestion.find({ type: 'scale' }).sort({ order: 1 });
+    const questionMap = {};
+    questions.forEach(q => {
+      questionMap[q._id.toString()] = q;
+    });
+
+    const getRatingText = (rating) => {
+      if (!rating) return 'N/A';
+      if (rating === 1) return 'Poor';
+      if (rating === 2) return 'Fair';
+      if (rating === 3) return 'Good';
+      if (rating === 4) return 'Very Good';
+      if (rating === 5) return 'Excellent';
+      return rating.toString();
+    };
+
+    // 2. Get all assignments for this faculty & timetable
+    const assignments = await FeedbackAssignment.find({ timetable, facultyId });
+    const assignedRollNumbers = assignments.map(a => a.studentRollNo);
+
+    // 3. Get all answers for these students & this faculty
+    const answers = await FeedbackAnswer.find({ timetable, facultyId, rollNumber: { $in: assignedRollNumbers } });
+    
+    // Map answer by roll number
+    const answerMap = {};
+    const stats = {
+      'Poor': 0,
+      'Fair': 0,
+      'Good': 0,
+      'Very Good': 0,
+      'Excellent': 0
+    };
+
+    answers.forEach(ans => {
+      const qAnswers = {};
+      ans.answers.forEach(a => {
+        const text = getRatingText(a.rating);
+        qAnswers[a.questionId.toString()] = text;
+        if (stats[text] !== undefined) {
+          stats[text]++;
+        }
+      });
+      answerMap[ans.rollNumber] = {
+        answers: qAnswers,
+        suggestions: ans.suggestions
+      };
+    });
+
+    // 4. Build student list
+    const studentsList = assignedRollNumbers.map(roll => {
+      const submitted = !!answerMap[roll];
+      return {
+        rollNumber: roll,
+        status: submitted ? 'Given' : 'Not Given',
+        answers: submitted ? answerMap[roll].answers : {},
+        suggestions: submitted ? answerMap[roll].suggestions : ''
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      students: studentsList,
+      stats,
+      questions
+    });
+
+  } catch (error) {
+    console.error('Error fetching faculty student responses:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
