@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Users, Star, BarChart3, ChevronRight, MessageSquare, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import api from '../../../services/api';
 
 const DetailedAnalyticsPage = () => {
@@ -66,8 +66,8 @@ const DetailedAnalyticsPage = () => {
     }
   };
 
-  const handleFacultyClick = (faculty) => {
-    setSelectedFaculty(faculty);
+  const handleFacultyClick = (faculty, roomNo = null) => {
+    setSelectedFaculty({ ...faculty, roomNo });
     fetchStudentResponses(selectedTimetable.name, faculty.facultyId);
   };
 
@@ -76,16 +76,8 @@ const DetailedAnalyticsPage = () => {
     
     const doc = new jsPDF('landscape');
     
-    // Title
-    doc.setFontSize(16);
-    doc.text(`Feedback Details - ${selectedFaculty.facultyName}`, 14, 15);
-    doc.setFontSize(12);
-    doc.text(`Timetable: ${selectedTimetable.name}`, 14, 22);
-    
     // Stats
     const stats = studentResponses.stats;
-    doc.setFontSize(10);
-    doc.text(`Stats: Poor (${stats['Poor']}) | Fair (${stats['Fair']}) | Good (${stats['Good']}) | Very Good (${stats['Very Good']}) | Excellent (${stats['Excellent']})`, 14, 30);
     
     // Prepare table data
     const tableColumn = ["Roll Number", "Status"];
@@ -108,12 +100,30 @@ const DetailedAnalyticsPage = () => {
       tableRows.push(studentData);
     });
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: 35,
       head: [tableColumn],
       body: tableRows,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [79, 70, 229] } // Indigo 600
+      styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+      headStyles: { fillColor: [79, 70, 229], textColor: 255, fontStyle: 'bold' },
+      columnStyles: {
+        0: { cellWidth: 25 }, // Roll Number
+        1: { cellWidth: 15 }, // Status
+        // Dynamically set Q1..Qn widths later or let autotable handle it, but Suggestions (last column) needs more space
+        [tableColumn.length - 1]: { cellWidth: 'auto' }
+      },
+      margin: { top: 35, right: 10, bottom: 15, left: 10 },
+      didDrawPage: function (data) {
+        // Header
+        doc.setFontSize(16);
+        doc.text(`Feedback Details - ${selectedFaculty.facultyName}`, data.settings.margin.left, 15);
+        doc.setFontSize(12);
+        doc.text(`Timetable: ${selectedTimetable.name}`, data.settings.margin.left, 22);
+        
+        // Stats
+        doc.setFontSize(10);
+        doc.text(`Stats: Poor (${stats['Poor']}) | Fair (${stats['Fair']}) | Good (${stats['Good']}) | Very Good (${stats['Very Good']}) | Excellent (${stats['Excellent']})`, data.settings.margin.left, 30);
+      }
     });
 
     doc.save(`${selectedFaculty.facultyName.replace(/\s+/g, '_')}_Feedback.pdf`);
@@ -202,18 +212,18 @@ const DetailedAnalyticsPage = () => {
         </div>
 
         {selectedTimetable.name.toLowerCase() === 'data engineering' ? (
-          <div className="mt-8 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div className="mt-8 overflow-hidden overflow-x-auto">
+            <table className="w-full text-center border-collapse border-2 border-black bg-white">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="p-4 font-semibold text-gray-800 border-r border-gray-200">Class</th>
-                  <th className="p-4 font-semibold text-gray-800 border-r border-gray-200">Computer Networks</th>
-                  <th className="p-4 font-semibold text-gray-800 border-r border-gray-200">Compiler Design</th>
-                  <th className="p-4 font-semibold text-gray-800 border-r border-gray-200">Machine Learning</th>
-                  <th className="p-4 font-semibold text-gray-800 border-r border-gray-200">OOAD</th>
-                  <th className="p-4 font-semibold text-gray-800 border-r border-gray-200">Engineering Economics & Management</th>
-                  <th className="p-4 font-semibold text-gray-800 border-r border-gray-200">Information Retrieval Systems</th>
-                  <th className="p-4 font-semibold text-gray-800">Fundamentals of Data Science</th>
+                <tr>
+                  <th className="p-2 font-bold text-black border border-black align-middle">Class</th>
+                  <th className="p-2 font-bold text-black border border-black align-middle">Computer Networks</th>
+                  <th className="p-2 font-bold text-black border border-black align-middle">Compiler Design</th>
+                  <th className="p-2 font-bold text-black border border-black align-middle">Machine Learning</th>
+                  <th className="p-2 font-bold text-black border border-black align-middle">OOAD</th>
+                  <th className="p-2 font-bold text-black border border-black align-middle">Engineering Economics & Management</th>
+                  <th className="p-2 font-bold text-black border border-black align-middle">Information Retrieval Systems</th>
+                  <th className="p-2 font-bold text-black border border-black align-middle">Fundamentals of Data Science</th>
                 </tr>
               </thead>
               <tbody>
@@ -249,8 +259,8 @@ const DetailedAnalyticsPage = () => {
                     fds: 'R Padma Sri'
                   }
                 ].map((row, rIdx) => (
-                  <tr key={rIdx} className="border-b border-gray-200 hover:bg-gray-50/50">
-                    <td className="p-4 font-medium text-gray-900 border-r border-gray-200 whitespace-nowrap">{row.class}</td>
+                  <tr key={rIdx}>
+                    <td className="p-2 font-bold text-black border border-black whitespace-nowrap align-middle">{row.class}</td>
                     {[row.cn, row.cd, row.ml, row.ooad, row.eem, row.irs, row.fds].map((fname, cIdx) => {
                       const matchedFaculty = selectedTimetable.faculties.find(f => 
                         f.facultyName.toLowerCase().replace(/[^a-z0-9]/g, '') === fname.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -259,8 +269,8 @@ const DetailedAnalyticsPage = () => {
                       return (
                         <td 
                           key={cIdx} 
-                          onClick={() => matchedFaculty && handleFacultyClick(matchedFaculty)}
-                          className={`p-4 border-r border-gray-200 ${matchedFaculty ? 'cursor-pointer hover:bg-indigo-50 hover:text-indigo-700 transition-colors' : 'text-gray-500'}`}
+                          onClick={() => matchedFaculty && handleFacultyClick(matchedFaculty, row.class)}
+                          className={`p-2 border border-black text-black align-middle ${matchedFaculty ? 'cursor-pointer hover:bg-yellow-100 transition-colors' : 'text-gray-500'}`}
                         >
                           {fname}
                         </td>
@@ -333,7 +343,17 @@ const DetailedAnalyticsPage = () => {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{selectedFaculty.facultyName}</h1>
-            <p className="text-gray-500">Detailed Feedback for {selectedTimetable.name}</p>
+            <p className="text-gray-500">
+              Detailed Feedback for {selectedTimetable.name}
+              <span className="mx-2">•</span>
+              Employee ID: {selectedFaculty.facultyId}
+              {selectedFaculty.roomNo && (
+                <>
+                  <span className="mx-2">•</span>
+                  Room No: {selectedFaculty.roomNo}
+                </>
+              )}
+            </p>
           </div>
         </div>
         <div className="text-right hidden sm:block">
