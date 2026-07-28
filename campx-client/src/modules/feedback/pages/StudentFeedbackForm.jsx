@@ -161,19 +161,22 @@ const StudentFeedbackForm = () => {
                           {qIndex + 1}. {q.questionText}
                         </label>
                         <div className="flex gap-2 sm:gap-4 flex-wrap">
-                          {[1, 2, 3, 4, 5].map(rating => (
-                            <button
-                              key={rating}
-                              onClick={() => handleRatingChange(assignment.facultyId, q._id, rating)}
-                              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg font-medium transition-colors ${
-                                currentRating === rating 
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
-                            >
-                              {rating}
-                            </button>
-                          ))}
+                          {Object.entries({1: 'Poor', 2: 'Average', 3: 'Good', 4: 'Excellent', 5: 'Very Excellent'}).map(([value, label]) => {
+                            const rating = parseInt(value);
+                            return (
+                              <button
+                                key={rating}
+                                onClick={() => handleRatingChange(assignment.facultyId, q._id, rating)}
+                                className={`px-3 py-2 sm:px-4 sm:py-2 rounded-lg font-medium transition-colors text-sm sm:text-base ${
+                                  currentRating === rating 
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     );
