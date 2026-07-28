@@ -155,7 +155,8 @@ exports.getDetailedAnalytics = async (req, res) => {
           facultyName: a.facultyName,
           totalStudentsAssigned: 0,
           submittedStudents: 0,
-          qStats: {}
+          qStats: {},
+          suggestions: []
         };
       }
       // Note: an assignment is one unique link between student and course/faculty. 
@@ -180,6 +181,10 @@ exports.getDetailedAnalytics = async (req, res) => {
         f.qStats[a.questionId].sum += a.rating;
         f.qStats[a.questionId].count++;
       });
+
+      if (ansDoc.suggestions && ansDoc.suggestions.trim().length > 0) {
+        f.suggestions.push(ansDoc.suggestions.trim());
+      }
     });
     
     // Format response
@@ -202,7 +207,8 @@ exports.getDetailedAnalytics = async (req, res) => {
           totalAssigned: f.totalStudentsAssigned,
           submitted: f.submittedStudents,
           completionPercentage: f.totalStudentsAssigned > 0 ? ((f.submittedStudents / f.totalStudentsAssigned) * 100).toFixed(1) : 0,
-          questionScores
+          questionScores,
+          suggestions: f.suggestions
         };
       });
       

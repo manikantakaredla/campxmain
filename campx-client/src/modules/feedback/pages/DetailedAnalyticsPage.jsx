@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Users, Star, BarChart3, ChevronRight } from 'lucide-react';
+import { ArrowLeft, BookOpen, Users, Star, BarChart3, ChevronRight, MessageSquare } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../../services/api';
 
@@ -219,6 +219,27 @@ const DetailedAnalyticsPage = () => {
           );
         })}
       </div>
+
+      {selectedFaculty.suggestions && selectedFaculty.suggestions.length > 0 && (
+        <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+              <MessageSquare size={20} />
+            </div>
+            <h2 className="text-lg font-bold text-gray-900">Student Suggestions</h2>
+            <span className="ml-auto bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
+              {selectedFaculty.suggestions.length}
+            </span>
+          </div>
+          <div className="space-y-4">
+            {selectedFaculty.suggestions.map((suggestion, idx) => (
+              <div key={idx} className="p-4 bg-gray-50 rounded-lg border border-gray-100 text-gray-700 text-sm">
+                "{suggestion}"
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
