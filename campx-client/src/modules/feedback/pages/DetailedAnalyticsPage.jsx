@@ -82,8 +82,8 @@ const DetailedAnalyticsPage = () => {
                   <BookOpen size={24} />
                 </div>
                 <div className="text-right">
-                  <span className="text-sm font-medium text-gray-500">Completion</span>
-                  <p className="text-xl font-bold text-gray-900">{tt.completionPercentage}%</p>
+                  <span className="text-sm font-medium text-gray-500">Completed</span>
+                  <p className="text-xl font-bold text-indigo-600">{tt.completionPercentage}%</p>
                 </div>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2 truncate" title={tt.name}>{tt.name}</h3>

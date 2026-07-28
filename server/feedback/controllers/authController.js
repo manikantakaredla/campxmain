@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const FeedbackStudent = require("../models/FeedbackStudent");
 const FeedbackOTP = require("../models/FeedbackOTP");
 const FeedbackConfig = require("../models/FeedbackConfig");
+const FeedbackSubmission = require("../models/FeedbackSubmission");
 const { sendEmail } = require("../../utils/sendEmail");
 
 // Helper to check if feedback is enabled
@@ -48,6 +49,15 @@ exports.sendOTP = async (req, res) => {
       return res.status(404).json({ 
         success: false, 
         message: "You are not eligible to submit feedback. Please contact the administrator." 
+      });
+    }
+
+    // Check if student already submitted feedback
+    const existingSubmission = await FeedbackSubmission.findOne({ rollNumber: student.rollNumber });
+    if (existingSubmission) {
+      return res.status(403).json({
+        success: false,
+        message: "You have already submitted your feedback."
       });
     }
 
@@ -126,6 +136,15 @@ exports.verifyOTP = async (req, res) => {
     const student = await FeedbackStudent.findOne({ collegeEmail: email.toLowerCase() });
     if (!student) {
       return res.status(404).json({ success: false, message: "Student record not found" });
+    }
+
+    // Check if student already submitted feedback
+    const existingSubmission = await FeedbackSubmission.findOne({ rollNumber: student.rollNumber });
+    if (existingSubmission) {
+      return res.status(403).json({
+        success: false,
+        message: "You have already submitted your feedback."
+      });
     }
 
     // Generate JWT (15 minutes)
