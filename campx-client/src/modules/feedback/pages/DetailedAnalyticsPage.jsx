@@ -211,7 +211,7 @@ const DetailedAnalyticsPage = () => {
           </div>
         </div>
 
-        {selectedTimetable.name.toLowerCase() === 'data engineering' ? (
+        {selectedTimetable.name.toLowerCase().includes('data engineering') ? (
           <div className="mt-8 overflow-hidden overflow-x-auto">
             <table className="w-full text-center border-collapse border-2 border-black bg-white">
               <thead>
