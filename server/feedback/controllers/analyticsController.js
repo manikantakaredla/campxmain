@@ -256,7 +256,28 @@ exports.getFacultyStudentResponses = async (req, res) => {
     };
 
     // 2. Get all assignments for this faculty & timetable
-    const assignments = await FeedbackAssignment.find({ timetable, facultyId });
+    let query = { timetable, facultyId };
+    const subject = req.query.subject;
+    if (subject) {
+      if (subject.toLowerCase() === 'fundamentals of data science') {
+        query.$or = [{ courseName: /fundamentals of data science/i }, { courseName: /fds/i }, { courseCode: /fds/i }];
+      } else if (subject.toLowerCase() === 'engineering economics & management') {
+        query.$or = [{ courseName: /engineering economics/i }, { courseName: /eem/i }, { courseCode: /eem/i }];
+      } else if (subject.toLowerCase() === 'information retrieval systems') {
+        query.$or = [{ courseName: /information retrieval/i }, { courseName: /irs/i }, { courseCode: /irs/i }];
+      } else if (subject.toLowerCase() === 'computer networks') {
+        query.$or = [{ courseName: /computer networks/i }, { courseName: /cn/i }, { courseCode: /cn/i }];
+      } else if (subject.toLowerCase() === 'compiler design') {
+        query.$or = [{ courseName: /compiler design/i }, { courseName: /cd/i }, { courseCode: /cd/i }];
+      } else if (subject.toLowerCase() === 'machine learning') {
+        query.$or = [{ courseName: /machine learning/i }, { courseName: /ml/i }, { courseCode: /ml/i }];
+      } else if (subject.toLowerCase() === 'ooad') {
+        query.$or = [{ courseName: /ooad/i }, { courseName: /object oriented/i }, { courseCode: /ooad/i }];
+      } else {
+        query.courseName = new RegExp(subject, 'i');
+      }
+    }
+    const assignments = await FeedbackAssignment.find(query);
     const assignedRollNumbers = assignments.map(a => a.studentRollNo);
 
     // 3. Get all answers for these students & this faculty

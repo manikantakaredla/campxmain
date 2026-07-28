@@ -54,10 +54,14 @@ const DetailedAnalyticsPage = () => {
     }
   };
 
-  const fetchStudentResponses = async (ttName, fId) => {
+  const fetchStudentResponses = async (ttName, fId, subject = null) => {
     try {
       setResponsesLoading(true);
-      const res = await api.get(`/feedback/admin/analytics/faculty-students?timetable=${encodeURIComponent(ttName)}&facultyId=${encodeURIComponent(fId)}`);
+      let url = `/feedback/admin/analytics/faculty-students?timetable=${encodeURIComponent(ttName)}&facultyId=${encodeURIComponent(fId)}`;
+      if (subject) {
+        url += `&subject=${encodeURIComponent(subject)}`;
+      }
+      const res = await api.get(url);
       setStudentResponses(res.data);
     } catch (error) {
       toast.error('Failed to load student responses');
@@ -66,9 +70,9 @@ const DetailedAnalyticsPage = () => {
     }
   };
 
-  const handleFacultyClick = (faculty, roomNo = null) => {
-    setSelectedFaculty({ ...faculty, roomNo });
-    fetchStudentResponses(selectedTimetable.name, faculty.facultyId);
+  const handleFacultyClick = (faculty, roomNo = null, subject = null) => {
+    setSelectedFaculty({ ...faculty, roomNo, subject });
+    fetchStudentResponses(selectedTimetable.name, faculty.facultyId, subject);
   };
 
   const downloadPDF = () => {
@@ -261,7 +265,16 @@ const DetailedAnalyticsPage = () => {
                 ].map((row, rIdx) => (
                   <tr key={rIdx}>
                     <td className="p-2 font-bold text-black border border-black whitespace-nowrap align-middle">{row.class}</td>
-                    {[row.cn, row.cd, row.ml, row.ooad, row.eem, row.irs, row.fds].map((fname, cIdx) => {
+                    {[
+                      { name: row.cn, subj: 'Computer Networks' },
+                      { name: row.cd, subj: 'Compiler Design' },
+                      { name: row.ml, subj: 'Machine Learning' },
+                      { name: row.ooad, subj: 'OOAD' },
+                      { name: row.eem, subj: 'Engineering Economics & Management' },
+                      { name: row.irs, subj: 'Information Retrieval Systems' },
+                      { name: row.fds, subj: 'Fundamentals of Data Science' }
+                    ].map((col, cIdx) => {
+                      const fname = col.name;
                       const matchedFaculty = selectedTimetable.faculties.find(f => 
                         f.facultyName.toLowerCase().replace(/[^a-z0-9]/g, '') === fname.toLowerCase().replace(/[^a-z0-9]/g, '')
                       ) || selectedTimetable.faculties.find(f => f.facultyName.toLowerCase().includes(fname.toLowerCase().split(' ')[0]));
@@ -269,7 +282,7 @@ const DetailedAnalyticsPage = () => {
                       return (
                         <td 
                           key={cIdx} 
-                          onClick={() => matchedFaculty && handleFacultyClick(matchedFaculty, row.class)}
+                          onClick={() => matchedFaculty && handleFacultyClick(matchedFaculty, row.class, col.subj)}
                           className={`p-2 border border-black text-black align-middle ${matchedFaculty ? 'cursor-pointer hover:bg-yellow-100 transition-colors' : 'text-gray-500'}`}
                         >
                           {fname}
