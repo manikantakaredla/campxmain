@@ -310,6 +310,7 @@ const DetailedAnalyticsPage = () => {
             </div>
           )}
         </div>
+        )}
       </div>
     );
   }
