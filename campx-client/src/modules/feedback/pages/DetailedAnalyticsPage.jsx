@@ -517,20 +517,30 @@ const DetailedAnalyticsPage = () => {
                             <td 
                               key={cIdx} 
                               onClick={() => matchedFaculty && handleFacultyClick(matchedFaculty, row.class, col.name, col.code)}
-                              className={`p-2 border border-black text-black align-middle text-center ${matchedFaculty ? 'cursor-pointer hover:bg-yellow-100 transition-colors' : 'text-gray-500'}`}
+                              className={`p-0 border border-black text-black align-top ${matchedFaculty ? 'cursor-pointer hover:bg-yellow-50 transition-colors' : 'bg-gray-50'}`}
                             >
-                              <div>{fac.id !== fac.name ? fac.id : 'N/A'}</div>
-                              <div className="text-sm mt-1">( {fac.name} )</div>
-                              {subjStats && (
-                                <div className="mt-2 text-indigo-700">
-                                  <div className="text-sm font-bold">
-                                    {subjStats.percentage ? `${subjStats.percentage}%` : 'N/A'}
-                                  </div>
-                                  <div className="text-[10px] text-gray-500 font-normal mt-0.5">
-                                    {subjStats.submitted} / {subjStats.total} responses
-                                  </div>
+                              <div className="flex flex-col h-full min-h-[100px] justify-between">
+                                <div className={`p-2 ${matchedFaculty ? '' : 'opacity-50'}`}>
+                                  <div className="font-bold text-gray-900">{fac.id !== fac.name ? fac.id : 'N/A'}</div>
+                                  <div className="text-xs text-gray-600 mt-1 leading-tight" title={fac.name}>{fac.name}</div>
                                 </div>
-                              )}
+                                {subjStats ? (
+                                  <div className="bg-indigo-50/60 p-2 border-t border-black/10 mt-auto">
+                                    <div className="text-sm font-bold text-indigo-700">
+                                      {subjStats.percentage ? `${subjStats.percentage}%` : 'N/A'}
+                                    </div>
+                                    <div className="text-[10px] text-gray-500 font-medium mt-0.5">
+                                      {subjStats.submitted} / {subjStats.total} responses
+                                    </div>
+                                  </div>
+                                ) : (
+                                  matchedFaculty && (
+                                    <div className="bg-gray-50/50 p-2 border-t border-black/10 mt-auto">
+                                      <div className="text-[10px] text-gray-400 font-medium">No data</div>
+                                    </div>
+                                  )
+                                )}
+                              </div>
                             </td>
                           );
                         })}
