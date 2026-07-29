@@ -79,9 +79,9 @@ exports.submitFeedback = async (req, res) => {
 
     // 4. Create the Answer Records
     const answerDocs = feedbacks.map(fb => {
-      const assignment = assignments.find(a => a.facultyId === fb.facultyId);
+      const assignment = assignments.find(a => a._id.toString() === fb.assignmentId);
       if (!assignment) {
-        throw new Error(`Invalid faculty ID ${fb.facultyId} for this student`);
+        throw new Error(`Invalid assignment ID ${fb.assignmentId} for this student`);
       }
       return {
         submissionId: submission._id,

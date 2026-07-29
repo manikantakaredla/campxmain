@@ -29,6 +29,7 @@ const StudentFeedbackForm = () => {
       
       // Initialize forms
       const initialFeedbacks = res.data.assignments.map(a => ({
+        assignmentId: a._id,
         facultyId: a.facultyId,
         answers: res.data.questions.filter(q => q.type === 'scale').map(q => ({
           questionId: q._id,
@@ -44,9 +45,9 @@ const StudentFeedbackForm = () => {
     }
   };
 
-  const handleRatingChange = (facultyId, questionId, rating) => {
+  const handleRatingChange = (assignmentId, questionId, rating) => {
     setFeedbacks(prev => prev.map(f => {
-      if (f.facultyId === facultyId) {
+      if (f.assignmentId === assignmentId) {
         return {
           ...f,
           answers: f.answers.map(a => a.questionId === questionId ? { ...a, rating } : a)
@@ -56,9 +57,9 @@ const StudentFeedbackForm = () => {
     }));
   };
 
-  const handleSuggestionChange = (facultyId, value) => {
+  const handleSuggestionChange = (assignmentId, value) => {
     setFeedbacks(prev => prev.map(f => {
-      if (f.facultyId === facultyId) {
+      if (f.assignmentId === assignmentId) {
         return { ...f, suggestions: value };
       }
       return f;
@@ -135,11 +136,11 @@ const StudentFeedbackForm = () => {
 
         <div className="space-y-8">
           {data.assignments.map((assignment, index) => {
-            const currentFeedback = feedbacks.find(f => f.facultyId === assignment.facultyId);
+            const currentFeedback = feedbacks.find(f => f.assignmentId === assignment._id);
             const scaleQuestions = data.questions.filter(q => q.type === 'scale');
 
             return (
-              <div key={assignment.facultyId} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div key={assignment._id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="bg-gray-50 border-b border-gray-200 p-4 sm:px-6">
                   <div className="flex items-start justify-between">
                     <div>
@@ -166,7 +167,7 @@ const StudentFeedbackForm = () => {
                             return (
                               <button
                                 key={rating}
-                                onClick={() => handleRatingChange(assignment.facultyId, q._id, rating)}
+                                onClick={() => handleRatingChange(assignment._id, q._id, rating)}
                                 className={`px-3 py-2 sm:px-4 sm:py-2 rounded-lg font-medium transition-colors text-sm sm:text-base ${
                                   currentRating === rating 
                                     ? 'bg-blue-600 text-white shadow-md'
@@ -188,7 +189,7 @@ const StudentFeedbackForm = () => {
                     </label>
                     <textarea
                       value={currentFeedback?.suggestions || ''}
-                      onChange={(e) => handleSuggestionChange(assignment.facultyId, e.target.value)}
+                      onChange={(e) => handleSuggestionChange(assignment._id, e.target.value)}
                       rows={3}
                       className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
                       placeholder="Type your feedback here..."
