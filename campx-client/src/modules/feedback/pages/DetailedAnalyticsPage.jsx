@@ -142,35 +142,41 @@ const DetailedAnalyticsPage = () => {
   const downloadExcel = () => {
     if (!studentResponses) return;
     
-    // Prepare table data
-    const questionKeys = studentResponses.questions.map(q => q._id);
+    // Calculate stats
+    const total = studentResponses.students.length;
+    const submitted = studentResponses.students.filter(s => s.status === 'Given').length;
+    const percent = total > 0 ? ((submitted / total) * 100).toFixed(1) : 0;
+    const stats = studentResponses.stats;
+    const statsText = `Stats: Poor (${stats['Poor']}) | Fair (${stats['Fair']}) | Good (${stats['Good']}) | Very Good (${stats['Very Good']}) | Excellent (${stats['Excellent']})`;
+
+    // Prepare Sheet 1: Metadata + Table
+    const sheet1Data = [
+      [`Feedback Details - ${selectedFaculty.facultyName}`],
+      [`Timetable: ${selectedTimetable.name} | Subject: ${selectedFaculty.subject || 'All'}`],
+      [`Total Assigned: ${total} | Responded: ${submitted} | Response Rate: ${percent}%`],
+      [statsText],
+      [] // empty row before table
+    ];
+
     const headers = ["Roll Number", "Status"];
     studentResponses.questions.forEach((q, idx) => {
       headers.push(`Q${idx+1}`);
     });
     headers.push("Suggestions");
+    sheet1Data.push(headers);
 
-    const excelData = [];
-    
     studentResponses.students.forEach(student => {
-      const row = {
-        "Roll Number": student.rollNumber,
-        "Status": student.status
-      };
-      
-      studentResponses.questions.forEach((q, idx) => {
-        row[`Q${idx+1}`] = student.answers[q._id] || '-';
+      const row = [student.rollNumber, student.status];
+      studentResponses.questions.forEach(q => {
+        row.push(student.answers[q._id] || '-');
       });
-      
-      row["Suggestions"] = student.suggestions || '-';
-      excelData.push(row);
+      row.push(student.suggestions || '-');
+      sheet1Data.push(row);
     });
 
-    const ws = XLSX.utils.json_to_sheet(excelData, { header: headers });
+    const ws = XLSX.utils.aoa_to_sheet(sheet1Data);
     
-    // Generate stats sheet
-    const total = studentResponses.students.length;
-    const submitted = studentResponses.students.filter(s => s.status === 'Given').length;
+    // Generate Sheet 2: Detailed Stats
     const statsData = [
       { "Metric": "Employee Name", "Value": selectedFaculty.facultyName },
       { "Metric": "Employee ID", "Value": selectedFaculty.facultyId },
