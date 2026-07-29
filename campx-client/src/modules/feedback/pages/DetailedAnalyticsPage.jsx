@@ -765,31 +765,62 @@ const DetailedAnalyticsPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {studentResponses.questions.map((q, idx) => {
-                    let poor = 0, fair = 0, good = 0, veryGood = 0, excellent = 0;
-                    let sum = 0, count = 0;
-                    studentResponses.students.forEach(student => {
-                      const ans = student.answers[q._id];
-                      if (ans === 'Poor') { poor++; sum += 1; count++; }
-                      if (ans === 'Fair') { fair++; sum += 2; count++; }
-                      if (ans === 'Good') { good++; sum += 3; count++; }
-                      if (ans === 'Very Good') { veryGood++; sum += 4; count++; }
-                      if (ans === 'Excellent') { excellent++; sum += 5; count++; }
+                  {(() => {
+                    let totalPoor = 0, totalFair = 0, totalGood = 0, totalVeryGood = 0, totalExcellent = 0;
+                    let totalSum = 0, totalCount = 0;
+                    
+                    const rows = studentResponses.questions.map((q, idx) => {
+                      let poor = 0, fair = 0, good = 0, veryGood = 0, excellent = 0;
+                      let sum = 0, count = 0;
+                      studentResponses.students.forEach(student => {
+                        const ans = student.answers[q._id];
+                        if (ans === 'Poor') { poor++; sum += 1; count++; }
+                        if (ans === 'Fair') { fair++; sum += 2; count++; }
+                        if (ans === 'Good') { good++; sum += 3; count++; }
+                        if (ans === 'Very Good') { veryGood++; sum += 4; count++; }
+                        if (ans === 'Excellent') { excellent++; sum += 5; count++; }
+                      });
+                      
+                      totalPoor += poor;
+                      totalFair += fair;
+                      totalGood += good;
+                      totalVeryGood += veryGood;
+                      totalExcellent += excellent;
+                      totalSum += sum;
+                      totalCount += count;
+                      
+                      const overallPercentage = count > 0 ? ((sum / count) * 20).toFixed(1) : 'N/A';
+                      
+                      return (
+                        <tr key={q._id} className="hover:bg-gray-50">
+                          <td className="p-4 font-medium text-gray-900 border-r border-gray-200">Q{idx + 1}: {q.questionText}</td>
+                          <td className="p-4 text-center border-r border-gray-200 font-medium text-green-700">{excellent}</td>
+                          <td className="p-4 text-center border-r border-gray-200 font-medium text-blue-700">{veryGood}</td>
+                          <td className="p-4 text-center border-r border-gray-200 font-medium text-yellow-700">{good}</td>
+                          <td className="p-4 text-center border-r border-gray-200 font-medium text-orange-700">{fair}</td>
+                          <td className="p-4 text-center border-r border-gray-200 font-medium text-red-700">{poor}</td>
+                          <td className="p-4 text-center font-bold text-indigo-700 bg-gray-50/50">{overallPercentage !== 'N/A' ? `${overallPercentage}%` : 'N/A'}</td>
+                        </tr>
+                      );
                     });
-                    const overallPercentage = count > 0 ? ((sum / count) * 20).toFixed(1) : 'N/A';
+                    
+                    const totalPercentage = totalCount > 0 ? ((totalSum / totalCount) * 20).toFixed(1) : 'N/A';
                     
                     return (
-                      <tr key={q._id} className="hover:bg-gray-50">
-                        <td className="p-4 font-medium text-gray-900 border-r border-gray-200">Q{idx + 1}: {q.questionText}</td>
-                        <td className="p-4 text-center border-r border-gray-200 font-medium text-green-700">{excellent}</td>
-                        <td className="p-4 text-center border-r border-gray-200 font-medium text-blue-700">{veryGood}</td>
-                        <td className="p-4 text-center border-r border-gray-200 font-medium text-yellow-700">{good}</td>
-                        <td className="p-4 text-center border-r border-gray-200 font-medium text-orange-700">{fair}</td>
-                        <td className="p-4 text-center border-r border-gray-200 font-medium text-red-700">{poor}</td>
-                        <td className="p-4 text-center font-bold text-indigo-700 bg-gray-50/50">{overallPercentage !== 'N/A' ? `${overallPercentage}%` : 'N/A'}</td>
-                      </tr>
+                      <>
+                        {rows}
+                        <tr className="bg-gray-100 border-t-2 border-gray-300">
+                          <td className="p-4 font-bold text-gray-900 border-r border-gray-200 text-right">Total Overall</td>
+                          <td className="p-4 text-center border-r border-gray-200 font-bold text-green-800">{totalExcellent}</td>
+                          <td className="p-4 text-center border-r border-gray-200 font-bold text-blue-800">{totalVeryGood}</td>
+                          <td className="p-4 text-center border-r border-gray-200 font-bold text-yellow-800">{totalGood}</td>
+                          <td className="p-4 text-center border-r border-gray-200 font-bold text-orange-800">{totalFair}</td>
+                          <td className="p-4 text-center border-r border-gray-200 font-bold text-red-800">{totalPoor}</td>
+                          <td className="p-4 text-center font-bold text-indigo-900 bg-indigo-50/80">{totalPercentage !== 'N/A' ? `${totalPercentage}%` : 'N/A'}</td>
+                        </tr>
+                      </>
                     );
-                  })}
+                  })()}
                 </tbody>
               </table>
             </div>
@@ -799,7 +830,7 @@ const DetailedAnalyticsPage = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="p-4 font-semibold text-gray-800 whitespace-nowrap border-r border-gray-200">S.No</th>
+                  <th className="p-4 font-semibold text-gray-800 whitespace-nowrap border-r border-gray-200">Roll Number</th>
                   <th className="p-4 font-semibold text-gray-800 whitespace-nowrap border-r border-gray-200">Status</th>
                   {studentResponses.questions.map((q, idx) => (
                     <th key={q._id} className="p-4 font-semibold text-gray-800 whitespace-nowrap border-r border-gray-200" title={q.questionText}>
@@ -812,7 +843,7 @@ const DetailedAnalyticsPage = () => {
               <tbody className="divide-y divide-gray-200">
                 {studentResponses.students.map((student, idx) => (
                   <tr key={idx} className="hover:bg-gray-50">
-                    <td className="p-4 font-medium text-gray-900 border-r border-gray-200">{idx + 1}</td>
+                    <td className="p-4 font-medium text-gray-900 border-r border-gray-200">{student.rollNumber}</td>
                     <td className="p-4 border-r border-gray-200">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${student.status === 'Given' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                         {student.status}
