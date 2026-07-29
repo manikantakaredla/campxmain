@@ -246,11 +246,122 @@ const DetailedAnalyticsPage = () => {
     if (!studentResponses) return;
     
     const doc = new jsPDF('landscape');
+    const marginL = 14;
     
-    // Stats
-    const stats = studentResponses.stats;
+    // 1. Overall Header Information
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("FACULTY FEEDBACK REPORT", marginL, 15);
     
-    // Prepare table data
+    doc.setFontSize(10);
+    
+    // Left column
+    doc.setFont("helvetica", "bold");
+    doc.text("EMP NAME:", marginL, 25);
+    doc.setFont("helvetica", "normal");
+    doc.text(selectedFaculty.facultyName, marginL + 25, 25);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("EMP ID:", marginL, 31);
+    doc.setFont("helvetica", "normal");
+    doc.text(String(selectedFaculty.facultyId), marginL + 25, 31);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Time Table:", marginL, 37);
+    doc.setFont("helvetica", "normal");
+    doc.text(selectedTimetable.name, marginL + 25, 37);
+    
+    // Right column
+    const rightColX = 140;
+    doc.setFont("helvetica", "bold");
+    doc.text("SUB:", rightColX, 25);
+    doc.setFont("helvetica", "normal");
+    doc.text(selectedFaculty.subject || 'N/A', rightColX + 25, 25);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("ROOM NO:", rightColX, 31);
+    doc.setFont("helvetica", "normal");
+    doc.text(selectedFaculty.roomNo || 'N/A', rightColX + 25, 31);
+    
+    // Calculate Overall Percentage across all questions
+    let totalPoor = 0, totalFair = 0, totalGood = 0, totalVeryGood = 0, totalExcellent = 0;
+    let totalSum = 0, totalCount = 0;
+    
+    studentResponses.questions.forEach(q => {
+       studentResponses.students.forEach(student => {
+          const ans = student.answers[q._id];
+          if (ans === 'Poor') { totalPoor++; totalSum += 1; totalCount++; }
+          if (ans === 'Fair') { totalFair++; totalSum += 2; totalCount++; }
+          if (ans === 'Good') { totalGood++; totalSum += 3; totalCount++; }
+          if (ans === 'Very Good') { totalVeryGood++; totalSum += 4; totalCount++; }
+          if (ans === 'Excellent') { totalExcellent++; totalSum += 5; totalCount++; }
+       });
+    });
+    
+    const overallPercentage = totalCount > 0 ? ((totalSum / totalCount) * 20) : 0;
+    let grade = 'Poor';
+    if (overallPercentage >= 80) grade = 'Excellent';
+    else if (overallPercentage >= 60) grade = 'Good';
+    else if (overallPercentage >= 40) grade = 'Average';
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("Overall Feedback Percentage:", rightColX, 37);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${overallPercentage.toFixed(1)}% (${grade})`, rightColX + 53, 37);
+
+    // 2. Stats Summary
+    const totalStudents = studentResponses.students.length;
+    const respondedCount = studentResponses.students.filter(s => s.status === 'Given').length;
+    const pendingCount = totalStudents - respondedCount;
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("Summary Stats:", marginL, 47);
+    doc.setFont("helvetica", "normal");
+    doc.text(`TOTAL STUDENTS: ${totalStudents}`, marginL, 53);
+    doc.text(`RESPONSES COUNT: ${respondedCount}`, marginL + 50, 53);
+    doc.text(`PENDING COUNT: ${pendingCount}`, marginL + 110, 53);
+
+    // 3. Detailed Question Stats Table
+    doc.setFont("helvetica", "bold");
+    doc.text("Stats & Counts by Questions:", marginL, 63);
+    
+    const qStatsHead = [["Question", "Excellent", "Very Good", "Good", "Fair", "Poor", "Overall %"]];
+    const qStatsBody = [];
+    studentResponses.questions.forEach((q, idx) => {
+       let poor = 0, fair = 0, good = 0, veryGood = 0, excellent = 0;
+       let sum = 0, count = 0;
+       studentResponses.students.forEach(student => {
+          const ans = student.answers[q._id];
+          if (ans === 'Poor') { poor++; sum += 1; count++; }
+          if (ans === 'Fair') { fair++; sum += 2; count++; }
+          if (ans === 'Good') { good++; sum += 3; count++; }
+          if (ans === 'Very Good') { veryGood++; sum += 4; count++; }
+          if (ans === 'Excellent') { excellent++; sum += 5; count++; }
+       });
+       const pct = count > 0 ? ((sum / count) * 20).toFixed(1) + "%" : "N/A";
+       qStatsBody.push([`Q${idx+1}: ${q.questionText}`, excellent, veryGood, good, fair, poor, pct]);
+    });
+    // Add total row
+    qStatsBody.push(["Total Overall", totalExcellent, totalVeryGood, totalGood, totalFair, totalPoor, `${overallPercentage.toFixed(1)}%`]);
+
+    autoTable(doc, {
+      startY: 67,
+      head: qStatsHead,
+      body: qStatsBody,
+      styles: { fontSize: 9, cellPadding: 2 },
+      headStyles: { fillColor: [79, 70, 229], textColor: 255, fontStyle: 'bold' },
+      columnStyles: {
+         0: { cellWidth: 130 }
+      },
+      margin: { left: marginL, right: 10 }
+    });
+
+    // 4. Student Responses Table
+    let finalY = doc.lastAutoTable.finalY || 67;
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("Student Responses List:", marginL, finalY + 12);
+
     const tableColumn = ["S.No", "Status"];
     const questionKeys = studentResponses.questions.map(q => q._id);
     studentResponses.questions.forEach((q, idx) => {
@@ -272,7 +383,7 @@ const DetailedAnalyticsPage = () => {
     });
 
     autoTable(doc, {
-      startY: 40,
+      startY: finalY + 16,
       head: [tableColumn],
       body: tableRows,
       styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
@@ -282,24 +393,7 @@ const DetailedAnalyticsPage = () => {
         1: { cellWidth: 15 }, // Status
         [tableColumn.length - 1]: { cellWidth: 'auto' }
       },
-      margin: { top: 40, right: 10, bottom: 15, left: 10 },
-      didDrawPage: function (data) {
-        // Header
-        doc.setFontSize(16);
-        doc.text(`Feedback Details - ${selectedFaculty.facultyName}`, data.settings.margin.left, 15);
-        doc.setFontSize(11);
-        doc.text(`Timetable: ${selectedTimetable.name} | Subject: ${selectedFaculty.subject || 'All'}`, data.settings.margin.left, 22);
-        
-        // Students Count
-        const total = studentResponses.students.length;
-        const submitted = studentResponses.students.filter(s => s.status === 'Given').length;
-        const percent = total > 0 ? ((submitted / total) * 100).toFixed(1) : 0;
-        doc.setFontSize(10);
-        doc.text(`Total Assigned: ${total} | Responded: ${submitted} | Response Rate: ${percent}%`, data.settings.margin.left, 28);
-        
-        // Stats
-        doc.text(`Stats: Poor (${stats['Poor']}) | Fair (${stats['Fair']}) | Good (${stats['Good']}) | Very Good (${stats['Very Good']}) | Excellent (${stats['Excellent']})`, data.settings.margin.left, 34);
-      }
+      margin: { left: marginL, right: 10, bottom: 15 }
     });
 
     doc.save(`${selectedFaculty.facultyName.replace(/\s+/g, '_')}_Feedback.pdf`);
