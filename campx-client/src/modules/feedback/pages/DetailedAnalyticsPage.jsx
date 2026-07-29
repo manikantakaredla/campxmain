@@ -277,7 +277,10 @@ const DetailedAnalyticsPage = () => {
                       const fname = col.name;
                       const matchedFaculty = selectedTimetable.faculties.find(f => 
                         f.facultyName.toLowerCase().replace(/[^a-z0-9]/g, '') === fname.toLowerCase().replace(/[^a-z0-9]/g, '')
-                      ) || selectedTimetable.faculties.find(f => f.facultyName.toLowerCase().includes(fname.toLowerCase().split(' ')[0]));
+                      ) || selectedTimetable.faculties.find(f => {
+                        const searchWords = fname.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\\s+/).filter(w => w.length > 2 && !['dr', 'mr', 'mrs'].includes(w));
+                        return searchWords.length > 0 && searchWords.every(w => f.facultyName.toLowerCase().includes(w));
+                      });
                       
                       return (
                         <td 
