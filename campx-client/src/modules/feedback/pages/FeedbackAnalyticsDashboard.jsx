@@ -6,8 +6,7 @@ import toast from 'react-hot-toast';
 
 const FeedbackAnalyticsDashboard = () => {
   const [stats, setStats] = useState(null);
-  const [heatmapData, setHeatmapData] = useState([]);
-  const [questions, setQuestions] = useState([]);
+  const [detailedStats, setDetailedStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -17,14 +16,63 @@ const FeedbackAnalyticsDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [overviewRes, heatmapRes] = await Promise.all([
+      const [overviewRes, detailedRes] = await Promise.all([
         api.get('/feedback/admin/analytics/overview'),
-        api.get('/feedback/admin/analytics/heatmap')
+        api.get('/feedback/admin/analytics/detailed')
       ]);
       
       setStats(overviewRes.data.stats);
-      setHeatmapData(heatmapRes.data.heatmapData);
-      setQuestions(heatmapRes.data.questions);
+      
+      const timetables = detailedRes.data.timetables;
+      
+      const facList = [];
+      const ttList = timetables.map(tt => {
+         let ttSum = 0;
+         let ttCount = 0;
+         tt.faculties.forEach(f => {
+            let sum = 0, count = 0;
+            if (f.questionScores) {
+               Object.values(f.questionScores).forEach(s => {
+                  if (s) {
+                     sum += parseFloat(s);
+                     count++;
+                     ttSum += parseFloat(s);
+                     ttCount++;
+                  }
+               });
+            }
+            const overallPct = count > 0 ? (sum / count) * 20 : 0;
+            facList.push({
+               facultyName: f.facultyName,
+               roomNo: f.roomNo || 'N/A',
+               timetable: tt.name,
+               overallPct,
+               submitted: f.submitted,
+               totalAssigned: f.totalAssigned,
+               completionPercentage: parseFloat(f.completionPercentage)
+            });
+         });
+         const ttOverallPct = ttCount > 0 ? (ttSum / ttCount) * 20 : 0;
+         return {
+            name: tt.name,
+            overallPct: ttOverallPct
+         };
+      });
+
+      const topTimetables = ttList.sort((a,b) => b.overallPct - a.overallPct).slice(0, 5);
+      
+      const ratedFaculties = facList.filter(f => f.submitted > 0);
+      const topFaculties = [...ratedFaculties].sort((a,b) => b.overallPct - a.overallPct).slice(0, 5);
+      const leastFaculties = [...ratedFaculties].sort((a,b) => a.overallPct - b.overallPct).slice(0, 5);
+      
+      const leastRespondedFaculties = [...facList].sort((a,b) => a.completionPercentage - b.completionPercentage).slice(0, 5);
+
+      setDetailedStats({
+        topTimetables,
+        topFaculties,
+        leastFaculties,
+        leastRespondedFaculties
+      });
     } catch (error) {
       toast.error('Failed to load analytics');
     } finally {
@@ -32,49 +80,7 @@ const FeedbackAnalyticsDashboard = () => {
     }
   };
 
-  const getHeatmapColor = (rating) => {
-    if (!rating) return 'bg-gray-100 text-gray-400';
-    const num = parseFloat(rating);
-    if (num >= 4.5) return 'bg-green-100 text-green-800';
-    if (num >= 3.5) return 'bg-blue-100 text-blue-800';
-    if (num >= 2.5) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
-  };
 
-  const exportHeatmapCSV = () => {
-    if (!heatmapData.length || !questions.length) return;
-
-    const headers = ['Faculty Name', ...questions.map((_, i) => `Q${i + 1}`), 'Overall Avg'];
-    const rows = heatmapData.map(f => {
-      let sum = 0;
-      let count = 0;
-      const qScores = questions.map(q => {
-        const score = f[q._id];
-        if (score) {
-          sum += parseFloat(score);
-          count++;
-        }
-        return score || 'N/A';
-      });
-      const avg = count > 0 ? (sum / count).toFixed(2) : 'N/A';
-      return [f.facultyName, ...qScores, avg];
-    });
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(e => e.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "feedback_heatmap.csv");
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   if (loading) return <div className="p-8">Loading...</div>;
 
@@ -91,13 +97,6 @@ const FeedbackAnalyticsDashboard = () => {
             className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm"
           >
             Detailed Analytics <ChevronRight size={16} />
-          </button>
-          <button
-            onClick={exportHeatmapCSV}
-            className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-          >
-            <Download size={16} />
-            Export CSV
           </button>
         </div>
       </div>
@@ -140,47 +139,107 @@ const FeedbackAnalyticsDashboard = () => {
         </div>
       </div>
 
-      {/* Heatmap */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Faculty Performance Heatmap</h2>
-          <p className="text-sm text-gray-500 mt-1">Scores out of 5.0 for each question.</p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left whitespace-nowrap">
-            <thead className="bg-gray-50 text-gray-900 border-b border-gray-200">
+      {/* 4 Small Tables Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        
+        {/* Top Percentage Faculties */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
+            <TrendingUp size={18} className="text-green-600" />
+            <h3 className="font-bold text-gray-900">Top Percentage Faculties</h3>
+          </div>
+          <table className="w-full text-sm text-left">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="p-4 font-semibold">Faculty Name</th>
-                {questions.map((q, i) => (
-                  <th key={q._id} className="p-4 font-semibold text-center" title={q.questionText}>
-                    Q{i + 1}
-                  </th>
-                ))}
+                <th className="p-3 font-semibold">Faculty Name</th>
+                <th className="p-3 font-semibold">Timetable</th>
+                <th className="p-3 font-semibold text-right">Percentage</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {heatmapData.map((row, idx) => (
-                <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                  <td className="p-4 font-medium text-gray-900">{row.facultyName}</td>
-                  {questions.map(q => {
-                    const score = row[q._id];
-                    return (
-                      <td key={q._id} className="p-2 text-center">
-                        <div className={`mx-auto w-12 py-1 rounded font-semibold ${getHeatmapColor(score)}`}>
-                          {score ? score : '-'}
-                        </div>
-                      </td>
-                    )
-                  })}
+              {detailedStats?.topFaculties.map((f, i) => (
+                <tr key={i} className="hover:bg-gray-50">
+                  <td className="p-3 font-medium text-gray-900">{f.facultyName}</td>
+                  <td className="p-3 text-gray-500">{f.timetable}</td>
+                  <td className="p-3 text-right font-bold text-green-600">{f.overallPct.toFixed(1)}%</td>
                 </tr>
               ))}
-              {heatmapData.length === 0 && (
-                <tr>
-                  <td colSpan={questions.length + 1} className="p-8 text-center text-gray-500">
-                    No feedback data available yet.
-                  </td>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Least Percentage Faculties */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
+            <TrendingUp size={18} className="text-red-600 rotate-180" />
+            <h3 className="font-bold text-gray-900">Least Percentage Faculties</h3>
+          </div>
+          <table className="w-full text-sm text-left">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="p-3 font-semibold">Faculty Name</th>
+                <th className="p-3 font-semibold">Timetable</th>
+                <th className="p-3 font-semibold text-right">Percentage</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {detailedStats?.leastFaculties.map((f, i) => (
+                <tr key={i} className="hover:bg-gray-50">
+                  <td className="p-3 font-medium text-gray-900">{f.facultyName}</td>
+                  <td className="p-3 text-gray-500">{f.timetable}</td>
+                  <td className="p-3 text-right font-bold text-red-600">{f.overallPct.toFixed(1)}%</td>
                 </tr>
-              )}
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Top Percentage Timetable */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
+            <Star size={18} className="text-yellow-600" />
+            <h3 className="font-bold text-gray-900">Top Percentage Timetables</h3>
+          </div>
+          <table className="w-full text-sm text-left">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="p-3 font-semibold">Timetable</th>
+                <th className="p-3 font-semibold text-right">Overall Percentage</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {detailedStats?.topTimetables.map((tt, i) => (
+                <tr key={i} className="hover:bg-gray-50">
+                  <td className="p-3 font-medium text-gray-900">{tt.name}</td>
+                  <td className="p-3 text-right font-bold text-indigo-600">{tt.overallPct.toFixed(1)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Least Responded Faculties */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
+            <Users size={18} className="text-gray-600" />
+            <h3 className="font-bold text-gray-900">Least Responded Faculties</h3>
+          </div>
+          <table className="w-full text-sm text-left">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="p-3 font-semibold">Faculty Name</th>
+                <th className="p-3 font-semibold">Room No</th>
+                <th className="p-3 font-semibold text-right">Response Rate</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {detailedStats?.leastRespondedFaculties.map((f, i) => (
+                <tr key={i} className="hover:bg-gray-50">
+                  <td className="p-3 font-medium text-gray-900">{f.facultyName}</td>
+                  <td className="p-3 text-gray-500">{f.roomNo}</td>
+                  <td className="p-3 text-right font-bold text-orange-600">{f.completionPercentage.toFixed(1)}% <span className="text-xs text-gray-500 font-normal ml-1">({f.submitted}/{f.totalAssigned})</span></td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

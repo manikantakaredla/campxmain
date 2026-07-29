@@ -12,7 +12,7 @@ import FeedbackLogin from "../../modules/feedback/components/FeedbackLogin";
 function LandingPage() {
   const navigate = useNavigate();
   const { login } = useAuth(); // Make sure this is here
-  
+
   const [showRegister, setShowRegister] = useState(false);
   const [registerType, setRegisterType] = useState("student");
   const [email, setEmail] = useState("");
@@ -22,7 +22,7 @@ function LandingPage() {
   const isFeedbackMode = import.meta.env.VITE_ENABLE_FEEDBACK_MODE === 'true';
 
   return (
-    <div 
+    <div
       className="min-h-screen flex relative overflow-hidden"
       style={{
         backgroundImage: "url('/collegebg.png')",
@@ -33,20 +33,20 @@ function LandingPage() {
     >
       {/* Dark overlay for low opacity look */}
       <div className="absolute inset-0 bg-black/70"></div>
-      
+
       {/* Left Section */}
       <div className="hidden lg:flex lg:w-1/2 relative z-10 flex-col justify-center px-12 lg:px-16 xl:px-20 text-white">
         <div className="max-w-lg">
-          <img 
-            src="https://www.adityauniversity.in/public/frontend/assets/images/site-logo.svg" 
-            alt="Aditya University" 
+          <img
+            src="https://www.adityauniversity.in/public/frontend/assets/images/site-logo.svg"
+            alt="Aditya University"
             className="w-36 h-auto mb-8 brightness-0 invert"
           />
-          
+
           <h1 className="text-4xl lg:text-5xl font-bold mb-4 leading-tight">
             Academic Hub
           </h1>
-          
+
           <p className="text-base lg:text-lg text-white/80 mb-10 leading-relaxed">
             Your centralized platform for academic resources, collaboration, and university management.
           </p>
@@ -88,14 +88,14 @@ function LandingPage() {
           </p>
         </div>
       </div>
-      
+
       {/* Right Section - Form Container */}
-     <div className="w-full lg:w-1/2 relative z-10 flex items-center justify-center p-4 sm:p-6 md:p-8">
+      <div className="w-full lg:w-1/2 relative z-10 flex items-center justify-center p-4 sm:p-6 md:p-8">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-          
+
           {/* Header with logo for mobile */}
           <div className="text-center pt-8 pb-4 px-6 border-b border-gray-100">
-            
+
             <h2 className="text-xl font-bold text-gray-800">
               {!showRegister && !showVerifyOTP ? 'Welcome Back' : showVerifyOTP ? 'Verify Email' : 'Create Account'}
             </h2>
@@ -113,24 +113,22 @@ function LandingPage() {
                     <button
                       type="button"
                       onClick={() => setLoginType("student")}
-                      className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${
-                        loginType === "student"
+                      className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${loginType === "student"
                           ? "bg-blue-600 text-white shadow-sm"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
+                        }`}
                     >
                       Student
                     </button>
                     <button
                       type="button"
                       onClick={() => setLoginType("faculty")}
-                      className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${
-                        loginType === "faculty"
+                      className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${loginType === "faculty"
                           ? "bg-blue-600 text-white shadow-sm"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
+                        }`}
                     >
-                      Faculty/Staff
+                      ADMIN
                     </button>
                   </div>
                 )}
@@ -173,22 +171,20 @@ function LandingPage() {
                     <button
                       type="button"
                       onClick={() => setRegisterType("student")}
-                      className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${
-                        registerType === "student"
+                      className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${registerType === "student"
                           ? "bg-blue-600 text-white shadow-sm"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
+                        }`}
                     >
                       Student
                     </button>
                     <button
                       type="button"
                       onClick={() => setRegisterType("faculty")}
-                      className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${
-                        registerType === "faculty"
+                      className={`flex-1 py-2 rounded-lg font-medium transition-all duration-200 ${registerType === "faculty"
                           ? "bg-blue-600 text-white shadow-sm"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
+                        }`}
                     >
                       Faculty
                     </button>

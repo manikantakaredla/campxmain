@@ -608,6 +608,12 @@ const DetailedAnalyticsPage = () => {
             <h1 className="text-2xl font-bold text-gray-900">{selectedFaculty.facultyName}</h1>
             <p className="text-gray-500">
               Detailed Feedback for {selectedTimetable.name}
+              {selectedFaculty.subject && (
+                <>
+                  <span className="mx-2">•</span>
+                  Subject: {selectedFaculty.subject}
+                </>
+              )}
               <span className="mx-2">•</span>
               Employee ID: {selectedFaculty.facultyId}
               {selectedFaculty.roomNo && (
@@ -632,8 +638,33 @@ const DetailedAnalyticsPage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
         {questions.map((q, idx) => {
-          const score = selectedFaculty.questionScores[q._id];
-          const percentage = selectedFaculty.questionPercentages ? selectedFaculty.questionPercentages[q._id] : (score ? (parseFloat(score) * 20).toFixed(1) : null);
+          let percentage = null;
+          let score = null;
+          if (studentResponses) {
+            let sum = 0, count = 0;
+            studentResponses.students.forEach(s => {
+               const ratingStr = s.answers[q._id];
+               let r = 0;
+               if (ratingStr === 'Excellent') r = 5;
+               else if (ratingStr === 'Very Good') r = 4;
+               else if (ratingStr === 'Good') r = 3;
+               else if (ratingStr === 'Fair') r = 2;
+               else if (ratingStr === 'Poor') r = 1;
+               
+               if (r > 0) {
+                 sum += r;
+                 count++;
+               }
+            });
+            if (count > 0) {
+              score = (sum / count).toFixed(2);
+              percentage = ((sum / count) * 20).toFixed(1);
+            }
+          } else {
+            score = selectedFaculty.questionScores[q._id];
+            percentage = selectedFaculty.questionPercentages ? selectedFaculty.questionPercentages[q._id] : (score ? (parseFloat(score) * 20).toFixed(1) : null);
+          }
+
           return (
             <div key={q._id} className={`bg-white rounded-xl border p-5 shadow-sm flex flex-col justify-between ${getHeatmapColor(score)}`}>
               <div>
@@ -652,26 +683,35 @@ const DetailedAnalyticsPage = () => {
         })}
       </div>
 
-      {selectedFaculty.suggestions && selectedFaculty.suggestions.length > 0 && (
-        <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
-              <MessageSquare size={20} />
-            </div>
-            <h2 className="text-lg font-bold text-gray-900">Student Suggestions</h2>
-            <span className="ml-auto bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
-              {selectedFaculty.suggestions.length}
-            </span>
-          </div>
-          <div className="space-y-4">
-            {selectedFaculty.suggestions.map((suggestion, idx) => (
-              <div key={idx} className="p-4 bg-gray-50 rounded-lg border border-gray-100 text-gray-700 text-sm">
-                "{suggestion}"
+      {(() => {
+        const suggestions = studentResponses 
+          ? studentResponses.students.map(s => s.suggestions).filter(s => s && s.trim().length > 0)
+          : selectedFaculty.suggestions;
+        
+        if (suggestions && suggestions.length > 0) {
+          return (
+            <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                  <MessageSquare size={20} />
+                </div>
+                <h2 className="text-lg font-bold text-gray-900">Student Suggestions</h2>
+                <span className="ml-auto bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
+                  {suggestions.length}
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+              <div className="space-y-4">
+                {suggestions.map((suggestion, idx) => (
+                  <div key={idx} className="p-4 bg-gray-50 rounded-lg border border-gray-100 text-gray-700 text-sm">
+                    "{suggestion}"
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        }
+        return null;
+      })()}
 
       {/* STUDENT RESPONSES SECTION */}
       {responsesLoading ? (
@@ -720,20 +760,23 @@ const DetailedAnalyticsPage = () => {
                     <th className="p-4 font-semibold text-gray-800 border-r border-gray-200 text-center">Very Good</th>
                     <th className="p-4 font-semibold text-gray-800 border-r border-gray-200 text-center">Good</th>
                     <th className="p-4 font-semibold text-gray-800 border-r border-gray-200 text-center">Fair</th>
-                    <th className="p-4 font-semibold text-gray-800 text-center">Poor</th>
+                    <th className="p-4 font-semibold text-gray-800 border-r border-gray-200 text-center">Poor</th>
+                    <th className="p-4 font-bold text-gray-900 text-center bg-gray-50/50">Overall %</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {studentResponses.questions.map((q, idx) => {
                     let poor = 0, fair = 0, good = 0, veryGood = 0, excellent = 0;
+                    let sum = 0, count = 0;
                     studentResponses.students.forEach(student => {
                       const ans = student.answers[q._id];
-                      if (ans === 'Poor') poor++;
-                      if (ans === 'Fair') fair++;
-                      if (ans === 'Good') good++;
-                      if (ans === 'Very Good') veryGood++;
-                      if (ans === 'Excellent') excellent++;
+                      if (ans === 'Poor') { poor++; sum += 1; count++; }
+                      if (ans === 'Fair') { fair++; sum += 2; count++; }
+                      if (ans === 'Good') { good++; sum += 3; count++; }
+                      if (ans === 'Very Good') { veryGood++; sum += 4; count++; }
+                      if (ans === 'Excellent') { excellent++; sum += 5; count++; }
                     });
+                    const overallPercentage = count > 0 ? ((sum / count) * 20).toFixed(1) : 'N/A';
                     
                     return (
                       <tr key={q._id} className="hover:bg-gray-50">
@@ -742,7 +785,8 @@ const DetailedAnalyticsPage = () => {
                         <td className="p-4 text-center border-r border-gray-200 font-medium text-blue-700">{veryGood}</td>
                         <td className="p-4 text-center border-r border-gray-200 font-medium text-yellow-700">{good}</td>
                         <td className="p-4 text-center border-r border-gray-200 font-medium text-orange-700">{fair}</td>
-                        <td className="p-4 text-center font-medium text-red-700">{poor}</td>
+                        <td className="p-4 text-center border-r border-gray-200 font-medium text-red-700">{poor}</td>
+                        <td className="p-4 text-center font-bold text-indigo-700 bg-gray-50/50">{overallPercentage !== 'N/A' ? `${overallPercentage}%` : 'N/A'}</td>
                       </tr>
                     );
                   })}
