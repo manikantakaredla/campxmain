@@ -144,7 +144,10 @@ exports.getDetailedAnalytics = async (req, res) => {
     });
     
     // Populate faculties within timetables
-    const normalizeSubject = (courseName) => {
+    const getSubjectKey = (doc) => {
+      if (doc.courseCode) return doc.courseCode; // strictly use course code if available
+      
+      const courseName = doc.courseName;
       if (!courseName) return 'Other';
       const c = courseName.toLowerCase();
       if (c.includes('fundamentals of data science') || c.includes('fds')) return 'Fundamentals of Data Science';
@@ -173,16 +176,14 @@ exports.getDetailedAnalytics = async (req, res) => {
           subjects: {}
         };
       }
-      // Note: an assignment is one unique link between student and course/faculty. 
-      // If a student has the same faculty for two courses in the same timetable, it might count twice unless we distinct it.
-      // But usually it's fine.
+      
       timetablesMap[tt].faculties[fId].totalStudentsAssigned++;
       
-      const normSubj = normalizeSubject(a.courseName);
-      if (!timetablesMap[tt].faculties[fId].subjects[normSubj]) {
-        timetablesMap[tt].faculties[fId].subjects[normSubj] = { total: 0, submitted: 0 };
+      const subjKey = getSubjectKey(a);
+      if (!timetablesMap[tt].faculties[fId].subjects[subjKey]) {
+        timetablesMap[tt].faculties[fId].subjects[subjKey] = { total: 0, submitted: 0, ratingSum: 0, ratingCount: 0 };
       }
-      timetablesMap[tt].faculties[fId].subjects[normSubj].total++;
+      timetablesMap[tt].faculties[fId].subjects[subjKey].total++;
     });
     
     // Populate answers
@@ -194,9 +195,9 @@ exports.getDetailedAnalytics = async (req, res) => {
       const f = timetablesMap[tt].faculties[fId];
       f.submittedStudents++;
       
-      const normSubj = normalizeSubject(ansDoc.courseName);
-      if (f.subjects[normSubj]) {
-        f.subjects[normSubj].submitted++;
+      const subjKey = getSubjectKey(ansDoc);
+      if (f.subjects[subjKey]) {
+        f.subjects[subjKey].submitted++;
       }
       
       ansDoc.answers.forEach(a => {
@@ -205,6 +206,11 @@ exports.getDetailedAnalytics = async (req, res) => {
         }
         f.qStats[a.questionId].sum += a.rating;
         f.qStats[a.questionId].count++;
+
+        if (f.subjects[subjKey]) {
+          f.subjects[subjKey].ratingSum += a.rating;
+          f.subjects[subjKey].ratingCount++;
+        }
       });
 
       if (ansDoc.suggestions && ansDoc.suggestions.trim().length > 0) {
@@ -216,11 +222,23 @@ exports.getDetailedAnalytics = async (req, res) => {
     const formattedTimetables = Object.values(timetablesMap).map(tt => {
       const faculties = Object.values(tt.faculties).map(f => {
         const questionScores = {};
+        const questionPercentages = {};
         questions.forEach(q => {
           const stats = f.qStats[q._id];
           questionScores[q._id] = stats && stats.count > 0 ? (stats.sum / stats.count).toFixed(2) : null;
+          questionPercentages[q._id] = stats && stats.count > 0 ? ((stats.sum / stats.count) * 20).toFixed(1) : null;
         });
         
+        // Subject percentages
+        Object.keys(f.subjects).forEach(sKey => {
+          const sObj = f.subjects[sKey];
+          if (sObj.ratingCount > 0) {
+            sObj.percentage = ((sObj.ratingSum / sObj.ratingCount) * 20).toFixed(1);
+          } else {
+            sObj.percentage = null;
+          }
+        });
+
         // Safety cap in case of assignment duplicates vs answers
         if (f.submittedStudents > f.totalStudentsAssigned) {
            f.totalStudentsAssigned = f.submittedStudents;
@@ -233,6 +251,7 @@ exports.getDetailedAnalytics = async (req, res) => {
           submitted: f.submittedStudents,
           completionPercentage: f.totalStudentsAssigned > 0 ? ((f.submittedStudents / f.totalStudentsAssigned) * 100).toFixed(1) : 0,
           questionScores,
+          questionPercentages,
           suggestions: f.suggestions,
           subjects: f.subjects
         };
@@ -284,8 +303,13 @@ exports.getFacultyStudentResponses = async (req, res) => {
     // 2. Get all assignments for this faculty & timetable
     let query = { timetable, facultyId };
     const subject = req.query.subject;
+    const courseCode = req.query.courseCode;
     let subjectCondition = null;
-    if (subject) {
+    
+    if (courseCode) {
+      query.courseCode = courseCode;
+      subjectCondition = [{ courseCode: courseCode }];
+    } else if (subject) {
       if (subject.toLowerCase() === 'fundamentals of data science') {
         subjectCondition = [{ courseName: /fundamentals of data science/i }, { courseName: /fds/i }, { courseCode: /fds/i }];
       } else if (subject.toLowerCase() === 'engineering economics & management') {
@@ -310,7 +334,9 @@ exports.getFacultyStudentResponses = async (req, res) => {
 
     // 3. Get all answers for these students & this faculty
     let answerQuery = { timetable, facultyId, rollNumber: { $in: assignedRollNumbers } };
-    if (subjectCondition) {
+    if (courseCode) {
+      answerQuery.courseCode = courseCode;
+    } else if (subjectCondition) {
       answerQuery.$or = subjectCondition;
     }
     const answers = await FeedbackAnswer.find(answerQuery);

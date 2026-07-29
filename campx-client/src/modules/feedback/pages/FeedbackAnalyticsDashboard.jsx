@@ -105,31 +105,31 @@ const FeedbackAnalyticsDashboard = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 shrink-0 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
             <Users size={24} />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-500 font-medium">Total Submissions</p>
-            <h3 className="text-2xl font-bold text-gray-900">{stats?.totalSubmitted} <span className="text-sm font-normal text-gray-400">/ {stats?.totalImported}</span></h3>
+            <h3 className="text-2xl font-bold text-gray-900 truncate">{stats?.totalSubmitted} <span className="text-sm font-normal text-gray-400">/ {stats?.totalImported}</span></h3>
             <p className="text-xs text-green-600 mt-1">{stats?.submissionPercent}% Completion Rate</p>
           </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center gap-4">
-          <div className="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 shrink-0 bg-yellow-100 text-yellow-600 rounded-lg flex items-center justify-center">
             <Star size={24} />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-500 font-medium">Avg Institute Rating</p>
-            <h3 className="text-2xl font-bold text-gray-900">{stats?.averageRating} <span className="text-sm font-normal text-gray-400">/ 5.0</span></h3>
+            <h3 className="text-2xl font-bold text-gray-900 truncate">{stats?.averageRating} <span className="text-sm font-normal text-gray-400">/ 5.0</span></h3>
           </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center gap-4">
-          <div className="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 shrink-0 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
             <TrendingUp size={24} />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-500 font-medium">Highest Rated Faculty</p>
             <h3 className="text-lg font-bold text-gray-900 truncate" title={stats?.highestRated?.name}>{stats?.highestRated?.name}</h3>
             <p className="text-xs text-green-600 font-medium mt-1">{stats?.highestRated?.rating} / 5.0</p>
@@ -137,10 +137,10 @@ const FeedbackAnalyticsDashboard = () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center gap-4">
-          <div className="w-12 h-12 bg-red-100 text-red-600 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 shrink-0 bg-red-100 text-red-600 rounded-lg flex items-center justify-center">
             <BarChart size={24} />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-500 font-medium">Lowest Rated Faculty</p>
             <h3 className="text-lg font-bold text-gray-900 truncate" title={stats?.lowestRated?.name}>{stats?.lowestRated?.name}</h3>
             <p className="text-xs text-red-600 font-medium mt-1">{stats?.lowestRated?.rating} / 5.0</p>
