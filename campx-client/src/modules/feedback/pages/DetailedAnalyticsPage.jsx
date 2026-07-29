@@ -522,7 +522,7 @@ const DetailedAnalyticsPage = () => {
                             <td 
                               key={cIdx} 
                               onClick={() => matchedFaculty && handleFacultyClick(matchedFaculty, row.class, col.name, col.code)}
-                              className={`p-0 border-r border-gray-200 last:border-r-0 align-top transition-all ${matchedFaculty ? 'cursor-pointer hover:bg-blue-50/60 hover:shadow-inner' : 'bg-gray-50/30'}`}
+                              className={`h-px p-0 border-r border-gray-200 last:border-r-0 align-top transition-all ${matchedFaculty ? 'cursor-pointer hover:bg-blue-50/60 hover:shadow-inner' : 'bg-gray-50/30'}`}
                             >
                               <div className="flex flex-col h-full min-h-[120px] justify-between">
                                 <div className={`p-3 ${matchedFaculty ? '' : 'opacity-40'}`}>
