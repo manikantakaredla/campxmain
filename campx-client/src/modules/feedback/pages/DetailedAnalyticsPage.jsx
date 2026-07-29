@@ -4,6 +4,7 @@ import { ArrowLeft, BookOpen, Users, Star, BarChart3, ChevronRight, MessageSquar
 import toast from 'react-hot-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import api from '../../../services/api';
 
 const DetailedAnalyticsPage = () => {
@@ -105,7 +106,7 @@ const DetailedAnalyticsPage = () => {
     });
 
     autoTable(doc, {
-      startY: 35,
+      startY: 40,
       head: [tableColumn],
       body: tableRows,
       styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
@@ -113,24 +114,63 @@ const DetailedAnalyticsPage = () => {
       columnStyles: {
         0: { cellWidth: 25 }, // Roll Number
         1: { cellWidth: 15 }, // Status
-        // Dynamically set Q1..Qn widths later or let autotable handle it, but Suggestions (last column) needs more space
         [tableColumn.length - 1]: { cellWidth: 'auto' }
       },
-      margin: { top: 35, right: 10, bottom: 15, left: 10 },
+      margin: { top: 40, right: 10, bottom: 15, left: 10 },
       didDrawPage: function (data) {
         // Header
         doc.setFontSize(16);
         doc.text(`Feedback Details - ${selectedFaculty.facultyName}`, data.settings.margin.left, 15);
-        doc.setFontSize(12);
-        doc.text(`Timetable: ${selectedTimetable.name}`, data.settings.margin.left, 22);
+        doc.setFontSize(11);
+        doc.text(`Timetable: ${selectedTimetable.name} | Subject: ${selectedFaculty.subject || 'All'}`, data.settings.margin.left, 22);
+        
+        // Students Count
+        const total = selectedFaculty.totalAssigned;
+        const submitted = selectedFaculty.submitted;
+        const percent = selectedFaculty.completionPercentage;
+        doc.setFontSize(10);
+        doc.text(`Total Assigned: ${total} | Responded: ${submitted} | Response Rate: ${percent}%`, data.settings.margin.left, 28);
         
         // Stats
-        doc.setFontSize(10);
-        doc.text(`Stats: Poor (${stats['Poor']}) | Fair (${stats['Fair']}) | Good (${stats['Good']}) | Very Good (${stats['Very Good']}) | Excellent (${stats['Excellent']})`, data.settings.margin.left, 30);
+        doc.text(`Stats: Poor (${stats['Poor']}) | Fair (${stats['Fair']}) | Good (${stats['Good']}) | Very Good (${stats['Very Good']}) | Excellent (${stats['Excellent']})`, data.settings.margin.left, 34);
       }
     });
 
     doc.save(`${selectedFaculty.facultyName.replace(/\s+/g, '_')}_Feedback.pdf`);
+  };
+
+  const downloadExcel = () => {
+    if (!studentResponses) return;
+    
+    // Prepare table data
+    const questionKeys = studentResponses.questions.map(q => q._id);
+    const headers = ["Roll Number", "Status"];
+    studentResponses.questions.forEach((q, idx) => {
+      headers.push(`Q${idx+1}`);
+    });
+    headers.push("Suggestions");
+
+    const excelData = [];
+    
+    studentResponses.students.forEach(student => {
+      const row = {
+        "Roll Number": student.rollNumber,
+        "Status": student.status
+      };
+      
+      studentResponses.questions.forEach((q, idx) => {
+        row[`Q${idx+1}`] = student.answers[q._id] || '-';
+      });
+      
+      row["Suggestions"] = student.suggestions || '-';
+      excelData.push(row);
+    });
+
+    const ws = XLSX.utils.json_to_sheet(excelData, { header: headers });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Feedback");
+    
+    XLSX.writeFile(wb, `${selectedFaculty.facultyName.replace(/\s+/g, '_')}_Feedback.xlsx`);
   };
 
   if (loading) {
@@ -234,61 +274,56 @@ const DetailedAnalyticsPage = () => {
                 {[
                   {
                     class: 'JWB-102',
-                    cn: 'Kavitapu Nagasivasankara Varaprasad',
-                    cd: 'Alla Devi Prasanthi',
-                    ml: 'M Kalyan Ram',
-                    ooad: 'Mallidi.Venkata Ajay Kumar Reddy',
-                    eem: 'Dr. N.Visalakshi',
-                    irs: 'M Kalyan Ram',
-                    fds: 'U P Kumar Chaturvedula'
+                    cn: { id: '6722', name: 'Kavitapu Nagasivasankara Varaprasad' },
+                    cd: { id: '6355', name: 'Dr.Jalaiah Saikam' },
+                    ml: { id: '1425', name: 'Mylavarapu Kalyan Ram' },
+                    ooad: { id: '6908', name: 'Mallidi Venkata Ajay Kumar Reddy' },
+                    eem: { id: '5', name: 'Dr. N.Visalakshi' },
+                    irs: { id: '1425', name: 'Mylavarapu Kalyan Ram' },
+                    fds: { id: '1852', name: 'U P Kumar Chaturvedula' }
                   },
                   {
                     class: 'JWB-103',
-                    cn: 'Koneti Durga Bhavani',
-                    cd: 'Dr.Jalaiah Saikam',
-                    ml: 'Jyothula Vidya',
-                    ooad: 'Ramesh Kothapalli',
-                    eem: 'Dr.Elumalai P V',
-                    irs: 'Dr. Pennada Siva Satya Prasad',
-                    fds: 'Dr. Appalaraju Grandhi'
+                    cn: { id: '6791', name: 'Koneti Durga Bhavani' },
+                    cd: { id: '6355', name: 'Dr.Jalaiah Saikam' },
+                    ml: { id: '6749', name: 'Jyothula Vidya' },
+                    ooad: { id: '6231', name: 'Ramesh Kothapalli' },
+                    eem: { id: '4711', name: 'Dr.Elumalai P V' },
+                    irs: { id: '5243', name: 'Dr. Pennada Siva Satya Prasad' },
+                    fds: { id: '6079', name: 'Dr. Appalaraju Grandhi' }
                   },
                   {
                     class: 'JWB-104',
-                    cn: 'Alla Devi Prasanthi',
-                    cd: 'Kavitapu Nagasivasankara Varaprasad',
-                    ml: 'Dr. Subba Rao Polamuri',
-                    ooad: 'Rananki Padma Sri',
-                    eem: 'Mr. V Suneetha',
-                    irs: 'G Uma Mahesh',
-                    fds: 'R Padma Sri'
+                    cn: { id: '6893', name: 'Alla Devi Prasanthi' },
+                    cd: { id: '6722', name: 'Kavitapu Nagasivasankara Varaprasad' },
+                    ml: { id: '6099', name: 'Dr. Subba Rao Polamuri' },
+                    ooad: { id: '6369', name: 'Rananki Padma Sri' },
+                    eem: { id: '411', name: 'Mr. V Suneetha' },
+                    irs: { id: '5317', name: 'G Uma Mahesh' },
+                    fds: { id: '6369', name: 'Rananki Padma Sri' }
                   }
                 ].map((row, rIdx) => (
                   <tr key={rIdx}>
                     <td className="p-2 font-bold text-black border border-black whitespace-nowrap align-middle">{row.class}</td>
                     {[
-                      { name: row.cn, subj: 'Computer Networks' },
-                      { name: row.cd, subj: 'Compiler Design' },
-                      { name: row.ml, subj: 'Machine Learning' },
-                      { name: row.ooad, subj: 'OOAD' },
-                      { name: row.eem, subj: 'Engineering Economics & Management' },
-                      { name: row.irs, subj: 'Information Retrieval Systems' },
-                      { name: row.fds, subj: 'Fundamentals of Data Science' }
+                      { data: row.cn, subj: 'Computer Networks' },
+                      { data: row.cd, subj: 'Compiler Design' },
+                      { data: row.ml, subj: 'Machine Learning' },
+                      { data: row.ooad, subj: 'OOAD' },
+                      { data: row.eem, subj: 'Engineering Economics & Management' },
+                      { data: row.irs, subj: 'Information Retrieval Systems' },
+                      { data: row.fds, subj: 'Fundamentals of Data Science' }
                     ].map((col, cIdx) => {
-                      const fname = col.name;
-                      const matchedFaculty = selectedTimetable.faculties.find(f => 
-                        f.facultyName.toLowerCase().replace(/[^a-z0-9]/g, '') === fname.toLowerCase().replace(/[^a-z0-9]/g, '')
-                      ) || selectedTimetable.faculties.find(f => {
-                        const searchWords = fname.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\\s+/).filter(w => w.length > 2 && !['dr', 'mr', 'mrs'].includes(w));
-                        return searchWords.length > 0 && searchWords.every(w => f.facultyName.toLowerCase().includes(w));
-                      });
+                      const matchedFaculty = selectedTimetable.faculties.find(f => f.facultyId === col.data.id);
                       
                       return (
                         <td 
                           key={cIdx} 
                           onClick={() => matchedFaculty && handleFacultyClick(matchedFaculty, row.class, col.subj)}
-                          className={`p-2 border border-black text-black align-middle ${matchedFaculty ? 'cursor-pointer hover:bg-yellow-100 transition-colors' : 'text-gray-500'}`}
+                          className={`p-2 border border-black text-black align-middle text-center ${matchedFaculty ? 'cursor-pointer hover:bg-yellow-100 transition-colors' : 'text-gray-500'}`}
                         >
-                          {fname}
+                          <div>{col.data.id}</div>
+                          <div className="text-sm mt-1">( {col.data.name} )</div>
                         </td>
                       );
                     })}
@@ -429,12 +464,20 @@ const DetailedAnalyticsPage = () => {
         <div className="mt-8 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h2 className="text-xl font-bold text-gray-900">Student Responses List</h2>
+          <div className="flex gap-2">
+            <button 
+              onClick={downloadExcel}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors font-medium text-sm"
+            >
+              <Download size={16} /> Excel
+            </button>
             <button 
               onClick={downloadPDF}
               className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors font-medium text-sm"
             >
-              <Download size={16} /> Download PDF
+              <Download size={16} /> PDF
             </button>
+          </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
