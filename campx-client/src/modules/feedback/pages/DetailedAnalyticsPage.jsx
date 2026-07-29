@@ -476,24 +476,26 @@ const DetailedAnalyticsPage = () => {
           const config = configKey ? TIMETABLES_CONFIG[configKey] : null;
 
           if (config) {
-            return (
-              <div className="mt-8 overflow-hidden overflow-x-auto">
-                <table className="w-full text-center border-collapse border-2 border-black bg-white">
-                  <thead>
+            const renderedFacultyIds = new Set();
+            
+            const tableUI = (
+              <div className="mt-8 rounded-xl shadow-sm border border-gray-200 overflow-hidden bg-white overflow-x-auto">
+                <table className="w-full text-center border-collapse bg-white">
+                  <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th className="p-2 font-bold text-black border border-black align-middle">Class</th>
+                      <th className="p-4 font-bold text-gray-700 border-r border-gray-200 align-middle w-24">Class</th>
                       {config.columns.map((col, idx) => (
-                        <th key={idx} className="p-2 font-bold text-black border border-black align-middle">
-                          <div className="text-sm text-gray-600">{col.code}</div>
-                          <div>{col.name}</div>
+                        <th key={idx} className="p-3 font-semibold text-gray-800 border-r border-gray-200 align-middle min-w-[140px] last:border-r-0">
+                          <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">{col.code}</div>
+                          <div className="text-sm leading-tight">{col.name}</div>
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-gray-200">
                     {config.rows.map((row, rIdx) => (
-                      <tr key={rIdx}>
-                        <td className="p-2 font-bold text-black border border-black whitespace-nowrap align-middle">{row.class}</td>
+                      <tr key={rIdx} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="p-3 font-bold text-gray-800 border-r border-gray-200 whitespace-nowrap align-middle bg-gray-50/30">{row.class}</td>
                         {row.faculties.map((fac, cIdx) => {
                           const col = config.columns[cIdx];
                           const matchedFaculty = selectedTimetable.faculties.find(f => 
@@ -501,15 +503,18 @@ const DetailedAnalyticsPage = () => {
                             (f.facultyName.toLowerCase().replace(/[^a-z0-9]/g, '') === fac.name.toLowerCase().replace(/[^a-z0-9]/g, ''))
                           );
                           let subjStats = null;
-                          if (matchedFaculty && matchedFaculty.subjects) {
-                            // Find matching subject by code or name
-                            const matchedSubjKey = Object.keys(matchedFaculty.subjects).find(k => 
-                              k.toLowerCase() === col.code.toLowerCase() || 
-                              col.name.toLowerCase().includes(k.toLowerCase()) ||
-                              k.toLowerCase().includes(col.name.toLowerCase())
-                            );
-                            if (matchedSubjKey) {
-                              subjStats = matchedFaculty.subjects[matchedSubjKey];
+                          if (matchedFaculty) {
+                            renderedFacultyIds.add(matchedFaculty.facultyId);
+                            if (matchedFaculty.subjects) {
+                              // Find matching subject by code or name
+                              const matchedSubjKey = Object.keys(matchedFaculty.subjects).find(k => 
+                                k.toLowerCase() === col.code.toLowerCase() || 
+                                col.name.toLowerCase().includes(k.toLowerCase()) ||
+                                k.toLowerCase().includes(col.name.toLowerCase())
+                              );
+                              if (matchedSubjKey) {
+                                subjStats = matchedFaculty.subjects[matchedSubjKey];
+                              }
                             }
                           }
                           
@@ -517,26 +522,26 @@ const DetailedAnalyticsPage = () => {
                             <td 
                               key={cIdx} 
                               onClick={() => matchedFaculty && handleFacultyClick(matchedFaculty, row.class, col.name, col.code)}
-                              className={`p-0 border border-black text-black align-top ${matchedFaculty ? 'cursor-pointer hover:bg-yellow-50 transition-colors' : 'bg-gray-50'}`}
+                              className={`p-0 border-r border-gray-200 last:border-r-0 align-top transition-all ${matchedFaculty ? 'cursor-pointer hover:bg-blue-50/60 hover:shadow-inner' : 'bg-gray-50/30'}`}
                             >
-                              <div className="flex flex-col h-full min-h-[100px] justify-between">
-                                <div className={`p-2 ${matchedFaculty ? '' : 'opacity-50'}`}>
-                                  <div className="font-bold text-gray-900">{fac.id !== fac.name ? fac.id : 'N/A'}</div>
-                                  <div className="text-xs text-gray-600 mt-1 leading-tight" title={fac.name}>{fac.name}</div>
+                              <div className="flex flex-col h-full min-h-[120px] justify-between">
+                                <div className={`p-3 ${matchedFaculty ? '' : 'opacity-40'}`}>
+                                  <div className="font-bold text-gray-900 text-sm">{fac.id !== fac.name ? fac.id : 'N/A'}</div>
+                                  <div className="text-[11px] text-gray-500 mt-1 leading-tight line-clamp-2 uppercase tracking-wide font-medium" title={fac.name}>{fac.name}</div>
                                 </div>
                                 {subjStats ? (
-                                  <div className="bg-indigo-50/60 p-2 border-t border-black/10 mt-auto">
-                                    <div className="text-sm font-bold text-indigo-700">
+                                  <div className="bg-indigo-50/80 p-2.5 border-t border-indigo-100 mt-auto flex flex-col items-center justify-center gap-1">
+                                    <div className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold shadow-sm">
                                       {subjStats.percentage ? `${subjStats.percentage}%` : 'N/A'}
                                     </div>
-                                    <div className="text-[10px] text-gray-500 font-medium mt-0.5">
+                                    <div className="text-[10px] text-indigo-600/70 font-medium">
                                       {subjStats.submitted} / {subjStats.total} responses
                                     </div>
                                   </div>
                                 ) : (
                                   matchedFaculty && (
-                                    <div className="bg-gray-50/50 p-2 border-t border-black/10 mt-auto">
-                                      <div className="text-[10px] text-gray-400 font-medium">No data</div>
+                                    <div className="bg-gray-50 p-2.5 border-t border-gray-100 mt-auto flex items-center justify-center">
+                                      <span className="text-[10px] text-gray-400 font-medium px-2 py-0.5 bg-gray-100 rounded-full">No data yet</span>
                                     </div>
                                   )
                                 )}
@@ -549,6 +554,62 @@ const DetailedAnalyticsPage = () => {
                   </tbody>
                 </table>
               </div>
+            );
+
+            const unlistedFaculties = selectedTimetable.faculties.filter(f => !renderedFacultyIds.has(f.facultyId));
+
+            return (
+              <>
+                {tableUI}
+                {unlistedFaculties.length > 0 && (
+                  <div className="mt-12">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-orange-100 text-orange-600 rounded-lg">
+                        <Star size={20} />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-bold text-gray-900">Additional Assigned Faculties</h2>
+                        <p className="text-sm text-gray-500">These faculties are assigned to this timetable but aren't mapped in the main grid.</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {unlistedFaculties.map((f, idx) => {
+                        const subjKey = f.subjects ? Object.keys(f.subjects)[0] : null;
+                        const subjStats = subjKey ? f.subjects[subjKey] : null;
+                        
+                        return (
+                          <div 
+                            key={idx} 
+                            onClick={() => handleFacultyClick(f, 'Other', subjKey || 'Unknown', subjKey || 'Unknown')}
+                            className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md hover:border-indigo-300 cursor-pointer transition-all group"
+                          >
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="p-3 bg-blue-50 rounded-lg text-blue-600 group-hover:bg-blue-100 transition-colors">
+                                <Users size={24} />
+                              </div>
+                              <div className="text-right">
+                                <span className="text-sm font-medium text-gray-500">Responses</span>
+                                <p className="text-xl font-bold text-gray-900">{f.completionPercentage}%</p>
+                                <p className="text-xs text-gray-400">{f.submitted} / {f.totalAssigned}</p>
+                              </div>
+                            </div>
+                            
+                            <h3 className="font-bold text-lg text-gray-900 truncate" title={f.facultyName}>{f.facultyName}</h3>
+                            <p className="text-sm text-gray-500 font-medium mb-4">ID: {f.facultyId}</p>
+                            
+                            {subjStats && (
+                              <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                                <span className="text-sm text-gray-600">Overall Rating for {subjKey}</span>
+                                <span className="font-bold text-indigo-700">{subjStats.percentage}%</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
             );
           }
 
