@@ -144,6 +144,19 @@ exports.getDetailedAnalytics = async (req, res) => {
     });
     
     // Populate faculties within timetables
+    const normalizeSubject = (courseName) => {
+      if (!courseName) return 'Other';
+      const c = courseName.toLowerCase();
+      if (c.includes('fundamentals of data science') || c.includes('fds')) return 'Fundamentals of Data Science';
+      if (c.includes('engineering economics') || c.includes('eem')) return 'Engineering Economics & Management';
+      if (c.includes('information retrieval') || c.includes('irs')) return 'Information Retrieval Systems';
+      if (c.includes('computer networks') || c.includes('cn')) return 'Computer Networks';
+      if (c.includes('compiler design') || c.includes('cd')) return 'Compiler Design';
+      if (c.includes('machine learning') || c.includes('ml')) return 'Machine Learning';
+      if (c.includes('ooad') || c.includes('object oriented')) return 'OOAD';
+      return courseName;
+    };
+
     assignments.forEach(a => {
       const tt = a.timetable;
       const fId = a.facultyId;
@@ -156,13 +169,20 @@ exports.getDetailedAnalytics = async (req, res) => {
           totalStudentsAssigned: 0,
           submittedStudents: 0,
           qStats: {},
-          suggestions: []
+          suggestions: [],
+          subjects: {}
         };
       }
       // Note: an assignment is one unique link between student and course/faculty. 
       // If a student has the same faculty for two courses in the same timetable, it might count twice unless we distinct it.
       // But usually it's fine.
       timetablesMap[tt].faculties[fId].totalStudentsAssigned++;
+      
+      const normSubj = normalizeSubject(a.courseName);
+      if (!timetablesMap[tt].faculties[fId].subjects[normSubj]) {
+        timetablesMap[tt].faculties[fId].subjects[normSubj] = { total: 0, submitted: 0 };
+      }
+      timetablesMap[tt].faculties[fId].subjects[normSubj].total++;
     });
     
     // Populate answers
@@ -173,6 +193,11 @@ exports.getDetailedAnalytics = async (req, res) => {
       
       const f = timetablesMap[tt].faculties[fId];
       f.submittedStudents++;
+      
+      const normSubj = normalizeSubject(ansDoc.courseName);
+      if (f.subjects[normSubj]) {
+        f.subjects[normSubj].submitted++;
+      }
       
       ansDoc.answers.forEach(a => {
         if (!f.qStats[a.questionId]) {
@@ -208,7 +233,8 @@ exports.getDetailedAnalytics = async (req, res) => {
           submitted: f.submittedStudents,
           completionPercentage: f.totalStudentsAssigned > 0 ? ((f.submittedStudents / f.totalStudentsAssigned) * 100).toFixed(1) : 0,
           questionScores,
-          suggestions: f.suggestions
+          suggestions: f.suggestions,
+          subjects: f.subjects
         };
       });
       

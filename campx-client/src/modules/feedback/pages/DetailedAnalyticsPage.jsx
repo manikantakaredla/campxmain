@@ -125,9 +125,9 @@ const DetailedAnalyticsPage = () => {
         doc.text(`Timetable: ${selectedTimetable.name} | Subject: ${selectedFaculty.subject || 'All'}`, data.settings.margin.left, 22);
         
         // Students Count
-        const total = selectedFaculty.totalAssigned;
-        const submitted = selectedFaculty.submitted;
-        const percent = selectedFaculty.completionPercentage;
+        const total = studentResponses.students.length;
+        const submitted = studentResponses.students.filter(s => s.status === 'Given').length;
+        const percent = total > 0 ? ((submitted / total) * 100).toFixed(1) : 0;
         doc.setFontSize(10);
         doc.text(`Total Assigned: ${total} | Responded: ${submitted} | Response Rate: ${percent}%`, data.settings.margin.left, 28);
         
@@ -167,8 +167,39 @@ const DetailedAnalyticsPage = () => {
     });
 
     const ws = XLSX.utils.json_to_sheet(excelData, { header: headers });
+    
+    // Generate stats sheet
+    const total = studentResponses.students.length;
+    const submitted = studentResponses.students.filter(s => s.status === 'Given').length;
+    const statsData = [
+      { "Metric": "Employee Name", "Value": selectedFaculty.facultyName },
+      { "Metric": "Employee ID", "Value": selectedFaculty.facultyId },
+      { "Metric": "Subject", "Value": selectedFaculty.subject || 'All' },
+      { "Metric": "Room No", "Value": selectedFaculty.roomNo || 'N/A' },
+      { "Metric": "Total Students", "Value": total },
+      { "Metric": "Responses Count", "Value": submitted }
+    ];
+
+    studentResponses.questions.forEach((q, idx) => {
+      let poor = 0, fair = 0, good = 0, veryGood = 0, excellent = 0;
+      studentResponses.students.forEach(student => {
+        const ans = student.answers[q._id];
+        if (ans === 'Poor') poor++;
+        if (ans === 'Fair') fair++;
+        if (ans === 'Good') good++;
+        if (ans === 'Very Good') veryGood++;
+        if (ans === 'Excellent') excellent++;
+      });
+      statsData.push({ 
+        "Metric": `Q${idx+1} (${q.questionText})`, 
+        "Value": `Excellent: ${excellent}, Very Good: ${veryGood}, Good: ${good}, Fair: ${fair}, Poor: ${poor}` 
+      });
+    });
+
+    const ws2 = XLSX.utils.json_to_sheet(statsData, { header: ["Metric", "Value"] });
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Feedback");
+    XLSX.utils.book_append_sheet(wb, ws, "Feedback Responses");
+    XLSX.utils.book_append_sheet(wb, ws2, "Feedback Stats");
     
     XLSX.writeFile(wb, `${selectedFaculty.facultyName.replace(/\s+/g, '_')}_Feedback.xlsx`);
   };
@@ -315,6 +346,10 @@ const DetailedAnalyticsPage = () => {
                       { data: row.fds, subj: 'Fundamentals of Data Science' }
                     ].map((col, cIdx) => {
                       const matchedFaculty = selectedTimetable.faculties.find(f => f.facultyId === col.data.id);
+                      let subjStats = null;
+                      if (matchedFaculty && matchedFaculty.subjects && matchedFaculty.subjects[col.subj]) {
+                        subjStats = matchedFaculty.subjects[col.subj];
+                      }
                       
                       return (
                         <td 
@@ -324,6 +359,11 @@ const DetailedAnalyticsPage = () => {
                         >
                           <div>{col.data.id}</div>
                           <div className="text-sm mt-1">( {col.data.name} )</div>
+                          {subjStats && (
+                            <div className="text-xs font-bold mt-2 text-indigo-700">
+                              {subjStats.submitted} / {subjStats.total} responses
+                            </div>
+                          )}
                         </td>
                       );
                     })}
@@ -409,7 +449,12 @@ const DetailedAnalyticsPage = () => {
         </div>
         <div className="text-right hidden sm:block">
            <p className="text-sm text-gray-500">Response Rate</p>
-           <p className="text-lg font-bold text-gray-900">{selectedFaculty.submitted} / {selectedFaculty.totalAssigned} ({selectedFaculty.completionPercentage}%)</p>
+           {(() => {
+             const actualTotal = studentResponses ? studentResponses.students.length : selectedFaculty.totalAssigned;
+             const actualSubmitted = studentResponses ? studentResponses.students.filter(s => s.status === 'Given').length : selectedFaculty.submitted;
+             const actualPercent = actualTotal > 0 ? ((actualSubmitted / actualTotal) * 100).toFixed(1) : 0;
+             return <p className="text-lg font-bold text-gray-900">{actualSubmitted} / {actualTotal} ({actualPercent}%)</p>;
+           })()}
         </div>
       </div>
 
