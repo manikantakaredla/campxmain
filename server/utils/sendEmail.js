@@ -1,15 +1,37 @@
 const SibApiV3Sdk = require("sib-api-v3-sdk");
+const https = require("https");
+
+// Pre-initialize SDK instance and warm up DNS/SSL to prevent first-hit cold start latency during OTP generation
+const client = SibApiV3Sdk.ApiClient.instance;
+let apiInstance = null;
+
+const getApiInstance = () => {
+  if (!apiInstance) {
+    client.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
+    apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+  }
+  return apiInstance;
+};
+
+// Proactive network warmup for Brevo servers after startup
+setTimeout(() => {
+  if (process.env.BREVO_API_KEY) {
+    try {
+      getApiInstance();
+      // Send a lightweight HTTPS connection to cache DNS resolution and TLS socket handshakes
+      https.get("https://api.brevo.com/v3", { timeout: 3500 }, () => {}).on("error", () => {});
+      console.log("⚡ Brevo email service network pipeline pre-warmed!");
+    } catch (e) {
+      // Silent catch for initial network ping
+    }
+  }
+}, 1000);
 
 const sendEmail = async (to, subject, text, html = null) => {
   try {
-    const client = SibApiV3Sdk.ApiClient.instance;
+    const emailApi = getApiInstance();
 
-    client.authentications["api-key"].apiKey =
-      process.env.BREVO_API_KEY;
-
-    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-
-    await apiInstance.sendTransacEmail({
+    await emailApi.sendTransacEmail({
       sender: {
         email: "luckyha0637k@gmail.com",
         name: "CAMPX",

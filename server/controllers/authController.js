@@ -402,7 +402,8 @@ exports.loginUser = async (req, res) => {
 
     user.lastLogin = new Date();
 
-    await user.save();
+    // Perform save asynchronously without blocking HTTP response to significantly speed up login
+    user.save().catch(err => console.error("Error saving user on login:", err.message));
 
     const token = generateToken(user);
 

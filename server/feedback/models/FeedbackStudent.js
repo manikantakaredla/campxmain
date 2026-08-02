@@ -24,4 +24,8 @@ const feedbackStudentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+feedbackStudentSchema.index({ collegeEmail: 1 });
+feedbackStudentSchema.index({ timetable: 1 });
+feedbackStudentSchema.index({ rollNumber: 1, collegeEmail: 1 });
+
 module.exports = mongoose.model("FeedbackStudent", feedbackStudentSchema);

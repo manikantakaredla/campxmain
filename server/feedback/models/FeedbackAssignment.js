@@ -39,5 +39,7 @@ const feedbackAssignmentSchema = new mongoose.Schema(
 
 // Compound index to prevent duplicate assignment for a student in a specific course
 feedbackAssignmentSchema.index({ studentRollNo: 1, courseCode: 1 }, { unique: true });
+feedbackAssignmentSchema.index({ timetable: 1, facultyId: 1 });
+feedbackAssignmentSchema.index({ studentRollNo: 1 });
 
 module.exports = mongoose.model("FeedbackAssignment", feedbackAssignmentSchema);
