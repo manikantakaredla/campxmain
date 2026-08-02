@@ -1058,23 +1058,99 @@ const DetailedAnalyticsPage = () => {
           : selectedFaculty.suggestions;
         
         if (suggestions && suggestions.length > 0) {
+          const positiveKeywords = ['good', 'nice', 'fine', 'great', 'excellent', 'best', 'super', 'awesome', 'satisfied', 'helpful', 'perfect', 'well', 'clear', 'love', 'liked'];
+          const neutralKeywords = ['no', 'none', 'nothing', 'na', 'n/a', 'ok', 'okay', 'nil', 'no suggestions', 'no complaints', 'all good', 'as of now'];
+          
+          let positiveCount = 0;
+          let neutralCount = 0;
+          const actionableRemarks = [];
+
+          suggestions.forEach(item => {
+            const clean = item.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
+            if (item.trim().length < 25) {
+              const isNeutral = neutralKeywords.some(k => clean === k || clean.startsWith(k + ' ') || clean.endsWith(' ' + k));
+              if (isNeutral || clean === 'no' || clean === 'nothing' || clean === 'no suggestions' || clean === 'na') {
+                neutralCount++;
+                return;
+              }
+              const isPositive = positiveKeywords.some(k => clean.includes(k));
+              if (isPositive) {
+                positiveCount++;
+                return;
+              }
+            }
+            actionableRemarks.push(item.trim());
+          });
+
+          const total = suggestions.length;
+          const satisfactionPercent = Math.round(((positiveCount + neutralCount) / total) * 100) || 100;
+          const uniqueRemarks = [...new Set(suggestions)];
+          const sampleQuotes = uniqueRemarks.slice(0, 3).map(q => `"${q}"`).join(", ");
+          
+          let summaryPara = "";
+
+          if (actionableRemarks.length === 0) {
+            if (positiveCount > 0 && neutralCount > 0) {
+              summaryPara = `Across all ${total} student remarks received, feedback indicates strong overall satisfaction and approval of the instructional approach. Students consistently expressed positive sentiments and general contentment (noting remarks such as ${sampleQuotes}), with no critical issues or structural modifications requested.`;
+            } else if (positiveCount > 0) {
+              summaryPara = `All ${total} submitted suggestions reflect overwhelmingly positive feedback and high general contentment with the teaching methodology and classroom engagement (featuring remarks such as ${sampleQuotes}). No specific areas of concern or course changes were requested by the students.`;
+            } else {
+              summaryPara = `A total of ${total} student comments were logged (e.g., ${sampleQuotes}), indicating general satisfaction with no specific methodological changes or complaints reported for the current course delivery.`;
+            }
+          } else {
+            const sampleInsights = actionableRemarks.slice(0, 2).map(r => `"${r}"`).join(" and ");
+            if (positiveCount + neutralCount > 0) {
+              summaryPara = `Out of ${total} total suggestions received, the clear majority (${positiveCount + neutralCount} students, or ~${satisfactionPercent}%) expressed general approval or satisfaction without complaints. Meanwhile, ${actionableRemarks.length} student(s) provided specific descriptive feedback regarding course execution—highlighting points such as ${sampleInsights}${actionableRemarks.length > 2 ? ' among other notes' : ''}.`;
+            } else {
+              summaryPara = `Students submitted ${total} specific qualitative observations and suggestions regarding the course implementation and learning experience. Notable actionable feedback included remarks such as ${sampleInsights}${actionableRemarks.length > 2 ? ', alongside additional constructive comments detailed in the response table below.' : '.'}`;
+            }
+          }
+
           return (
             <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
-                  <MessageSquare size={20} />
-                </div>
-                <h2 className="text-lg font-bold text-gray-900">Student Suggestions</h2>
-                <span className="ml-auto bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
-                  {suggestions.length}
-                </span>
-              </div>
-              <div className="space-y-4">
-                {suggestions.map((suggestion, idx) => (
-                  <div key={idx} className="p-4 bg-gray-50 rounded-lg border border-gray-100 text-gray-700 text-sm">
-                    "{suggestion}"
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                    <MessageSquare size={20} />
                   </div>
-                ))}
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900">Student Suggestions Summary</h2>
+                    <p className="text-xs text-gray-500">Consolidated executive overview of student remarks</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-semibold border border-indigo-100 flex items-center gap-1">
+                    ✨ Executive Summary
+                  </span>
+                  <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
+                    {suggestions.length} {suggestions.length === 1 ? 'Response' : 'Responses'}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="p-5 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30 rounded-xl border border-indigo-100/80 shadow-inner">
+                <p className="text-gray-800 text-sm md:text-base leading-relaxed font-normal">
+                  {summaryPara}
+                </p>
+                <div className="mt-4 pt-3 border-t border-indigo-100/60 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                  <span className="font-semibold text-gray-700">Sentiment Breakdown:</span>
+                  {positiveCount > 0 && (
+                    <span className="bg-green-50 text-green-700 font-medium px-2.5 py-1 rounded-md border border-green-200">
+                      👍 {positiveCount} Positive / Satisfied
+                    </span>
+                  )}
+                  {neutralCount > 0 && (
+                    <span className="bg-gray-100 text-gray-700 font-medium px-2.5 py-1 rounded-md border border-gray-200">
+                      👌 {neutralCount} No Complaints / N/A
+                    </span>
+                  )}
+                  {actionableRemarks.length > 0 && (
+                    <span className="bg-amber-50 text-amber-700 font-medium px-2.5 py-1 rounded-md border border-amber-200">
+                      💡 {actionableRemarks.length} Specific Note{actionableRemarks.length > 1 ? 's' : ''}
+                    </span>
+                  )}
+                  <span className="sm:ml-auto text-gray-400 italic mt-1 sm:mt-0">Individual remarks shown in normal table below</span>
+                </div>
               </div>
             </div>
           );
