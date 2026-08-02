@@ -181,6 +181,7 @@ const DetailedAnalyticsPage = () => {
   
   const [studentResponses, setStudentResponses] = useState(null);
   const [responsesLoading, setResponsesLoading] = useState(false);
+  const [exportingTimetable, setExportingTimetable] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -470,6 +471,195 @@ const DetailedAnalyticsPage = () => {
     XLSX.writeFile(wb, `${selectedFaculty.facultyName.replace(/\s+/g, '_')}_Feedback.xlsx`);
   };
 
+  const downloadTimetableExcel = async () => {
+    if (!selectedTimetable || !selectedTimetable.faculties || selectedTimetable.faculties.length === 0) {
+      toast.error('No faculties available in this timetable');
+      return;
+    }
+
+    setExportingTimetable(true);
+    const toastId = toast.loading('Generating Excel sheets for all faculties...');
+    try {
+      const ttPrefixMatch = selectedTimetable.name.match(/^T\d+/i);
+      const ttPrefix = ttPrefixMatch ? ttPrefixMatch[0].toUpperCase() : null;
+      let configKey = null;
+      if (ttPrefix) {
+        configKey = Object.keys(TIMETABLES_CONFIG).find(k => k.startsWith(ttPrefix));
+      } else {
+        configKey = Object.keys(TIMETABLES_CONFIG).find(k => 
+          selectedTimetable.name.toLowerCase().includes(k.split(' ')[0].toLowerCase())
+        );
+      }
+      const config = configKey ? TIMETABLES_CONFIG[configKey] : null;
+
+      const tasks = [];
+      selectedTimetable.faculties.forEach(fac => {
+        const subjKeys = Object.keys(fac.subjects || {});
+        if (subjKeys.length === 0) {
+          tasks.push({ fac, subject: null, courseCode: null, label: 'General', roomNo: 'N/A' });
+        } else {
+          subjKeys.forEach(sKey => {
+            let matchedCol = null;
+            let matchedRoom = 'N/A';
+            if (config) {
+              if (config.columns) {
+                matchedCol = config.columns.find(col => 
+                  col.code.toLowerCase() === sKey.toLowerCase() || 
+                  col.name.toLowerCase() === sKey.toLowerCase() ||
+                  col.name.toLowerCase().includes(sKey.toLowerCase()) ||
+                  sKey.toLowerCase().includes(col.name.toLowerCase())
+                );
+              }
+              if (config.rows) {
+                for (const row of config.rows) {
+                  const facIdx = row.faculties.findIndex(f => f.id === String(fac.facultyId) || (f.name.toLowerCase().replace(/[^a-z0-9]/g, '') === fac.facultyName.toLowerCase().replace(/[^a-z0-9]/g, '')));
+                  if (facIdx !== -1) {
+                    const col = config.columns[facIdx];
+                    if (col && (col.code.toLowerCase() === sKey.toLowerCase() || col.name.toLowerCase().includes(sKey.toLowerCase()) || sKey.toLowerCase().includes(col.name.toLowerCase()))) {
+                      matchedRoom = row.class;
+                      break;
+                    } else if (matchedRoom === 'N/A') {
+                      matchedRoom = row.class;
+                    }
+                  }
+                }
+              }
+            }
+            const isCourseCode = !sKey.includes(' ') && sKey.length <= 12 && /[0-9]/.test(sKey);
+            const subjectParam = matchedCol ? matchedCol.name : (isCourseCode ? null : sKey);
+            const courseCodeParam = matchedCol ? matchedCol.code : (isCourseCode ? sKey : null);
+            const label = (matchedCol ? matchedCol.code : null) || (isCourseCode ? sKey : null) || (matchedCol ? matchedCol.name : sKey);
+            
+            tasks.push({ fac, subject: subjectParam, courseCode: courseCodeParam, label, roomNo: matchedRoom });
+          });
+        }
+      });
+
+      const results = await Promise.all(
+        tasks.map(async (task) => {
+          try {
+            let url = `/feedback/admin/analytics/faculty-students?timetable=${encodeURIComponent(selectedTimetable.name)}&facultyId=${encodeURIComponent(task.fac.facultyId)}`;
+            if (task.subject) url += `&subject=${encodeURIComponent(task.subject)}`;
+            if (task.courseCode) url += `&courseCode=${encodeURIComponent(task.courseCode)}`;
+            const res = await api.get(url);
+            return { task, studentResp: res.data };
+          } catch (err) {
+            console.error(`Error loading data for ${task.fac.facultyName}:`, err);
+            return null;
+          }
+        })
+      );
+
+      const wb = XLSX.utils.book_new();
+      const usedSheetNames = new Set();
+
+      results.forEach(resItem => {
+        if (!resItem || !resItem.studentResp || !resItem.studentResp.students) return;
+        const { task, studentResp } = resItem;
+
+        const total = studentResp.students.length;
+        const submitted = studentResp.students.filter(s => s.status === 'Given').length;
+        const percent = total > 0 ? ((submitted / total) * 100).toFixed(1) : 0;
+        const stats = studentResp.stats || {};
+        const statsText = `Stats: Poor (${stats['Poor'] || 0}) | Fair (${stats['Fair'] || 0}) | Good (${stats['Good'] || 0}) | Very Good (${stats['Very Good'] || 0}) | Excellent (${stats['Excellent'] || 0})`;
+        
+        const subjectTitle = task.subject || task.courseCode || task.label || 'All';
+
+        const sheetData = [
+          [`Feedback Details - ${task.fac.facultyName}`],
+          [`Timetable: ${selectedTimetable.name} | Subject: ${subjectTitle} | ID: ${task.fac.facultyId}`],
+          [`Total Assigned: ${total} | Responded: ${submitted} | Response Rate: ${percent}%`],
+          [statsText],
+          []
+        ];
+
+        const headers = ["S.No"];
+        const questionsList = studentResp.questions || [];
+        questionsList.forEach((q, idx) => {
+          headers.push(`Q${idx+1}`);
+        });
+        headers.push("Suggestions");
+        sheetData.push(headers);
+
+        const respondedStudents = studentResp.students.filter(s => s.status === 'Given');
+        respondedStudents.forEach((student, index) => {
+          const row = [index + 1];
+          questionsList.forEach(q => {
+            row.push(student.answers[q._id] || '-');
+          });
+          row.push(student.suggestions || '-');
+          sheetData.push(row);
+        });
+
+        // Merging Feedback Stats (Metric & Value table) directly into the sheet
+        sheetData.push([]);
+        sheetData.push([]);
+        sheetData.push(["Feedback Stats"]);
+        sheetData.push(["Metric", "Value"]);
+        sheetData.push(["Employee Name", task.fac.facultyName]);
+        sheetData.push(["Employee ID", task.fac.facultyId]);
+        sheetData.push(["Subject", subjectTitle]);
+        sheetData.push(["Room No", task.roomNo || 'N/A']);
+        sheetData.push(["Total Students", total]);
+        sheetData.push(["Responses Count", submitted]);
+
+        questionsList.forEach((q, idx) => {
+          let poor = 0, fair = 0, good = 0, veryGood = 0, excellent = 0;
+          studentResp.students.forEach(student => {
+            const ans = student.answers[q._id];
+            if (ans === 'Poor') poor++;
+            if (ans === 'Fair') fair++;
+            if (ans === 'Good') good++;
+            if (ans === 'Very Good') veryGood++;
+            if (ans === 'Excellent') excellent++;
+          });
+          sheetData.push([
+            `Q${idx+1} (${q.questionText})`,
+            `Excellent: ${excellent}, Very Good: ${veryGood}, Good: ${good}, Fair: ${fair}, Poor: ${poor}`
+          ]);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+        // Format sheet name: "faculty name- subject name/code"
+        const cleanName = (task.fac.facultyName || 'Faculty').replace(/[\\/?*:[\]]/g, '').trim();
+        const cleanSubj = (task.label || 'Subj').replace(/[\\/?*:[\]]/g, '').trim();
+        let candidateName = `${cleanName}-${cleanSubj}`;
+        if (candidateName.length > 31) {
+          const maxSubjLen = Math.min(cleanSubj.length, 12);
+          const maxFacLen = Math.max(8, 31 - 1 - maxSubjLen);
+          const truncFac = cleanName.substring(0, maxFacLen).trim();
+          const truncSubj = cleanSubj.substring(0, 31 - 1 - truncFac.length).trim();
+          candidateName = `${truncFac}-${truncSubj}`;
+        }
+
+        let finalSheetName = candidateName;
+        let counter = 1;
+        while (usedSheetNames.has(finalSheetName.toLowerCase())) {
+          const suffix = `_${counter}`;
+          finalSheetName = candidateName.substring(0, 31 - suffix.length) + suffix;
+          counter++;
+        }
+        usedSheetNames.add(finalSheetName.toLowerCase());
+
+        XLSX.utils.book_append_sheet(wb, ws, finalSheetName);
+      });
+
+      if (wb.SheetNames.length === 0) {
+        toast.error('No response data available to generate Excel.');
+      } else {
+        XLSX.writeFile(wb, `${selectedTimetable.name.replace(/\s+/g, '_')}_Consolidated_Report.xlsx`);
+        toast.success('Excel report downloaded successfully!');
+      }
+    } catch (error) {
+      console.error('Failed to generate timetable excel:', error);
+      toast.error('Failed to generate Excel report');
+    } finally {
+      toast.dismiss(toastId);
+      setExportingTimetable(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -542,14 +732,28 @@ const DetailedAnalyticsPage = () => {
           <span className="text-gray-900 font-medium truncate">{selectedTimetable.name}</span>
         </div>
         
-        <div className="flex items-center gap-4">
-          <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-            <ArrowLeft size={20} className="text-gray-600" />
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{selectedTimetable.name} - Faculties</h1>
-            <p className="text-gray-500">Select a faculty to view specific ratings</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <ArrowLeft size={20} className="text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{selectedTimetable.name} - Faculties</h1>
+              <p className="text-gray-500">Select a faculty to view specific ratings</p>
+            </div>
           </div>
+          <button 
+            onClick={downloadTimetableExcel}
+            disabled={exportingTimetable}
+            className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-4 py-2.5 rounded-xl transition-colors font-medium text-sm shadow-sm shrink-0"
+          >
+            {exportingTimetable ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Download size={18} />
+            )}
+            <span>{exportingTimetable ? 'Generating Excel...' : 'Print Excel'}</span>
+          </button>
         </div>
 
         {(() => {
