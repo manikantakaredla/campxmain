@@ -362,7 +362,7 @@ const DetailedAnalyticsPage = () => {
     doc.setFont("helvetica", "bold");
     doc.text("Student Responses List:", marginL, finalY + 12);
 
-    const tableColumn = ["S.No", "Status"];
+    const tableColumn = ["S.No"];
     const questionKeys = studentResponses.questions.map(q => q._id);
     studentResponses.questions.forEach((q, idx) => {
       tableColumn.push(`Q${idx+1}`);
@@ -370,10 +370,10 @@ const DetailedAnalyticsPage = () => {
     tableColumn.push("Suggestions");
 
     const tableRows = [];
-    studentResponses.students.forEach((student, index) => {
+    const respondedStudents = studentResponses.students.filter(s => s.status === 'Given');
+    respondedStudents.forEach((student, index) => {
       const studentData = [
-        index + 1,
-        student.status
+        index + 1
       ];
       questionKeys.forEach(qId => {
         studentData.push(student.answers[qId] || '-');
@@ -390,7 +390,6 @@ const DetailedAnalyticsPage = () => {
       headStyles: { fillColor: [79, 70, 229], textColor: 255, fontStyle: 'bold' },
       columnStyles: {
         0: { cellWidth: 15 }, // S.No
-        1: { cellWidth: 15 }, // Status
         [tableColumn.length - 1]: { cellWidth: 'auto' }
       },
       margin: { left: marginL, right: 10, bottom: 15 }
@@ -418,15 +417,16 @@ const DetailedAnalyticsPage = () => {
       [] // empty row before table
     ];
 
-    const headers = ["S.No", "Status"];
+    const headers = ["S.No"];
     studentResponses.questions.forEach((q, idx) => {
       headers.push(`Q${idx+1}`);
     });
     headers.push("Suggestions");
     sheet1Data.push(headers);
 
-    studentResponses.students.forEach((student, index) => {
-      const row = [index + 1, student.status];
+    const respondedStudents = studentResponses.students.filter(s => s.status === 'Given');
+    respondedStudents.forEach((student, index) => {
+      const row = [index + 1];
       studentResponses.questions.forEach(q => {
         row.push(student.answers[q._id] || '-');
       });
@@ -995,8 +995,7 @@ const DetailedAnalyticsPage = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="p-4 font-semibold text-gray-800 whitespace-nowrap border-r border-gray-200">Roll Number</th>
-                  <th className="p-4 font-semibold text-gray-800 whitespace-nowrap border-r border-gray-200">Status</th>
+                  <th className="p-4 font-semibold text-gray-800 whitespace-nowrap border-r border-gray-200 w-16">S.No</th>
                   {studentResponses.questions.map((q, idx) => (
                     <th key={q._id} className="p-4 font-semibold text-gray-800 whitespace-nowrap border-r border-gray-200" title={q.questionText}>
                       Q{idx + 1}
@@ -1006,14 +1005,9 @@ const DetailedAnalyticsPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {studentResponses.students.map((student, idx) => (
+                {studentResponses.students.filter(s => s.status === 'Given').map((student, idx) => (
                   <tr key={idx} className="hover:bg-gray-50">
-                    <td className="p-4 font-medium text-gray-900 border-r border-gray-200">{student.rollNumber}</td>
-                    <td className="p-4 border-r border-gray-200">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${student.status === 'Given' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {student.status}
-                      </span>
-                    </td>
+                    <td className="p-4 font-medium text-gray-900 border-r border-gray-200 text-center">{idx + 1}</td>
                     {studentResponses.questions.map(q => (
                       <td key={q._id} className="p-4 text-sm text-gray-600 border-r border-gray-200">
                         {student.answers[q._id] || '-'}
@@ -1026,9 +1020,9 @@ const DetailedAnalyticsPage = () => {
                 ))}
               </tbody>
             </table>
-            {studentResponses.students.length === 0 && (
+            {studentResponses.students.filter(s => s.status === 'Given').length === 0 && (
               <div className="p-8 text-center text-gray-500">
-                No students assigned to this faculty for this timetable.
+                No feedback responses recorded for this faculty yet.
               </div>
             )}
           </div>
