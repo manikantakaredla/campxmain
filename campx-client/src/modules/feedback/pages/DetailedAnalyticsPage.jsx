@@ -1,177 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Users, Star, BarChart3, ChevronRight, MessageSquare, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import api from '../../../services/api';
-
-const TIMETABLES_CONFIG = {
-  "T1 TIME TABLE": {
-    columns: [
-      { code: "241CS007", name: "Computer Networks" },
-      { code: "241IT004", name: "Compiler Design" },
-      { code: "241AI005", name: "Machine Learning" },
-      { code: "241CS017", name: "Object Oriented Analysis & Design using UML" },
-      { code: "241MB001", name: "Engineering Economics & Management" },
-      { code: "241AI014", name: "Soft Computing -MI,CA (Minor Stream)" },
-      { code: "241AI010", name: "Natural Language Processing - MI (Minor Stream)" }
-    ],
-    rows: [
-      {
-        class: "RB-306",
-        faculties: [
-          { id: "6893", name: "Alla Devi Prasanthi" },
-          { id: "6079", name: "Dr. Appalaraju Grandhi" },
-          { id: "6749", name: "Jyothula Vidya" },
-          { id: "6749", name: "Jyothula Vidya" },
-          { id: "5", name: "Dr. N. Visalakshi" },
-          { id: "1852", name: "U P Kumar Chaturvedula" },
-          { id: "391", name: "Dr. Tirukoti Sudha Rani" }
-        ]
-      },
-      {
-        class: "RB-307",
-        faculties: [
-          { id: "6123", name: "Chinnari Mrudula Pothula" },
-          { id: "6722", name: "Kavitapu Nagasivasankara Varaprasad" },
-          { id: "6807", name: "Dr. Sindhu B" },
-          { id: "6231", name: "Ramesh Kothapalli" },
-          { id: "4826", name: "Dr. K V Siva Mohan" },
-          { id: "6699", name: "Dr. K V Siva Prasad Reddy" },
-          { id: "6787", name: "Surimalli Koteswara Rao" }
-        ]
-      },
-      {
-        class: "RB-308",
-        faculties: [
-          { id: "6722", name: "Kavitapu Nagasivasankara Varaprasad" },
-          { id: "6849", name: "Talluri Hari Babu" },
-          { id: "6099", name: "Dr. Subba Rao Polamuri" },
-          { id: "6908", name: "Mallidi Venkata Ajay Kumar Reddy" },
-          { id: "411", name: "Mrs. V. Suneetha" },
-          { id: "Rajendra Mahanta", name: "Rajendra Mahanta" },
-          { id: "6849", name: "Talluri Hari Babu" }
-        ]
-      }
-    ]
-  },
-  "T2 TIME TABLE": {
-    columns: [
-      { code: "241CS007", name: "Computer Networks" },
-      { code: "241IT004", name: "Compiler Design" },
-      { code: "241AI005", name: "Machine Learning" },
-      { code: "241CS017", name: "Object Oriented Analysis & Design using UML" },
-      { code: "241MB001", name: "Engineering Economics & Management" },
-      { code: "241AI026", name: "Information Retrieval Systems -DE(Minor Stream)" },
-      { code: "241CS034", name: "Fundamentals of Data Science -DE(Minor Stream)" }
-    ],
-    rows: [
-      {
-        class: "JWB-102",
-        faculties: [
-          { id: "6722", name: "Kavitapu Nagasivasankara Varaprasad" },
-          { id: "6893", name: "Alla Devi Prasanthi" },
-          { id: "1425", name: "M Kalyan Ram" },
-          { id: "6908", name: "Mallidi Venkata Ajay Kumar Reddy" },
-          { id: "5", name: "Dr. N. Visalakshi" },
-          { id: "1425", name: "M Kalyan Ram" },
-          { id: "1852", name: "U P Kumar Chaturvedula" }
-        ]
-      },
-      {
-        class: "JWB-103",
-        faculties: [
-          { id: "6791", name: "Koneti Durga Bhavani" },
-          { id: "6355", name: "Dr. Jalaiah Saikam" },
-          { id: "6749", name: "Jyothula Vidya" },
-          { id: "6231", name: "Ramesh Kothapalli" },
-          { id: "4711", name: "Dr. Elumalai P V" },
-          { id: "5243", name: "Dr. Pennada Siva Satya Prasad" },
-          { id: "6079", name: "Dr. Appalaraju Grandhi" }
-        ]
-      },
-      {
-        class: "JWB-104",
-        faculties: [
-          { id: "6893", name: "Alla Devi Prasanthi" },
-          { id: "6722", name: "Kavitapu Nagasivasankara Varaprasad" },
-          { id: "6099", name: "Dr. Subba Rao Polamuri" },
-          { id: "6369", name: "Rananki Padma Sri" },
-          { id: "411", name: "Mrs. V. Suneetha" },
-          { id: "5317", name: "G Uma Mahesh" },
-          { id: "6369", name: "Rananki Padma Sri" }
-        ]
-      }
-    ]
-  },
-  "T3 TIME TABLE": {
-    columns: [
-      { code: "241CS007", name: "Computer Networks" },
-      { code: "241IT004", name: "Compiler Design" },
-      { code: "241AI005", name: "Machine Learning" },
-      { code: "241CS017", name: "Object Oriented Analysis & Design using UML" },
-      { code: "241MB001", name: "Engineering Economics & Management" },
-      { code: "241CS030", name: "Information Security Analysis & Audit -NS (Minor Stream)" },
-      { code: "241CS023", name: "Cloud Computing -NS (Minor Stream)" }
-    ],
-    rows: [
-      {
-        class: "JWB-107",
-        faculties: [
-          { id: "Anil Kumar Prathipati", name: "Anil Kumar Prathipati" },
-          { id: "353", name: "Nalla Siva Kumar" },
-          { id: "6099", name: "Dr. Subba Rao Polamuri" },
-          { id: "6807", name: "Dr. Sindhu B" },
-          { id: "5", name: "Dr. N. Visalakshi" },
-          { id: "Rajendra Kumar Mahanta", name: "Rajendra Kumar Mahanta" },
-          { id: "5317", name: "Gandhikota Umamahesh" }
-        ]
-      },
-      {
-        class: "JWB-108",
-        faculties: [
-          { id: "6123", name: "Chinnari Mrudula Pothula" },
-          { id: "6355", name: "Dr. Jalaiah Saikam" },
-          { id: "6807", name: "Dr. Sindhu B" },
-          { id: "6355", name: "Dr. Jalaiah Saikam" },
-          { id: "411", name: "Mrs. V. Suneetha" },
-          { id: "6380", name: "Dr. Nagaraju Katta" },
-          { id: "5243", name: "Dr. Pennada Siva Satya Prasad" }
-        ]
-      }
-    ]
-  },
-  "T4 TIME TABLE": {
-    columns: [
-      { code: "241CS007", name: "Computer Networks" },
-      { code: "241IT004", name: "Compiler Design" },
-      { code: "241AI005", name: "Machine Learning" },
-      { code: "241CS017", name: "Object Oriented Analysis & Design using UML" },
-      { code: "241MB001", name: "Engineering Economics & Management" },
-      { code: "241AI014", name: "Soft Computing -MI,CA (Minor Stream)" },
-      { code: "241AI010", name: "Natural Language Processing - MI (Minor Stream)" }
-    ],
-    rows: [
-      {
-        class: "RB-304 & RB-305",
-        faculties: [
-          { id: "6791", name: "Koneti Durga Bhavani" },
-          { id: "6079", name: "Dr. Appalaraju Grandhi" },
-          { id: "6901", name: "Arasada Rakesh" },
-          { id: "6231", name: "Ramesh Kothapalli" },
-          { id: "5", name: "Dr. N. Visalakshi" },
-          { id: "6699", name: "Dr. K V Siva Prasad Reddy" },
-          { id: "391", name: "Dr. Tirukoti Sudha Rani" }
-        ]
-      }
-    ]
-  }
-};
+import { TIMETABLES_CONFIG } from '../constants/timetablesConfig';
 
 const DetailedAnalyticsPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [questions, setQuestions] = useState([]);
@@ -190,8 +29,27 @@ const DetailedAnalyticsPage = () => {
   const fetchData = async () => {
     try {
       const res = await api.get('/feedback/admin/analytics/detailed');
-      setData(res.data.timetables || []);
+      const fetchedTimetables = res.data.timetables || [];
+      setData(fetchedTimetables);
       setQuestions(res.data.questions || []);
+
+      if (location.state && location.state.timetableName && location.state.facultyId) {
+        const targetTt = fetchedTimetables.find(t => t.name === location.state.timetableName);
+        if (targetTt) {
+          setSelectedTimetable(targetTt);
+          const targetFac = targetTt.faculties.find(f => String(f.facultyId) === String(location.state.facultyId));
+          if (targetFac) {
+            const facObj = {
+              ...targetFac,
+              roomNo: location.state.roomNo || null,
+              subject: location.state.subject || null,
+              courseCode: location.state.courseCode || null,
+            };
+            setSelectedFaculty(facObj);
+            fetchStudentResponses(targetTt.name, targetFac.facultyId, location.state.subject || null, location.state.courseCode || null);
+          }
+        }
+      }
     } catch (error) {
       toast.error('Failed to load detailed analytics');
     } finally {
@@ -210,9 +68,17 @@ const DetailedAnalyticsPage = () => {
 
   const handleBack = () => {
     if (selectedFaculty) {
+      if (location.state?.from === 'faculty-analytics') {
+        navigate('/admin/feedback/faculty-analytics');
+        return;
+      }
       setSelectedFaculty(null);
       setStudentResponses(null);
     } else if (selectedTimetable) {
+      if (location.state?.from === 'faculty-analytics') {
+        navigate('/admin/feedback/faculty-analytics');
+        return;
+      }
       setSelectedTimetable(null);
     } else {
       navigate('/admin/feedback/dashboard');
@@ -321,6 +187,7 @@ const DetailedAnalyticsPage = () => {
     doc.text(`TOTAL STUDENTS: ${totalStudents}`, marginL, 53);
     doc.text(`RESPONSES COUNT: ${respondedCount}`, marginL + 50, 53);
     doc.text(`PENDING COUNT: ${pendingCount}`, marginL + 110, 53);
+    doc.text(`PERFORMANCE: ${overallPercentage.toFixed(1)}% (${grade})`, marginL + 170, 53);
 
     // 3. Detailed Question Stats Table
     doc.setFont("helvetica", "bold");
@@ -437,6 +304,24 @@ const DetailedAnalyticsPage = () => {
 
     const ws = XLSX.utils.aoa_to_sheet(sheet1Data);
     
+    // Calculate overall percentage and grade for stats
+    let totalSum = 0, totalCount = 0;
+    studentResponses.questions.forEach(q => {
+      studentResponses.students.forEach(student => {
+        const ans = student.answers[q._id];
+        if (ans === 'Poor') { totalSum += 1; totalCount++; }
+        if (ans === 'Fair') { totalSum += 2; totalCount++; }
+        if (ans === 'Good') { totalSum += 3; totalCount++; }
+        if (ans === 'Very Good') { totalSum += 4; totalCount++; }
+        if (ans === 'Excellent') { totalSum += 5; totalCount++; }
+      });
+    });
+    const overallPercent = totalCount > 0 ? ((totalSum / totalCount) * 20) : 0;
+    let grade = 'Poor';
+    if (overallPercent >= 80) grade = 'Excellent';
+    else if (overallPercent >= 60) grade = 'Good';
+    else if (overallPercent >= 40) grade = 'Average';
+
     // Generate Sheet 2: Detailed Stats
     const statsData = [
       { "Metric": "Employee Name", "Value": selectedFaculty.facultyName },
@@ -444,7 +329,8 @@ const DetailedAnalyticsPage = () => {
       { "Metric": "Subject", "Value": selectedFaculty.subject || 'All' },
       { "Metric": "Room No", "Value": selectedFaculty.roomNo || 'N/A' },
       { "Metric": "Total Students", "Value": total },
-      { "Metric": "Responses Count", "Value": submitted }
+      { "Metric": "Responses Count", "Value": submitted },
+      { "Metric": "Performance Percentage", "Value": `${overallPercent.toFixed(1)}% (${grade})` }
     ];
 
     studentResponses.questions.forEach((q, idx) => {
@@ -591,6 +477,24 @@ const DetailedAnalyticsPage = () => {
           sheetData.push(row);
         });
 
+        // Calculate overall performance percentage for stats table
+        let totalSum = 0, totalCount = 0;
+        questionsList.forEach(q => {
+          studentResp.students.forEach(student => {
+            const ans = student.answers[q._id];
+            if (ans === 'Poor') { totalSum += 1; totalCount++; }
+            if (ans === 'Fair') { totalSum += 2; totalCount++; }
+            if (ans === 'Good') { totalSum += 3; totalCount++; }
+            if (ans === 'Very Good') { totalSum += 4; totalCount++; }
+            if (ans === 'Excellent') { totalSum += 5; totalCount++; }
+          });
+        });
+        const overallPercent = totalCount > 0 ? ((totalSum / totalCount) * 20) : 0;
+        let grade = 'Poor';
+        if (overallPercent >= 80) grade = 'Excellent';
+        else if (overallPercent >= 60) grade = 'Good';
+        else if (overallPercent >= 40) grade = 'Average';
+
         // Merging Feedback Stats (Metric & Value table) directly into the sheet
         sheetData.push([]);
         sheetData.push([]);
@@ -602,6 +506,7 @@ const DetailedAnalyticsPage = () => {
         sheetData.push(["Room No", task.roomNo || 'N/A']);
         sheetData.push(["Total Students", total]);
         sheetData.push(["Responses Count", submitted]);
+        sheetData.push(["Performance Percentage", `${overallPercent.toFixed(1)}% (${grade})`]);
 
         questionsList.forEach((q, idx) => {
           let poor = 0, fair = 0, good = 0, veryGood = 0, excellent = 0;

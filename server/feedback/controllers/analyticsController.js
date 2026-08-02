@@ -304,29 +304,33 @@ exports.getFacultyStudentResponses = async (req, res) => {
     let query = { timetable, facultyId };
     const subject = req.query.subject;
     const courseCode = req.query.courseCode;
-    let subjectCondition = null;
+    let subjectCondition = [];
     
-    if (courseCode) {
-      query.courseCode = courseCode;
-      subjectCondition = [{ courseCode: courseCode }];
-    } else if (subject) {
-      if (subject.toLowerCase() === 'fundamentals of data science') {
-        subjectCondition = [{ courseName: /fundamentals of data science/i }, { courseName: /fds/i }, { courseCode: /fds/i }];
-      } else if (subject.toLowerCase() === 'engineering economics & management') {
-        subjectCondition = [{ courseName: /engineering economics/i }, { courseName: /eem/i }, { courseCode: /eem/i }];
-      } else if (subject.toLowerCase() === 'information retrieval systems') {
-        subjectCondition = [{ courseName: /information retrieval/i }, { courseName: /irs/i }, { courseCode: /irs/i }];
-      } else if (subject.toLowerCase() === 'computer networks') {
-        subjectCondition = [{ courseName: /computer networks/i }, { courseName: /cn/i }, { courseCode: /cn/i }];
-      } else if (subject.toLowerCase() === 'compiler design') {
-        subjectCondition = [{ courseName: /compiler design/i }, { courseName: /cd/i }, { courseCode: /cd/i }];
-      } else if (subject.toLowerCase() === 'machine learning') {
-        subjectCondition = [{ courseName: /machine learning/i }, { courseName: /ml/i }, { courseCode: /ml/i }];
-      } else if (subject.toLowerCase() === 'ooad') {
-        subjectCondition = [{ courseName: /ooad/i }, { courseName: /object oriented/i }, { courseCode: /ooad/i }];
+    if (courseCode && courseCode !== 'N/A' && courseCode !== 'GEN') {
+      subjectCondition.push({ courseCode: courseCode });
+      subjectCondition.push({ courseCode: new RegExp(courseCode, 'i') });
+    }
+    if (subject && subject !== 'General Evaluation' && subject !== 'Other') {
+      if (subject.toLowerCase() === 'fundamentals of data science' || subject.toLowerCase() === 'fds') {
+        subjectCondition.push({ courseName: /fundamentals of data science/i }, { courseName: /fds/i }, { courseCode: /fds/i });
+      } else if (subject.toLowerCase() === 'engineering economics & management' || subject.toLowerCase() === 'eem') {
+        subjectCondition.push({ courseName: /engineering economics/i }, { courseName: /eem/i }, { courseCode: /eem/i });
+      } else if (subject.toLowerCase() === 'information retrieval systems' || subject.toLowerCase() === 'irs') {
+        subjectCondition.push({ courseName: /information retrieval/i }, { courseName: /irs/i }, { courseCode: /irs/i });
+      } else if (subject.toLowerCase() === 'computer networks' || subject.toLowerCase() === 'cn') {
+        subjectCondition.push({ courseName: /computer networks/i }, { courseName: /cn/i }, { courseCode: /cn/i });
+      } else if (subject.toLowerCase() === 'compiler design' || subject.toLowerCase() === 'cd') {
+        subjectCondition.push({ courseName: /compiler design/i }, { courseName: /cd/i }, { courseCode: /cd/i });
+      } else if (subject.toLowerCase() === 'machine learning' || subject.toLowerCase() === 'ml') {
+        subjectCondition.push({ courseName: /machine learning/i }, { courseName: /ml/i }, { courseCode: /ml/i });
+      } else if (subject.toLowerCase() === 'ooad' || subject.toLowerCase().includes('object oriented')) {
+        subjectCondition.push({ courseName: /ooad/i }, { courseName: /object oriented/i }, { courseCode: /ooad/i });
       } else {
-        subjectCondition = [{ courseName: new RegExp(subject, 'i') }];
+        subjectCondition.push({ courseName: new RegExp(subject, 'i') });
       }
+    }
+
+    if (subjectCondition.length > 0) {
       query.$or = subjectCondition;
     }
     const assignments = await FeedbackAssignment.find(query);
@@ -334,9 +338,7 @@ exports.getFacultyStudentResponses = async (req, res) => {
 
     // 3. Get all answers for these students & this faculty
     let answerQuery = { timetable, facultyId, rollNumber: { $in: assignedRollNumbers } };
-    if (courseCode) {
-      answerQuery.courseCode = courseCode;
-    } else if (subjectCondition) {
+    if (subjectCondition.length > 0) {
       answerQuery.$or = subjectCondition;
     }
     const answers = await FeedbackAnswer.find(answerQuery);

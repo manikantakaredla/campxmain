@@ -115,7 +115,7 @@ const StudentFeedbackForm = () => {
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
           <div>
             <h1 className="text-xl font-bold">Faculty Feedback System</h1>
-            <p className="text-blue-100 text-sm mt-1">{data.student.rollNumber} • {data.student.timetable}</p>
+            <p className="text-blue-100 text-sm mt-1">{data.student.timetable}</p>
           </div>
           <button 
             onClick={logout}

@@ -230,6 +230,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         label: 'Feedback System',
         items: [
           { path: '/feedback/dashboard', icon: <TrendingUp size={20} />, label: 'Feedback Analytics' },
+          { path: '/feedback/faculty-analytics', icon: <Users size={20} />, label: 'Faculty Analytics' },
           { path: '/feedback/import', icon: <Upload size={20} />, label: 'Import Data' },
           { path: '/feedback/config', icon: <Settings size={20} />, label: 'Configuration' }
         ]
